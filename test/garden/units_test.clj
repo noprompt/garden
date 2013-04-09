@@ -1,13 +1,13 @@
 (ns garden.units-test
   (:require [clojure.test :refer :all]
-            [garden.units :as  u]))
+            [garden.units :as u]))
 
 (deftest test-unit-arthimetic
-  (let [μm (u/make-unit-fn :μm)
-        μm+ (u/make-unit-adder :μm)
-        μm- (u/make-unit-subtractor :μm)
-        μm* (u/make-unit-multiplier :μm)
-        μm-div (u/make-unit-divider :μm)]
+  (let [μm (#'u/make-unit-fn :μm)
+        μm+ (#'u/make-unit-adder :μm)
+        μm- (#'u/make-unit-subtractor :μm)
+        μm* (#'u/make-unit-multiplier :μm)
+        μm-div (#'u/make-unit-divider :μm)]
     (testing "addition"
       (is (= (μm 0) (μm+)))
       (is (= (μm 2) (μm+ 1 1))))
@@ -50,4 +50,3 @@
     (is (thrown? IllegalArgumentException (u/px (u/Hz 1))))
     (is (thrown? IllegalArgumentException (u/px (u/kHz 1))))))
 
-;(run-tests)

@@ -1,18 +1,15 @@
 (ns garden.units
   (:refer-clojure :exclude [rem]))
 
-
 (defrecord Unit [magnitude unit]
   Object
   (toString [this]
     (str (.magnitude this) (name (.unit this)))))
 
+;;;; Unit conversion
 
-;;
-;; Unit conversion
-;;
-
-(def ^:private convertable-units
+(def ^:private
+  convertable-units
   {:in  0  :cm   1  :pc  2 :mm   3 :pt 4 :px 5 ;; Absolute units
    :deg 6  :grad 7  :rad 8 :turn 9             ;; Angles
    :s   10 :ms   11                            ;; Times
@@ -21,7 +18,8 @@
 
 ;; Note: Typically, commas are avoided in sequences, but in this case they are
 ;; useful for displaying the table in a readable manor.
-(def ^:private conversion-table
+(def ^:private
+  conversion-table
   ; in   , cm   , pc         , mm         , pt         , px           , deg , grad        , rad          , turn        , s   , ms   , Hz  , kHz
   [[1    , 2.54 , 6          , 25.4       , 72         , 96           , nil , nil         , nil          , nil         , nil , nil  , nil , nil]   ;; in
    [nil  , 1    , 2.36220473 , 10         , 28.3464567 , 37.795275591 , nil , nil         , nil          , nil         , nil , nil  , nil , nil]   ;; cm
@@ -39,12 +37,10 @@
    [nil  , nil  , nil        , nil        , nil        , nil          , nil , nil         , nil          , nil         , nil , nil  , nil , 1]     ;; kHz
    ])
 
-
 (defn- convertable?
   "True if unit is a key of convertable-units, false otherwise."
   [unit]
   (contains? convertable-units unit))
-
 
 (defn- convert
   "Convert a Unit with :unit left to a Unit with :unit right if possible."
@@ -65,13 +61,8 @@
     (let [x (first (drop-while convertable? [left right]))]
       (throw (IllegalArgumentException. (str "Inconvertible unit " (name x)))))))
 
+;;;; Unit helpers
 
-;;
-;; Unit helpers
-;;
-;; NOTE: Submite this to kibit
-;;    Don't: (= (type x) Unit)
-;;    Do: (instance? Unit x)
 (defn unit?
   "True if x is of type Unit."
   [x]
@@ -102,13 +93,12 @@
   [x]
   (boolean (and (unit? x) (#{:dpi :dpcm :dppx} (:unit x)))))
 
-(defn make-unit-checker
+(defn- make-unit-checker
   "Creates a function for verifying the given unit type."
   [unit]
   (fn [x] (and (unit? x) (= (:unit x) unit))))
 
-
-(defn make-unit-fn
+(defn- make-unit-fn
   "Creates a function for creating and converting CSS units for the given
    unit. If a number n is passed to the function it will produce a new Unit
    record with a the magnitued set to n. If a Unit is passed the function
@@ -126,8 +116,7 @@
                            (.getName (type x))
                            (name unit)))))))
 
-
-(defn make-unit-adder
+(defn- make-unit-adder
   "Create a addition function for adding Units."
   [unit]
   (let [u (make-unit-fn unit)]
@@ -141,8 +130,7 @@
       ([x y & more]
        (reduce u+ (u+ x y) more)))))
 
-
-(defn make-unit-subtractor
+(defn- make-unit-subtractor
   "Create a subtraction function for subtracting Units."
   [unit]
   (let [u (make-unit-fn unit)]
@@ -156,7 +144,7 @@
        (reduce u- (u- x y) more)))))
 
 
-(defn make-unit-multiplier
+(defn- make-unit-multiplier
   "Create a multiplication function for multiplying Units."
   [unit]
   (let [u (make-unit-fn unit)]
@@ -170,8 +158,7 @@
       ([x y & more]
        (reduce u* (u* x y) more)))))
 
-
-(defn make-unit-divider
+(defn- make-unit-divider
   "Create a division function for dividing Units."
   [unit]
   (let [u (make-unit-fn unit)]
@@ -183,7 +170,6 @@
          (u (/ m1 m2))))
       ([x y & more]
        (reduce ud (ud x y) more)))))
-
 
 (defmacro defunit
   "Create a suite of functions for unit creation, conversion, validation, and
