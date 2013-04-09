@@ -1,7 +1,7 @@
 # Garden
 
 Garden is a library for rendering CSS in Clojure. Conceptually similar to
-[hiccup](https://github.com/weavejester/hiccup), it uses vectors to represent
+[Hiccup](https://github.com/weavejester/hiccup), it uses vectors to represent
 rules and maps to represent declarations. Garden also comes with functions for
 working with units.
 
