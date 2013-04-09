@@ -259,12 +259,17 @@ since it's technically possible to compute their contextual value.
 
 ## Thanks
 
-A big thank you goes out to @weavejester for creating Hiccup. I learned a lot
-from studying the source code (and borrowed several ideas). Writing this
-library would have been significantly difficult without it.
+A big thank you goes out to [@weavejester](https://github.com/weavejester) for
+creating Hiccup, [@briancarper](https://github.com/briancarper) for creating
+[gaka](https://github.com/briancarper/gaka/), and
+[@paraseba](https://github.com/paraseba) for creating
+[cssgen](https://github.com/paraseba/cssgen). I learned a lot
+from studying the source code of these libraries (and borrowed several ideas
+from them). Writing this library would have been significantly more difficult
+without the hard work of these individuals.
 
-I'd also like to thank @jhardy for putting up with random questions and pushing
-me to get this library out there.
+I'd also like to thank [@jhardy](https://github.com/jhardy) for putting up with
+random questions and pushing me to keep working on this library.
 
 Thanks to everyone in `#clojure` on IRC for answering my questions and being
 patient with me. If you're looking for an example of a great community, look no
