@@ -35,7 +35,7 @@ From your project's root directory start up a new REPL and try the following:
 user=> (require '[garden.core :refer (css)]))
 nil
 user=> (css [:body {:font-size "16px"}])
-"body{font-family:16px}"
+"body{font-size:16px}"
 ```
 
 First you'll notice the use of the `css` macro. This macro takes an optional
