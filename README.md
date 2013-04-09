@@ -157,7 +157,7 @@ user=> (css [:.box (partly-rounded "3px")])
 ".box{border-bottom-left-radius:3px;border-top-right-radius:3px}"
 ```
 
-###### Vectors and lists
+##### Vectors and lists
 
 Finally we have vectors and lists which are handled in the same manor when used
 as a declaration value. The semantics of these values increment the level of
@@ -207,9 +207,10 @@ user=> (css (px 16))
 "16px"
 ```
 
-Unit functions take a number _n_ and construct a new `Unit` record with _n_ as
-the magnitude. Unit functions also accept other units as values returning their
-conversion if possible. This makes working with unit values very flexible.
+Unit functions take a number _n_ and construct a new `garden.units.Unit` record
+with _n_ as the magnitude. Unit functions also accept other units as values
+returning their conversion if possible. This makes working with unit values
+very flexible.
 
 ```clojure
 user=> (css (px (px 16)))
@@ -256,6 +257,12 @@ since it's technically possible to compute their contextual value.
 * Create a namespaces for functions/macros dealing with:
   1. colors
   2. animations
+
+## Contributing
+
+For the love of all that's holy, if you find anything wrong with this library
+or see an opportunity to improve it, don't stop yourself from opening an issue
+or submitting a pull request!
 
 ## Thanks
 
