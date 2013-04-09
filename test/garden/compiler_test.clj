@@ -73,4 +73,3 @@
         (is (= (make-media-query media-expr [rule])
                "@media bar and not baz and (quux:grault){foo{bar:baz;quux:grault}}"))))))
 
-(run-tests)
