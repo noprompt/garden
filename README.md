@@ -251,6 +251,43 @@ groups. This means you cannot, for example, convert `px` to `rad` or `Hz` to
 In the future, some exceptions to this rule might apply for working with `em`s
 since it's technically possible to compute their contextual value.
 
+## Compiler flags
+
+The `css` macro optionally takes a map of compiler flags. Currently, the only
+key of this map recognized by the macro is `:output-style`. The `:output-style`
+may be one of `:expanded`, `:compact`, or `:compressed`. By default all CSS is
+rendered using the `:compressed` flag.
+
+Assuming:
+
+```clojure
+(def styles
+  [[:h1 {:font-weight "normal"}]
+    [:a {:text-decoration "none"}]])
+```
+
+`(css {:output-style :expanded} styles)` results in the following output when
+`print`ed:
+
+```css
+h1 {
+  font-weight: normal;
+}
+
+h1 a {
+  text-decoration: none;
+}
+
+```
+
+`(css {:output-style :compact} styles)` results in the following output when
+`print`ed:
+
+```css
+h1 { font-weight: normal; }
+h1 a { text-decoration: none; }
+```
+
 ## TODO
 
 * Use Clojure meta for media queries
