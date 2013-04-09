@@ -108,7 +108,7 @@ To be on the safe side, just play ball and avoid anything else for now.
 We've already seen strings used as declaration map values, but Garden also
 supports keywords, symbols, numbers, maps, vectors, and lists in addition.
 
-##### Strings, keywords, symbols
+##### Strings, keywords, symbols, and numbers
 
 Strings, keywords, symbols, and numbers are rendered as literal CSS values:
 
@@ -191,11 +191,11 @@ units. This includes creation, conversion, and arithmetic. To start using units
 use/require the `garden.units` namespace.
 
 ```clojure
-user=> (require '[garden.units :refer (px in)])
+user=> (require '[garden.units :refer (px pt)])
 nil
 ```
 
-For demonstration purposes we're only `refer`ing the `px` and `in` units but
+For demonstration purposes we're only `refer`ing the `px` and `pt` units but
 Garden supports all of the usual suspects. Also we'll use the `css` macro to
 render the units as strings but note this is not necessary when authoring a
 stylesheet.
