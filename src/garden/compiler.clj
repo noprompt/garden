@@ -5,11 +5,13 @@
             [garden.util :refer :all]
             [garden.units :refer [unit?]]))
 
-(declare render-css)
-
 ;;;; Output style and formatting
 
-(def output-style
+(def
+  ^{:private true
+    :doc "Map associating output-style options to characters used when
+         rendering CSS."}
+  output-style
   {:expanded {:comma ", "
               :colon ": "
               :semicolon ";\n"
@@ -35,7 +37,11 @@
                 :newline ""
                 :indent 0}})
 
-(def ^:dynamic *output-style* :compressed)
+(def
+ ^{:dynamic true
+   :private true
+   :doc "The stylesheet output style."}
+  *output-style* :compressed)
 
 (defn- output [k]
   (fn [] (-> output-style *output-style* k)))
@@ -57,7 +63,8 @@
    (reduce str (take n (repeat \space)))))
 
 (defmacro with-output-style
-  "Sets the output style for rendering CSS strings. Defaults to compressed."
+  "Set the output style for rendering CSS strings. The value of style may be
+   either 'expanded, 'compact, or 'compressed. Defaults to compressed."
   [style & body]
   (let [style (if (contains? output-style (keyword style))
                 (keyword style)
@@ -83,6 +90,8 @@
 
 ;;;; Declaration, rule, and stylesheet generation.
 
+(declare render-css)
+
 (defn- expand-declaration
   "Expands nested properties."
   [declaration]
@@ -106,7 +115,7 @@
          (space-join v)
          (to-str v))))
 
-(defn make-rule
+(defn- make-rule
   "Make a CSS rule."
   [[selector & declarations]]
   (str (to-str selector)
@@ -114,7 +123,7 @@
        (string/join (semicolon) (map render-css declarations))
        (right-brace)))
 
-(defn make-stylesheet
+(defn- make-stylesheet
   "Make a CSS stylesheet from a vector of rules."
   [rules]
   (->> (filter vector? rules)
@@ -123,7 +132,11 @@
 
 ;;;; Media query generation.
 
-(def media-output-style
+(def
+  ^{:private true
+    :doc "Map for associng output-style to characters used in rendering a CSS
+          media query."}
+  media-output-style
   {:expanded {:left-brace " {\n\n"
               :right-brace "}"}
    :compact {:left-brace " {\n"
@@ -131,7 +144,7 @@
    :compressed {:left-brace "{"
                 :right-brace "}"}})
 
-(defn make-media-expression
+(defn- make-media-expression
   "Make a media query expession from one or more maps."
   ([expr]
    (let [query (for [[k v] expr]
@@ -145,7 +158,7 @@
   ([expr & more]
    (comma-join (map make-media-expression (cons expr more)))))
 
-(defn make-media-query
+(defn- make-media-query
   "Make a CSS media query from one or more maps and a sequence of rules."
   [expr rules]
   (let [expr (if (sequential? expr)
@@ -216,5 +229,7 @@
   (render-css [this]
     ""))
 
-(defn compile-css [& rules]
+(defn compile-css
+  "Convert any number of Clojure data structures to CSS."
+  [& rules]
   (render-css rules))
