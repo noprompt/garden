@@ -3,8 +3,7 @@
   (:require [clojure.string :as string]
             [clojure.math.combinatorics :refer [cartesian-product]]
             [garden.util :refer :all]
-            [garden.units :refer [unit?]])
-  (:import [clojure.lang IPersistentVector]))
+            [garden.units :refer [unit?]]))
 
 (declare render-css)
 
