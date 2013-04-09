@@ -12,6 +12,7 @@ working with units.
   * [Rules](#rules)
   * [Declarations](#declarations)
   * [Units](#units)
+* [TODO](#todo)
 * [Thanks](#thanks)
 
 ## Installation
@@ -104,8 +105,10 @@ To be on the safe side, just play ball and avoid anything else for now.
 
 #### Values
 
-We've already seen strings used as declaration map values but Garden supports
-keywords, symbols, numbers, maps, vectors, and lists in addition to this.
+We've already seen strings used as declaration map values, but Garden also
+supports keywords, symbols, numbers, maps, vectors, and lists in addition.
+
+##### Strings, keywords, symbols
 
 Strings, keywords, symbols, and numbers are rendered as literal CSS values:
 
@@ -121,6 +124,7 @@ user=> (css [:pre {:font-family "\"Liberation Mono\", Consolas, monospace"}])
 "pre{font-family:\"Liberation Mono\", Consolas, monospace}"
 ```
 
+##### Maps
 
 In some cases it would be useful target several properties in a "group" of
 properties without having to type the same prefix several times. To do this
@@ -153,6 +157,8 @@ user=> (css [:.box (partly-rounded "3px")])
 ".box{border-bottom-left-radius:3px;border-top-right-radius:3px}"
 ```
 
+###### Vectors and lists
+
 Finally we have vectors and lists which are handled in the same manor when used
 as a declaration value. The semantics of these values increment the level of
 complexity somewhat so be sure you understand their behavior before you use
@@ -164,14 +170,15 @@ user=> (css [:p {:font ["16px" "sans-serif"]}])
 "p{font:16px sans-serif}"
 ```
 
-When you nest a vector/list  you are asking for a *comma* separated list.
+When you nest a vector/list you are asking for a *comma* separated list.
 
 ```clojure
 user=> (css [:p {:font ["16px" '(Helvetica Arial sans-serif)]}])
 "p{font:16px Helvetica,Arial,sans-serif}"
 ```
 
-Be warned, this pattern is recursive!
+Be warned, this pattern is recursive! Unless you know exactly what you are
+doing, avoid nesting more than one level.
 
 ### Units
 
@@ -243,11 +250,18 @@ groups. This means you cannot, for example, convert `px` to `rad` or `Hz` to
 In the future, some exceptions to this rule might apply for working with `em`s
 since it's technically possible to compute their contextual value.
 
+## TODO
+
+* Use Clojure meta for media queries
+* Create a namespaces for functions/macros dealing with:
+  1. colors
+  2. animations
+
 ## Thanks
 
-A big thank you goes out to @weavejester for creating Hiccup. I learned a ton
-from studying the source code and borrowed several ideas. Writing this library
-would have been significantly harder without it.
+A big thank you goes out to @weavejester for creating Hiccup. I learned a lot
+from studying the source code (and borrowed several ideas). Writing this
+library would have been significantly difficult without it.
 
 I'd also like to thank @jhardy for putting up with random questions and pushing
 me to get this library out there.
