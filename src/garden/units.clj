@@ -12,7 +12,7 @@
 (def
   ^{:private true
     :doc "Map for associating CSS unit types to columns and rows in
-          converstion-table."}
+          conversion-table."}
   convertable-units
   {:in  0  :cm   1  :pc  2 :mm   3 :pt 4 :px 5 ;; Absolute units
    :deg 6  :grad 7  :rad 8 :turn 9             ;; Angles
