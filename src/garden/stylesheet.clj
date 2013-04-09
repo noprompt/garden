@@ -1,10 +1,10 @@
 (ns garden.stylesheet
   (:refer-clojure :exclude [import])
   (:import java.net.URI)
-  (:use [clojure.string :only [join]]))
+  (:require [clojure.string :refer [join]]))
 
 (defn css-fn [fn-name & args]
-  (format "%s(%s)" (name fn-name) (join ", " args)))
+  (format "%s(%s)" (name fn-name) (join (#'garden.compiler/comma) args)))
 
 (defn font-face
   "Make a CSS @font-face rule."

@@ -1,4 +1,5 @@
-(ns garden.util)
+(ns garden.util
+  "Utility functions used by Garden.")
 
 (defprotocol ToString
   (^String to-str [this] "Convert a value into a string."))
@@ -18,7 +19,7 @@
   [& args]
   (apply str (map to-str args)))
 
-(defn natural?
+(defn ^Boolean natural?
   "True if n is a natural number."
   [n]
   (and (integer? n) (pos? n)))

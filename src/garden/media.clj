@@ -1,7 +1,7 @@
 (ns garden.media
+  "Utility functions for working with media queries."
   (:require [garden.util :refer :all]
             [garden.units :as unit]))
-
 
 ;; See: http://www.w3.org/TR/css3-mediaqueries/#media1
 ;; Feature, accepted value type or values, accept min/max prefixes
