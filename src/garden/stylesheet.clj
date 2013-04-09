@@ -3,13 +3,13 @@
   (:import java.net.URI)
   (:require [clojure.string :refer [join]]))
 
-(defn css-fn [fn-name & args]
-  (format "%s(%s)" (name fn-name) (join (#'garden.compiler/comma) args)))
+(defn css-fn [fn-name args]
+  (format "%s(%s)" (name fn-name) (#'garden.compiler/comma-join args)))
 
 (defn font-face
   "Make a CSS @font-face rule."
   [& declarations]
-  (apply (partial conj ["@font-face"]) declarations))
+  (conj ["@font-face"] declarations))
 
 (defn url
   "Make a CSS url function."
@@ -18,7 +18,10 @@
 
 (defn import
   "Make a CSS @import expression."
-  ([stylesheet]
-   (str "@import " stylesheet))
-  ([stylesheet & media-types]
-   (format "@import %s %s" stylesheet (join ", " (map name media-types)))))
+  ([stylesheet-path]
+   (str "@import " stylesheet-path))
+  ([stylesheet-path & media-types]
+   (format
+     "@import %s %s"
+     stylesheet-path
+     (join (#'garden.compiler/comma) (map name media-types)))))
