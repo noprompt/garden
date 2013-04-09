@@ -1,7 +1,6 @@
 (ns garden.media
   (:require [garden.util :refer :all]
-            [garden.units :as unit]
-            ))
+            [garden.units :as unit]))
 
 
 ;; See: http://www.w3.org/TR/css3-mediaqueries/#media1
