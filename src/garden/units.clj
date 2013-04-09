@@ -1,4 +1,5 @@
 (ns garden.units
+  "Functions and macros for working with CSS units."
   (:refer-clojure :exclude [rem]))
 
 (defrecord Unit [magnitude unit]
@@ -8,7 +9,10 @@
 
 ;;;; Unit conversion
 
-(def ^:private
+(def
+  ^{:private true
+    :doc "Map for associating CSS unit types to columns and rows in
+          converstion-table."}
   convertable-units
   {:in  0  :cm   1  :pc  2 :mm   3 :pt 4 :px 5 ;; Absolute units
    :deg 6  :grad 7  :rad 8 :turn 9             ;; Angles
@@ -17,8 +21,10 @@
    })
 
 ;; Note: Typically, commas are avoided in sequences, but in this case they are
-;; useful for displaying the table in a readable manor.
-(def ^:private
+;; useful for displaying the table in a readable manner.
+(def
+  ^{:private true
+    :doc "Table for converting CSS units."}
   conversion-table
   ; in   , cm   , pc         , mm         , pt         , px           , deg , grad        , rad          , turn        , s   , ms   , Hz  , kHz
   [[1    , 2.54 , 6          , 25.4       , 72         , 96           , nil , nil         , nil          , nil         , nil , nil  , nil , nil]   ;; in
@@ -142,7 +148,6 @@
          (u (- m1 m2))))
       ([x y & more]
        (reduce u- (u- x y) more)))))
-
 
 (defn- make-unit-multiplier
   "Create a multiplication function for multiplying Units."
