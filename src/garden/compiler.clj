@@ -64,7 +64,7 @@
 
 (defmacro with-output-style
   "Set the output style for rendering CSS strings. The value of style may be
-   either 'expanded, 'compact, or 'compressed. Defaults to compressed."
+   either :expanded, :compact, or :compressed. Defaults to compressed."
   [style & body]
   (let [style (if (contains? output-style (keyword style))
                 (keyword style)
@@ -101,7 +101,7 @@
             prefix (fn [[k v]]
                      {(str prop \- (to-str k)) v})]
         (if (and (map? value)
-                 (not (unit? value))) ; Don't expand units.
+                 (not (instance? clojure.lang.IRecord value))) 
           (expand-declaration (into m (map prefix value)))
           (assoc m prop value))))
     {}
@@ -220,8 +220,11 @@
   (render-css [this]
     (str (float this)))
   garden.units.Unit
-  (render-css [{:keys [magnitude unit]}]
-    (str (render-css magnitude) (to-str unit)))
+  (render-css [this]
+    (str this))
+  garden.stylesheet.CSSFunction
+  (render-css [this]
+    (str this))
   Object
   (render-css [this]
     (str this))
