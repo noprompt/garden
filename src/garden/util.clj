@@ -23,3 +23,8 @@
   "True if n is a natural number."
   [n]
   (and (integer? n) (pos? n)))
+
+(defn ^String wrap-quotes
+  "Wrap a string with double quotes."
+  [s]
+  (str \" s \"))
