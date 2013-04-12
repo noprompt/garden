@@ -1,5 +1,4 @@
 (ns garden.stylesheet
-  (:refer-clojure :exclude [import])
   (:import java.net.URI)
   (:require [clojure.string :refer [join]]
             [garden.util :refer :all]
