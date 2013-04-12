@@ -5,7 +5,12 @@
 (defrecord Unit [magnitude unit]
   Object
   (toString [this]
-    (str (.magnitude this) (name (.unit this)))))
+    (let [m (when (ratio? magnitude)
+              (float magnitude))]
+      (str (if (ratio? magnitude)
+             (float magnitude)
+             magnitude)
+           (name unit)))))
 
 ;;;; Unit conversion
 
