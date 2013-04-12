@@ -74,14 +74,14 @@
 
 (declare comma-join space-join)
 
-(defn- comma-join
+(defn comma-join
   "Return a comma separated list of values. Subsequences are joined with
    spaces."
   [xs]
   (let [ys (map #(if (sequential? %) (space-join %) (to-str %)) xs)]
     (string/join (comma) ys)))
 
-(defn- space-join
+(defn space-join
   "Return a space separated list of values. Subsequences are joined with
    commas."
   [xs]
@@ -144,7 +144,7 @@
    :compressed {:left-brace "{"
                 :right-brace "}"}})
 
-(defn- make-media-expression
+(defn make-media-expression
   "Make a media query expession from one or more maps."
   ([expr]
    (let [query (for [[k v] expr]
