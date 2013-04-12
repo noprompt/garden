@@ -4,8 +4,8 @@
 
 (deftest css-functions
   (testing "url"
-    (is (= (str (url "http://foo.css"))
-           "url(http://foo.css)")))
+    (is (= (str (url "http://example.com/foo.css"))
+           "url(http://example.com/foo.css)")))
 
   (testing "attr"
     (is (= (str (attr :size))
@@ -22,12 +22,12 @@
            "toggle(italic,bold)")))
 
   (testing "at-import"
-    (is (= (at-import "http://foo.css")
-           "@import \"http://foo.css\";"))
-    (is (= (at-import (url "http://foo.css"))
-           "@import url(http://foo.css);"))
-    (is (= (at-import "http://foo.css" :screen)
-           "@import \"http://foo.css\" screen;"))
-    (is (= (at-import "http://foo.css" :screen {:orientation :landscape})
-           "@import \"http://foo.css\" screen,(orientation:landscape);"))))
+    (is (= (at-import "http://example.com/foo.css")
+           "@import \"http://example.com/foo.css\";"))
+    (is (= (at-import (url "http://example.com/foo.css"))
+           "@import url(http://example.com/foo.css);"))
+    (is (= (at-import "http://example.com/foo.css" :screen)
+           "@import \"http://example.com/foo.css\" screen;"))
+    (is (= (at-import "http://example.com/foo.css" :screen {:orientation :landscape})
+           "@import \"http://example.com/foo.css\" screen,(orientation:landscape);"))))
 
