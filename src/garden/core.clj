@@ -1,5 +1,6 @@
-(ns garden.core
-  "Library for rendering Clojure data structures as CSS."
+(ns ^{:doc "Library for rendering Clojure data structures as CSS."
+      :author "Joel Holdbrooks"}
+  garden.core
   (:require [garden.compiler :refer [with-output-style compile-css]]))
 
 (defmacro css
