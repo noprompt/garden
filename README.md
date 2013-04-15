@@ -10,6 +10,7 @@ working with units.
 * [Installation](#installation)
 * [Syntax](#syntax)
   * [Rules](#rules)
+    * [Parent selector references](#parent-selector-references)
   * [Declarations](#declarations)
   * [Units](#units)
 * [TODO](#todo)
@@ -20,7 +21,7 @@ working with units.
 Add the following dependency to your `project.clj` file:
 
 ```clojure
-[garden "0.1.0-alpha"]
+[garden "0.1.0-alpha2"]
 ```
 
 ## Syntax
@@ -71,6 +72,21 @@ selectors:
 user=> (css [:h1 :h2 {:font-weight "normal"}
              [:strong :b {:font-weight "bold"}]])
 "h1,h2{font-weight:normal}h1 strong,h1 b,h2 strong,h2 b{font-weight:bold}"
+```
+
+#### Parent selector references
+
+As in Sass, Garden also supports selectors prefixed with the `&`
+character allowing you to reference a parent select.
+
+```clojure
+user=> (css [:a
+             {:font-weight 'normal
+              :text-decoration 'none}
+             [:&:hover
+              {:font-weight 'bold
+               :text-decoration 'underline}]])
+"a{text-decoration:none;font-weight:normal}a:hover{text-decoration:underline;font-weight:bold}"
 ```
 
 ### Declarations
