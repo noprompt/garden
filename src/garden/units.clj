@@ -1,16 +1,8 @@
 (ns garden.units
   "Functions and macros for working with CSS units."
-  (:refer-clojure :exclude [rem]))
-
-(defrecord Unit [magnitude unit]
-  Object
-  (toString [this]
-    (let [m (when (ratio? magnitude)
-              (float magnitude))]
-      (str (if (ratio? magnitude)
-             (float magnitude)
-             magnitude)
-           (name unit)))))
+  (:refer-clojure :exclude [rem])
+  (:require garden.types)
+  (:import garden.types.CSSUnit))
 
 ;;;; Unit conversion
 
@@ -62,8 +54,8 @@
           v1 (get-in conversion-table [i j])
           v2 (get-in conversion-table [j i])]
       (cond
-        v1 (->Unit (* v1 m) right)
-        v2 (->Unit (/ m v2) right)
+        v1 (CSSUnit. (* v1 m) right)
+        v2 (CSSUnit. (/ m v2) right)
         ;; Both units are convertible but no conversion between them exists.
         :else (throw
                 (IllegalArgumentException.
@@ -77,7 +69,7 @@
 (defn unit?
   "True if x is of type Unit."
   [x]
-  (instance? Unit x))
+  (instance? CSSUnit x))
 
 (defn length?
   "True if x is a length Unit (in, cm, pc, mm, pt, or px)."
@@ -117,7 +109,7 @@
   [unit]
   (fn [x]
     (cond
-      (number? x) (->Unit x unit)
+      (number? x) (CSSUnit. x unit)
       (unit? x) (if (= (:unit x) unit)
                     x
                     (convert x unit))

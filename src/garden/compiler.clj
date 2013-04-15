@@ -2,58 +2,13 @@
   (:refer-clojure :exclude [newline])
   (:require [clojure.string :as string]
             [clojure.math.combinatorics :refer [cartesian-product]]
-            [garden.util :refer :all]
-            [garden.units :refer [unit?]]))
+            [garden.util :refer :all])
+  (:import garden.types.CSSFunction
+           garden.types.CSSUnit))
 
-;;;; Output style and formatting
-
-(def
-  ^{:private true
-    :doc "Map associating output-style options to characters used when
-         rendering CSS."}
-  output-style
-  {:expanded {:comma ", "
-              :colon ": "
-              :semicolon ";\n"
-              :left-brace " {\n"
-              :right-brace ";\n}"
-              :rule-separator "\n\n"
-              :newline "\n"
-              :indent 2}
-   :compact {:comma ", "
-             :colon ": "
-             :semicolon "; "
-             :left-brace " { "
-             :right-brace "; }"
-             :rule-separator "\n"
-             :newline "\n"
-             :indent 0}
-   :compressed {:comma ","
-                :colon ":"
-                :semicolon ";"
-                :left-brace "{"
-                :right-brace "}"
-                :rule-separator ""
-                :newline ""
-                :indent 0}})
-
-(def
- ^{:dynamic true
-   :private true
-   :doc "The stylesheet output style."}
-  *output-style* :compressed)
-
-(defn- output [k]
-  (fn [] (-> output-style *output-style* k)))
-
-(def ^:private comma (output :comma))
-(def ^:private colon (output :colon))
-(def ^:private semicolon (output :semicolon))
-(def ^:private left-brace (output :left-brace))
-(def ^:private right-brace (output :right-brace))
-(def ^:private rule-separator (output :rule-separator))
-(def ^:private newline (output :newline))
-(def ^:private indent-level (output :indent))
+(defprotocol CSSRenderer
+  (render-css [this]
+    "Convert a Clojure data type in to a string of CSS."))
 
 (defn- ^String indent
   "Return an indent string."
@@ -62,35 +17,7 @@
   ([n]
    (reduce str (take n (repeat \space)))))
 
-(defmacro with-output-style
-  "Set the output style for rendering CSS strings. The value of style may be
-   either :expanded, :compact, or :compressed. Defaults to compressed."
-  [style & body]
-  (let [style (if (contains? output-style (keyword style))
-                (keyword style)
-                :compressed)]
-    `(binding [*output-style* ~style]
-       ~@body)))
-
-(declare comma-join space-join)
-
-(defn comma-join
-  "Return a comma separated list of values. Subsequences are joined with
-   spaces."
-  [xs]
-  (let [ys (map #(if (sequential? %) (space-join %) (to-str %)) xs)]
-    (string/join (comma) ys)))
-
-(defn space-join
-  "Return a space separated list of values. Subsequences are joined with
-   commas."
-  [xs]
-  (let [ys (map #(if (sequential? %) (comma-join %) (to-str %)) xs)]
-    (string/join \space ys)))
-
 ;;;; Declaration, rule, and stylesheet generation.
-
-(declare render-css)
 
 (defn- expand-declaration
   "Expands nested properties."
@@ -175,10 +102,6 @@
                    (string/replace (make-stylesheet rules) #"(?m:^)" ind)))]
     (str "@media " expr l-brace rules (rule-separator) r-brace)))
 
-(defprotocol CSSRenderer
-  (render-css [this]
-    "Convert a Clojure data type in to a string of CSS."))
-
 (defn- render-declaration
   "Render a declaration map as a CSS declaration."
   [declaration]
@@ -219,10 +142,10 @@
   clojure.lang.Ratio
   (render-css [this]
     (str (float this)))
-  garden.units.Unit
+  garden.types.CSSUnit
   (render-css [this]
     (str this))
-  garden.stylesheet.CSSFunction
+  garden.types.CSSFunction
   (render-css [this]
     (str this))
   Object

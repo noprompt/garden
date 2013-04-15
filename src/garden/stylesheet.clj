@@ -1,16 +1,10 @@
 (ns garden.stylesheet
-  (:import java.net.URI)
   (:require [clojure.string :refer [join]]
             [garden.util :refer :all]
-            [garden.compiler :refer [comma-join make-media-expression]]))
-
-(defrecord CSSFunction [function args]
-  Object
-  (toString [this]
-    (let [args (if (sequential? args)
-                 (comma-join args)
-                 (to-str args))]
-      (format "%s(%s)" (to-str function) args))))
+            [garden.compiler :refer [make-media-expression]])
+  (:refer-clojure :exclude [newline])
+  (:import java.net.URI
+           garden.types.CSSFunction))
 
 ;; http://dev.w3.org/csswg/css-values/#url
 (defn url
