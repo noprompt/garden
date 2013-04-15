@@ -110,16 +110,31 @@
        (map make-declaration)
        (string/join (semicolon))))
 
+(defn- extract-attachment [selector]
+  (when-let [attachment (re-find #"^&.+" (to-str (last selector)))]
+    (apply str (rest attachment))))
+
+(defn- expand-selector [selector context]
+  "Expands a selector within the context and returns a new selector."
+  (let [new-context (if (seq context)
+                      (map flatten (cartesian-product context selector))
+                      (map vector selector))]
+    (map (fn [sel]
+           (if-let [attachment (extract-attachment sel)]
+             (let [parent (butlast sel)]
+               (concat (butlast parent)
+                       (list (as-str (last parent) attachment))))
+             sel))
+         new-context)))
+
 (defn- render-rule
   "Render a rule vector as a CSS rule."
   ([rule]
    (render-rule rule []))
   ([rule context]
    (let [selector (take-while (complement coll?) rule)
-         context (if (seq context)
-                   (map flatten (cartesian-product context selector))
-                   (vec selector))
-         selector (comma-join context)
+         new-context (expand-selector selector context)
+         selector (comma-join new-context)
          declarations (filter map? rule)
          subselectors (filter vector? rule)
          rendered-rule (when (seq declarations)
