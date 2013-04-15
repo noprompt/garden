@@ -140,7 +140,7 @@
          rendered-rule (when (seq declarations)
                          (make-rule `[~selector ~@declarations]))]
       (if (seq subselectors)
-        (->> (map #(render-rule %1 context) subselectors)
+        (->> (map #(render-rule %1 new-context) subselectors)
              (cons rendered-rule)
              (string/join (rule-separator)))
         rendered-rule))))
