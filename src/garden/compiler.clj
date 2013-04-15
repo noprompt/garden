@@ -2,7 +2,8 @@
   (:refer-clojure :exclude [newline])
   (:require [clojure.string :as string]
             [clojure.math.combinatorics :refer [cartesian-product]]
-            [garden.util :refer :all])
+            [garden.util :refer :all]
+            [garden.types])
   (:import garden.types.CSSFunction
            garden.types.CSSUnit))
 
@@ -117,7 +118,7 @@
    (let [selector (take-while (complement coll?) rule)
          context (if (seq context)
                    (map flatten (cartesian-product context selector))
-                   (into context selector))
+                   (vec selector))
          selector (comma-join context)
          declarations (filter map? rule)
          subselectors (filter vector? rule)

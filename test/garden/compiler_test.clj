@@ -1,6 +1,7 @@
 (ns garden.compiler_test
   (:require [clojure.test :refer :all]
-            [garden.compiler :refer :all]))
+            [garden.compiler :refer :all]
+            [garden.util :refer [with-output-style]]))
 
 (deftest test-with-output-style
   (let [declaration {:foo "bar"}
