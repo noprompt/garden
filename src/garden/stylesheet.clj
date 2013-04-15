@@ -1,8 +1,7 @@
 (ns garden.stylesheet
-  (:require [clojure.string :refer [join]]
-            [garden.util :refer :all]
-            [garden.compiler :refer [make-media-expression]])
   (:refer-clojure :exclude [newline])
+  (:require [garden.util :refer :all]
+            [garden.compiler :refer [make-media-expression]])
   (:import java.net.URI
            garden.types.CSSFunction))
 
