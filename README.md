@@ -21,7 +21,7 @@ working with units.
 Add the following dependency to your `project.clj` file:
 
 ```clojure
-[garden "0.1.0-alpha2"]
+[garden "0.1.0-alpha3"]
 ```
 
 ## Syntax
