@@ -9,6 +9,7 @@
         rule [:foo {:bar "baz"} {:quux "grault"}]
         rule' [:foo {:bar "baz"} [:quux {:corge "grault"}]]
         rule'' [:foo :bar {:bar "baz"} [:quux :corge {:corge "grault"}]]
+        rule''' [:foo :bar '({:bar "baz"}) '([:quux :corge {:corge "grault"}])]
         stylesheet [[:foo {:bar "baz"}] [:quux {:corge "grault"}]]
         media-expr (sorted-map :bar true :baz false :quux "grault")]
     (testing "with output :compressed"
@@ -22,6 +23,8 @@
         (is (= (render-css rule')
                "foo{bar:baz}foo quux{corge:grault}"))
         (is (= (render-css rule'')
+               "foo,bar{bar:baz}foo quux,foo corge,bar quux,bar corge{corge:grault}"))
+        (is (= (render-css rule''')
                "foo,bar{bar:baz}foo quux,foo corge,bar quux,bar corge{corge:grault}"))
         (is (= (#'garden.compiler/make-stylesheet stylesheet)
                "foo{bar:baz}quux{corge:grault}"))

@@ -127,23 +127,38 @@
              sel))
          new-context)))
 
+(defn- divide-rule [rule]
+  "Divide a rule in to triple of selector, declarations, and subrules."
+  (let [[selector children] (split-with (complement coll?) rule)]
+    (loop [children children
+           new-rule [selector [] []]]
+      (if-let [child (first children)]
+        (cond
+         (map? child)
+         (recur (next children) (update-in new-rule [1] conj child))
+         (vector? child)
+         (recur (next children) (update-in new-rule [2] conj child))
+         (list? child)
+         (recur (apply concat child (rest children)) new-rule)
+         :else
+         (recur (next children) new-rule))
+        new-rule))))
+
 (defn- render-rule
   "Render a rule vector as a CSS rule."
   ([rule]
-   (render-rule rule []))
+     (render-rule rule []))
   ([rule context]
-   (let [selector (take-while (complement coll?) rule)
-         new-context (expand-selector selector context)
-         selector (comma-join new-context)
-         declarations (filter map? rule)
-         subselectors (filter vector? rule)
-         rendered-rule (when (seq declarations)
-                         (make-rule `[~selector ~@declarations]))]
-      (if (seq subselectors)
-        (->> (map #(render-rule %1 new-context) subselectors)
-             (cons rendered-rule)
-             (string/join (rule-separator)))
-        rendered-rule))))
+     (let [[selector declarations subrules] (divide-rule rule)
+           new-context (expand-selector selector context)
+           rendered-selector (comma-join new-context)
+           rendered-rule (when (seq declarations)
+                           (make-rule `[~rendered-selector ~@declarations]))]
+       (if (seq subrules)
+         (->> (map #(render-rule %1 new-context) subrules)
+              (cons rendered-rule)
+              (string/join (rule-separator)))
+         rendered-rule))))
 
 (extend-protocol CSSRenderer
   clojure.lang.IPersistentVector
