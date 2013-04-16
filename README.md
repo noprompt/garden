@@ -223,7 +223,7 @@ user=> (css (px 16))
 "16px"
 ```
 
-Unit functions take a number _n_ and construct a new `garden.units.Unit` record
+Unit functions take a number _n_ and construct a new `garden.types.Unit` record
 with _n_ as the magnitude. Unit functions also accept other units as values
 returning their conversion if possible. This makes working with unit values
 very flexible.
