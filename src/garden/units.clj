@@ -176,20 +176,22 @@
 (defmacro defunit
   "Create a suite of functions for unit creation, conversion, validation, and
    arithemetic."
-  [unit]
-  (let [k (keyword unit)
-        unit? (symbol (str unit \?))
-        unit+ (symbol (str unit \+))
-        unit- (symbol (str unit \-))
-        unit* (symbol (str unit \*))
-        unit-div (symbol (str unit "-div"))]
-    `(do
-       (def ~unit (make-unit-fn ~k))
-       (def ~unit? (make-unit-checker ~k))
-       (def ~unit+ (make-unit-adder ~k))
-       (def ~unit- (make-unit-subtractor ~k))
-       (def ~unit* (make-unit-multiplier ~k))
-       (def ~unit-div (make-unit-divider ~k)))))
+  ([name]
+     `(defunit ~name ~name))
+  ([name unit]
+     (let [k (keyword unit)
+           name? (symbol (str name \?))
+           name+ (symbol (str name \+))
+           name- (symbol (str name \-))
+           name* (symbol (str name \*))
+           name-div (symbol (str name "-div"))]
+       `(do
+          (def ~name (make-unit-fn ~k))
+          (def ~name? (make-unit-checker ~k))
+          (def ~name+ (make-unit-adder ~k))
+          (def ~name- (make-unit-subtractor ~k))
+          (def ~name* (make-unit-multiplier ~k))
+          (def ~name-div (make-unit-divider ~k))))))
 
 (comment
   ; This:
@@ -226,6 +228,7 @@
 (defunit px)
 (defunit pt)
 (defunit pc)
+(defunit percent :%)
 
 ;; Angles
 
