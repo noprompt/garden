@@ -3,6 +3,12 @@
             [garden.stylesheet :refer :all]))
 
 (deftest css-functions
+  (testing "font-family"
+    (is (= (font-family "Liberation Mono")
+           {:font-family ['("\"Liberation Mono\"")]})
+        (= (font-family "Liberation Mono" "Consolas" "Menlo" :mono-space)
+           {:font-family ['("\"Liberation Mono\"" "Consolas" "Menlo" :mono-space)]})))
+
   (testing "url"
     (is (= (str (url "http://example.com/foo.css"))
            "url(http://example.com/foo.css)")))

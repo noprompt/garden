@@ -1,9 +1,21 @@
-(ns garden.stylesheet
+(ns ^{:doc "Utility functions for stylsheets."}
+    garden.stylesheet
   (:refer-clojure :exclude [newline])
   (:require [garden.util :refer :all]
             [garden.compiler :refer [make-media-expression]])
   (:import java.net.URI
            garden.types.CSSFunction))
+
+(defn font-family
+  "Returns a font-family declaration for at least one font. Strings
+   containing whitespace are automatically escaped."
+  [font & fonts]
+  (let [f (fn [x] (if (and (string? x)
+                          (re-find #" " x))
+                   (wrap-quotes x)
+                   x))
+        fonts (flatten (cons font fonts))]
+    {:font-family [(map f fonts)]}))
 
 ;; http://dev.w3.org/csswg/css-values/#url
 (defn url
