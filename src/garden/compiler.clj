@@ -29,7 +29,7 @@
             prefix (fn [[k v]]
                      {(str prop \- (to-str k)) v})]
         (if (and (map? value)
-                 (not (instance? clojure.lang.IRecord value))) 
+                 (not (instance? clojure.lang.IRecord value)))
           (expand-declaration (into m (map prefix value)))
           (assoc m prop value))))
     {}
@@ -190,6 +190,4 @@
   "Convert any number of Clojure data structures to CSS."
   [& rules]
   (render-css rules))
-(ns lorem-ipsum
-  (:require [clojure.string :as string]))
- 
+
