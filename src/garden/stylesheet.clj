@@ -1,7 +1,7 @@
 (ns ^{:doc "Utility functions for stylsheets."}
     garden.stylesheet
   (:refer-clojure :exclude [newline])
-  (:require [garden.util :refer :all]
+  (:require [garden.util :as u]
             [garden.compiler :refer [make-media-expression]])
   (:import java.net.URI
            garden.types.CSSFunction))
@@ -12,7 +12,7 @@
   [font & fonts]
   (let [f (fn [x] (if (and (string? x)
                           (re-find #" " x))
-                   (wrap-quotes x)
+                   (u/wrap-quotes x)
                    x))
         fonts (flatten (cons font fonts))]
     {:font-family [(map f fonts)]}))
@@ -53,16 +53,16 @@
   ([uri]
      (format "@import %s;" (if (:function uri)
                              uri
-                             (wrap-quotes uri))))
+                             (u/wrap-quotes uri))))
   ([uri & media-exprs]
      (let [exprs (for [expr media-exprs]
                    (if (map? expr)
                      (make-media-expression expr)
-                     (to-str expr)))]
+                     (u/to-str expr)))]
        (format "@import %s %s;"
                (if (:function uri)
                  uri
-                 (wrap-quotes uri))
-               (comma-join exprs)))))
+                 (u/wrap-quotes uri))
+               (u/comma-join exprs)))))
 
 (declare at-media)
