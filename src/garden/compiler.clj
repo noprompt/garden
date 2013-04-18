@@ -1,8 +1,7 @@
 (ns garden.compiler
-  (:refer-clojure :exclude [newline])
   (:require [clojure.string :as string]
             [clojure.math.combinatorics :refer [cartesian-product]]
-            [garden.util :refer :all]
+            [garden.util :as u]
             [garden.types])
   (:import garden.types.CSSFunction
            garden.types.CSSUnit))
@@ -14,7 +13,7 @@
 (defn- ^String indent
   "Return an indent string."
   ([]
-   (indent (indent-level)))
+   (indent (u/indent-level)))
   ([n]
    (reduce str (take n (repeat \space)))))
 
@@ -25,9 +24,9 @@
   [declaration]
   (reduce
     (fn [m [prop value]]
-      (let [prop (to-str prop)
+      (let [prop (u/to-str prop)
             prefix (fn [[k v]]
-                     {(str prop \- (to-str k)) v})]
+                     {(str prop \- (u/to-str k)) v})]
         (if (and (map? value)
                  (not (instance? clojure.lang.IRecord value)))
           (expand-declaration (into m (map prefix value)))
@@ -38,25 +37,25 @@
 (defn- make-declaration
   "Make a CSS declaration."
   [[prop v]]
-  (str (indent) (to-str prop) (colon)
+  (str (indent) (u/to-str prop) (u/colon)
        (if (sequential? v)
-         (space-join v)
-         (to-str v))))
+         (u/space-join v)
+         (u/to-str v))))
 
 (defn- make-rule
   "Make a CSS rule."
   [[selector & declarations]]
-  (str (to-str selector)
-       (left-brace)
-       (string/join (semicolon) (map render-css declarations))
-       (right-brace)))
+  (str (u/to-str selector)
+       (u/left-brace)
+       (string/join (u/semicolon) (map render-css declarations))
+       (u/right-brace)))
 
 (defn- make-stylesheet
   "Make a CSS stylesheet from a vector of rules."
   [rules]
   (->> (filter vector? rules)
        (map render-css)
-       (string/join (rule-separator))))
+       (string/join (u/rule-separator))))
 
 ;;;; Media query generation.
 
@@ -77,14 +76,14 @@
   ([expr]
    (let [query (for [[k v] expr]
                  (cond
-                   (true? v) (to-str k)
-                   (false? v) (str "not " (to-str k))
-                   :else (if (and v (seq (to-str v)))
-                           (str "(" (to-str k) (colon) (to-str v) ")")
-                           (str "(" (to-str k) ")"))))]
+                   (true? v) (u/to-str k)
+                   (false? v) (str "not " (u/to-str k))
+                   :else (if (and v (seq (u/to-str v)))
+                           (str "(" (u/to-str k) (u/colon) (u/to-str v) ")")
+                           (str "(" (u/to-str k) ")"))))]
      (string/join " and " query)))
   ([expr & more]
-   (comma-join (map make-media-expression (cons expr more)))))
+   (u/comma-join (map make-media-expression (cons expr more)))))
 
 (defn- make-media-query
   "Make a CSS media query from one or more maps and a sequence of rules."
@@ -95,23 +94,23 @@
         mos (partial get-in media-output-style)
         ;; Media queries are a sepcial case and require a few minor adjustments
         ;; to their output.
-        l-brace (mos [*output-style* :left-brace] (left-brace))
-        r-brace (mos [*output-style* :right-brace] (right-brace))
-        rules  (if (= *output-style* :compressed)
+        l-brace (mos [u/*output-style* :left-brace] (u/left-brace))
+        r-brace (mos [u/*output-style* :right-brace] (u/right-brace))
+        rules  (if (= u/*output-style* :compressed)
                  (make-stylesheet rules)
-                 (let [ind (indent (+ 2 (indent-level)))]
+                 (let [ind (indent (+ 2 (u/indent-level)))]
                    (string/replace (make-stylesheet rules) #"(?m:^)" ind)))]
-    (str "@media " expr l-brace rules (rule-separator) r-brace)))
+    (str "@media " expr l-brace rules (u/rule-separator) r-brace)))
 
 (defn- render-declaration
   "Render a declaration map as a CSS declaration."
   [declaration]
   (->> (expand-declaration declaration)
        (map make-declaration)
-       (string/join (semicolon))))
+       (string/join (u/semicolon))))
 
 (defn- extract-attachment [selector]
-  (when-let [attachment (re-find #"^&.+" (to-str (last selector)))]
+  (when-let [attachment (re-find #"^&.+" (u/to-str (last selector)))]
     (apply str (rest attachment))))
 
 (defn- expand-selector [selector context]
@@ -123,7 +122,7 @@
            (if-let [attachment (extract-attachment sel)]
              (let [parent (butlast sel)]
                (concat (butlast parent)
-                       (list (as-str (last parent) attachment))))
+                       (list (u/as-str (last parent) attachment))))
              sel))
          new-context)))
 
@@ -151,13 +150,13 @@
   ([rule context]
      (let [[selector declarations subrules] (divide-rule rule)
            new-context (expand-selector selector context)
-           rendered-selector (comma-join new-context)
+           rendered-selector (u/comma-join new-context)
            rendered-rule (when (seq declarations)
                            (make-rule `[~rendered-selector ~@declarations]))]
        (if (seq subrules)
          (->> (map #(render-rule %1 new-context) subrules)
               (cons rendered-rule)
-              (string/join (rule-separator)))
+              (string/join (u/rule-separator)))
          rendered-rule))))
 
 (extend-protocol CSSRenderer
@@ -169,7 +168,7 @@
     (render-declaration this))
   clojure.lang.ISeq
   (render-css [this]
-    (string/join (newline) (map render-css this)))
+    (string/join (u/newline) (map render-css this)))
   clojure.lang.Ratio
   (render-css [this]
     (str (float this)))
