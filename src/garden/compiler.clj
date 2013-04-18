@@ -37,16 +37,13 @@
 (defn- make-declaration
   "Make a CSS declaration."
   [[prop v]]
-  (str (indent) (u/to-str prop) (u/colon)
-       (if (sequential? v)
-         (u/space-join v)
-         (u/to-str v))))
+  (let [v (if (sequential? v) (u/space-join v) (u/to-str v))]
+    (str (indent) (u/to-str prop) (u/colon) v)))
 
 (defn- make-rule
-  "Make a CSS rule."
+  "Make a CSS rule from a vector."
   [[selector & declarations]]
-  (str (u/to-str selector)
-       (u/left-brace)
+  (str (u/to-str selector) (u/left-brace)
        (string/join (u/semicolon) (map render-css declarations))
        (u/right-brace)))
 
