@@ -224,6 +224,7 @@
 (defunit px)
 (defunit pt)
 (defunit pc)
+(defunit percent :%)
 
 ;; Angles
 
