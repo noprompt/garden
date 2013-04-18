@@ -190,3 +190,6 @@
   "Convert any number of Clojure data structures to CSS."
   [& rules]
   (render-css rules))
+(ns lorem-ipsum
+  (:require [clojure.string :as string]))
+ 

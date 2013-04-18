@@ -176,20 +176,18 @@
 (defmacro defunit
   "Create a suite of functions for unit creation, conversion, validation, and
    arithemetic."
-  [unit]
-  (let [k (keyword unit)
-        unit? (symbol (str unit \?))
-        unit+ (symbol (str unit \+))
-        unit- (symbol (str unit \-))
-        unit* (symbol (str unit \*))
-        unit-div (symbol (str unit "-div"))]
-    `(do
-       (def ~unit (make-unit-fn ~k))
-       (def ~unit? (make-unit-checker ~k))
-       (def ~unit+ (make-unit-adder ~k))
-       (def ~unit- (make-unit-subtractor ~k))
-       (def ~unit* (make-unit-multiplier ~k))
-       (def ~unit-div (make-unit-divider ~k)))))
+  ([name]
+     `(defunit ~name ~name))
+  ([name unit]
+     (let [k (keyword unit)
+           append #(symbol (str name %))]
+       `(do
+          (def ~name (make-unit-fn ~k))
+          (def ~(append \?) (make-unit-checker ~k))
+          (def ~(append \+) (make-unit-adder ~k))
+          (def ~(append \-) (make-unit-subtractor ~k))
+          (def ~(append \*) (make-unit-multiplier ~k))
+          (def ~(append "-div") (make-unit-divider ~k))))))
 
 (comment
   ; This:
@@ -249,4 +247,3 @@
 (defunit dpi)
 (defunit dpcm)
 (defunit dppx)
-
