@@ -180,18 +180,14 @@
      `(defunit ~name ~name))
   ([name unit]
      (let [k (keyword unit)
-           name? (symbol (str name \?))
-           name+ (symbol (str name \+))
-           name- (symbol (str name \-))
-           name* (symbol (str name \*))
-           name-div (symbol (str name "-div"))]
+           append #(symbol (str name %))]
        `(do
           (def ~name (make-unit-fn ~k))
-          (def ~name? (make-unit-checker ~k))
-          (def ~name+ (make-unit-adder ~k))
-          (def ~name- (make-unit-subtractor ~k))
-          (def ~name* (make-unit-multiplier ~k))
-          (def ~name-div (make-unit-divider ~k))))))
+          (def ~(append \?) (make-unit-checker ~k))
+          (def ~(append \+) (make-unit-adder ~k))
+          (def ~(append \-) (make-unit-subtractor ~k))
+          (def ~(append \*) (make-unit-multiplier ~k))
+          (def ~(append "-div") (make-unit-divider ~k))))))
 
 (comment
   ; This:
@@ -252,4 +248,3 @@
 (defunit dpi)
 (defunit dpcm)
 (defunit dppx)
-

@@ -83,9 +83,8 @@
   "Set the output style for rendering CSS strings. The value of style may be
    either :expanded, :compact, or :compressed. Defaults to compressed."
   [style & body]
-  (let [style (if (contains? output-style (keyword style))
-                (keyword style)
-                :compressed)]
+  (let [k (keyword style)
+        style (if (contains? output-style k) k :compressed)]
     `(binding [*output-style* ~style]
        ~@body)))
 
@@ -95,12 +94,12 @@
   "Return a comma separated list of values. Subsequences are joined with
    spaces."
   [xs]
-  (let [ys (map #(if (sequential? %) (space-join %) (to-str %)) xs)]
+  (let [ys (for [x xs] (if (sequential? x) (space-join x) (to-str x)))]
     (string/join (comma) ys)))
 
 (defn space-join
   "Return a space separated list of values. Subsequences are joined with
    commas."
   [xs]
-  (let [ys (map #(if (sequential? %) (comma-join %) (to-str %)) xs)]
+  (let [ys (for [x xs] (if (sequential? x) (comma-join x) (to-str x)))]
     (string/join \space ys)))
