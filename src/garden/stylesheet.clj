@@ -1,4 +1,4 @@
-(ns ^{:doc "Utility functions for stylsheets."}
+(ns ^{:doc "Utility functions for stylesheets."}
     garden.stylesheet
   (:refer-clojure :exclude [newline])
   (:require [garden.util :as u]
