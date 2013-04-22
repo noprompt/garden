@@ -13,6 +13,7 @@ working with units.
     * [Parent selector references](#parent-selector-references)
   * [Declarations](#declarations)
   * [Units](#units)
+  * [Media queries](#media-queries)
 * [TODO](#todo)
 * [Thanks](#thanks)
 
@@ -21,7 +22,7 @@ working with units.
 Add the following dependency to your `project.clj` file:
 
 ```clojure
-[garden "0.1.0-alpha4"]
+[garden "0.1.0-beta"]
 ```
 
 ## Syntax
@@ -267,6 +268,91 @@ groups. This means you cannot, for example, convert `px` to `rad` or `Hz` to
 In the future, some exceptions to this rule might apply for working with `em`s
 since it's technically possible to compute their contextual value.
 
+### Media queries
+
+Authoring stylesheets these days without media queries is somewhat
+like having prime rib without horseradish. Garden leverages Clojure's
+meta data to provide a convenient notation for specifying a media
+query. At compile time media queries will appear at the bottom of your
+stylesheet grouped in the order they appear in.
+
+You may use the short-hand meta form:
+
+```clojure
+user=> (css ^:screen [:h1 {:font-weight "bold"}])
+"@media screen{h1{font-weight:bold}}"
+```
+
+or the long-hand form to build more complex media expressions:
+
+```clojure
+user=> (css ^{:min-width (px 768) :max-width (px 979)}
+            [:container {:width (px 960)}])
+"@media (max-width:979px) and (min-width:768px){container{width:960px}}"
+```
+
+Media queries may also be nested and will be properly output at
+compile time.
+
+```clojure
+user=> (css [:a {:font-weight "normal"}
+             [:&:hover {:color "red"}]
+             ^:screen
+             [:&:hover {:color "pink"}]])
+"a{font-weight:normal}a:hover{color:red}@media screen{a:hover{color:pink}}"
+```
+
+To target a group of rules we can use the `at-media` function from the
+`garden.stylesheet` namespace. This function takes a map of
+representing a media query and adds it as meta to the subsequent
+rules.
+
+```clojure
+user=> (require '[garden.stylesheet :refer [at-media]])
+nil
+user=> (css
+         (media {:min-width (px 768) :max-width (px 979)}
+                [:.container {:width (px 960) :padding [0 (px 10)]}]
+                [:.row {:width (px 940)}])
+         (media {:max-width (px 480)}
+                [:container {:width (px 480) :padding [0 (px 10)]}]
+                [:.row {:width (px 460)}]))
+```
+
+Will out put the equivalent CSS:
+
+```css
+@media (max-width: 979px) and (min-width: 768px) {
+  .container {
+    padding: 0 10px;
+    width: 960px
+  }
+  .row {
+    width: 940px
+  }
+}
+@media (max-width: 480px) {
+  .container {
+    padding: 0 10px;
+    width: 480px
+  }
+  .row {
+    width: 460px
+  }
+}
+```
+
+To understand how media expressions are interpreted refer to this table:
+
+ Map | Interpetation 
+ --- | ---
+ `{:screen true}` | `screen`
+ `{:screen false}` | `not screen`
+ `{:screen true :braille false}` | `screen and not braille`
+`{:min-width (px 768) :max-width (px 959)}` | `(min-width: 768px) and (max-width: 959)`
+
+At this time specifying multiple queries is not supported.
+
 ## Compiler flags
 
 The `css` macro optionally takes a map of compiler flags. Currently, the only
@@ -306,7 +392,6 @@ h1 a { text-decoration: none; }
 
 ## TODO
 
-* Use Clojure meta for media queries
 * Create a namespaces for functions/macros dealing with:
   1. colors
   2. animations
