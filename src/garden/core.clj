@@ -4,10 +4,10 @@
   (:require [garden.util :refer [with-output-style]]
             [garden.compiler :refer [compile-css]]))
 
-(defn css
+(defmacro css
   "Convert a Clojure data structures to a string of CSS."
   [options & rules]
   (if-let [output-style (and (map? options) (:output-style options))]
-    (with-output-style output-style
-      (compile-css rules))
-    (compile-css options rules)))
+    `(with-output-style ~output-style
+      (compile-css ~@rules))
+    `(compile-css ~options ~@rules)))
