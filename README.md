@@ -311,12 +311,12 @@ rules.
 user=> (require '[garden.stylesheet :refer [at-media]])
 nil
 user=> (css
-         (media {:min-width (px 768) :max-width (px 979)}
-                [:.container {:width (px 960) :padding [0 (px 10)]}]
-                [:.row {:width (px 940)}])
-         (media {:max-width (px 480)}
-                [:container {:width (px 480) :padding [0 (px 10)]}]
-                [:.row {:width (px 460)}]))
+         (at-media {:min-width (px 768) :max-width (px 979)}
+                   [:.container {:width (px 960) :padding [0 (px 10)]}]
+                   [:.row {:width (px 940)}])
+         (at-media {:max-width (px 480)}
+                   [:container {:width (px 480) :padding [0 (px 10)]}]
+                   [:.row {:width (px 460)}]))
 ```
 
 Will out put the equivalent CSS:
