@@ -11,7 +11,7 @@
         rule'' [:foo :bar {:bar "baz"} [:quux :corge {:corge "grault"}]]
         rule''' [:foo :bar '({:bar "baz"}) '([:quux :corge {:corge "grault"}])]
         stylesheet [[:foo {:bar "baz"}] [:quux {:corge "grault"}]]
-        media-expr (sorted-map :bar true :baz false :quux "grault")]
+        stylesheet' (with-meta [:h1 {:foo "bar"}] {:screen true})]
     (testing "with output :compressed"
       (with-output-style :compressed
         (is (= (render-css declaration)
@@ -26,12 +26,8 @@
                "foo,bar{bar:baz}foo quux,foo corge,bar quux,bar corge{corge:grault}"))
         (is (= (render-css rule''')
                "foo,bar{bar:baz}foo quux,foo corge,bar quux,bar corge{corge:grault}"))
-        (is (= (#'garden.compiler/make-stylesheet stylesheet)
-               "foo{bar:baz}quux{corge:grault}"))
-        (is (= (#'garden.compiler/make-media-expression media-expr)
-               "bar and not baz and (quux:grault)"))
-        (is (= (#'garden.compiler/make-media-query media-expr [rule])
-               "@media bar and not baz and (quux:grault){foo{bar:baz;quux:grault}}"))))
+        (is (= (render-css stylesheet)
+               "foo{bar:baz}quux{corge:grault}"))))
     (testing "with output :compact"
       (with-output-style :compact
         (is (= (render-css declaration)
@@ -39,15 +35,7 @@
         (is (= (render-css declaration')
                "foo-bar-baz: quux"))
         (is (= (render-css rule)
-               "foo { bar: baz; quux: grault; }"))
-        (is (= (#'garden.compiler/make-stylesheet stylesheet)
-               "foo { bar: baz; }\nquux { corge: grault; }"))
-        (is (= (#'garden.compiler/make-media-expression media-expr)
-               "bar and not baz and (quux: grault)"))
-        (is (= (#'garden.compiler/make-media-expression media-expr)
-               "bar and not baz and (quux: grault)"))
-        (is (= (#'garden.compiler/make-media-query media-expr stylesheet)
-               "@media bar and not baz and (quux: grault) {\n  foo { bar: baz; }\n  quux { corge: grault; }\n}"))))
+               "foo { bar: baz; quux: grault; }"))))
     (testing "with output :expanded"
       (with-output-style :expanded
         (is (= (render-css declaration)
@@ -56,12 +44,8 @@
                "  foo-bar-baz: quux"))
         (is (= (render-css rule)
                "foo {\n  bar: baz;\n  quux: grault;\n}"))
-        (is (= (#'garden.compiler/make-stylesheet stylesheet)
-               "foo {\n  bar: baz;\n}\n\nquux {\n  corge: grault;\n}"))
-        (is (= (#'garden.compiler/make-media-expression media-expr)
-               "bar and not baz and (quux: grault)"))
-        (is (= (#'garden.compiler/make-media-query media-expr stylesheet)
-               "@media bar and not baz and (quux: grault) {\n\n    foo {\n      bar: baz;\n    }\n    \n    quux {\n      corge: grault;\n    }\n\n}"))))
+        (is (= (render-css stylesheet)
+               "foo {\n  bar: baz;\n}\n\nquux {\n  corge: grault;\n}"))))
     (testing "with output :invalid"
       (with-output-style :invalid
         (is (= (render-css declaration)
@@ -70,10 +54,16 @@
                "foo-bar-baz:quux"))
         (is (= (render-css rule)
                "foo{bar:baz;quux:grault}"))
-        (is (= (#'garden.compiler/make-stylesheet stylesheet)
-               "foo{bar:baz}quux{corge:grault}"))
-        (is (= (#'garden.compiler/make-media-expression media-expr)
-               "bar and not baz and (quux:grault)"))
-        (is (= (#'garden.compiler/make-media-query media-expr [rule])
-               "@media bar and not baz and (quux:grault){foo{bar:baz;quux:grault}}"))))))
+        (is (= (render-css stylesheet)
+               "foo{bar:baz}quux{corge:grault}"))))
+    (testing "media queries"
+      (is (= (compile-css ^:screen [:h1 {:a "b"}])
+             "@media screen{h1{a:b}}"))
+      (is (= (compile-css ^:screen [[:h1 {:c "d"}] [:h2 {:e "f"}]]
+                          [:h1 {:a "b"}])
+             "h1{a:b}@media screen{h1{c:d}h2{e:f}}"))
+      (is (= (compile-css [:h1 {:a "b"} ^:screen [:&:hover {:c "d"}]])
+             "h1{a:b}@media screen{h1:hover{c:d}}"))
+      (is (= (compile-css ^:toast [:h1 {:a "b"}])
+             "h1{a:b}")))))
 

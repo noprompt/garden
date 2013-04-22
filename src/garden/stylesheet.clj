@@ -22,7 +22,7 @@
   "Create CSS url function."
   [uri]
   (CSSFunction. :url (URI. uri)))
-
+ 
 ;; SEE: http://dev.w3.org/csswg/css-values/#attr
 (defn attr
   "Create CSS attr function."
@@ -47,9 +47,7 @@
   ["@font-face" font-properties])
 
 (defn at-import
-  "Alpha - Subject to change.
-
-   Create a CSS @import expression."
+  "Create a CSS @import expression."
   ([uri]
      (format "@import %s;" (if (:function uri)
                              uri
@@ -65,4 +63,5 @@
                  (u/wrap-quotes uri))
                (u/comma-join exprs)))))
 
-(declare at-media)
+(defn at-media [expr rule & rules]
+  (with-meta (cons rule rules) expr))

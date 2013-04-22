@@ -103,3 +103,8 @@
   [xs]
   (let [ys (for [x xs] (if (sequential? x) (comma-join x) (to-str x)))]
     (string/join \space ys)))
+
+(defn without-meta
+  "Return obj with meta removed."
+  [obj]
+  (with-meta obj nil))
