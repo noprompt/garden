@@ -22,7 +22,7 @@ working with units.
 Add the following dependency to your `project.clj` file:
 
 ```clojure
-[garden "0.1.0-beta"]
+[garden "0.1.0-beta1"]
 ```
 
 ## Syntax
@@ -344,7 +344,7 @@ Will out put the equivalent CSS:
 
 To understand how media expressions are interpreted refer to this table:
 
- Map | Interpetation 
+ Map | Interpetation
  --- | ---
  `{:screen true}` | `screen`
  `{:screen false}` | `not screen`
