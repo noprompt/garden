@@ -109,7 +109,7 @@
          (recur (next children) (update-in new-rule [1] conj child))
          (vector? child)
          (recur (next children) (update-in new-rule [2] conj child))
-         (list? child)
+         (seq? child)
          (recur (apply concat child (rest children)) new-rule)
          :else
          (recur (next children) new-rule))
