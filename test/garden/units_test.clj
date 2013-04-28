@@ -1,13 +1,14 @@
 (ns garden.units-test
-  (:require [clojure.test :refer :all]
-            [garden.units :as u]))
+  (:use clojure.test
+       garden.units)
+  (:import garden.types.CSSUnit))
 
 (deftest test-unit-arthimetic
-  (let [μm (u/make-unit-fn :μm)
-        μm+ (u/make-unit-adder :μm)
-        μm- (u/make-unit-subtractor :μm)
-        μm* (u/make-unit-multiplier :μm)
-        μm-div (u/make-unit-divider :μm)]
+  (let [μm (make-unit-fn :μm)
+        μm+ (make-unit-adder :μm)
+        μm- (make-unit-subtractor :μm)
+        μm* (make-unit-multiplier :μm)
+        μm-div (make-unit-divider :μm)]
     (testing "addition"
       (is (= (μm 0) (μm+)))
       (is (= (μm 2) (μm+ 1 1))))
@@ -24,29 +25,60 @@
 
 (deftest test-px
   (testing "px checking"
-    (is (u/px? (u/px 0)))
-    (is (not (u/px? 1))))
+    (is (px? (px 0)))
+    (is (not (px? 1))))
   (testing "px addition"
-    (is (= (u/px 2) (u/px+ 1 1))))
+    (is (= (px 2) (px+ 1 1))))
   (testing "px subtraction"
-    (is (= (u/px 2) (u/px- 4 2))))
+    (is (= (px 2) (px- 4 2))))
   (testing "px multiplication"
-    (is (= (u/px 2) (u/px* 1 2))))
+    (is (= (px 2) (px* 1 2))))
   (testing "px division"
-    (is (= (u/px 2) (u/px-div 4 2)))
-    (is (thrown? ArithmeticException (u/px-div 2 0))))
+    (is (= (px 2) (px-div 4 2)))
+    (is (thrown? ArithmeticException (px-div 2 0))))
   (testing "px conversion"
-    (is (= (u/px 1) (u/px (u/px 1))))
-    (is (= (u/px 37.795275591) (u/px (u/cm 1))))
-    (is (= (u/px 16) (u/px (u/pc 1))))
-    (is (= (u/px 3.7795275591) (u/px (u/mm 1))))
-    (is (= (u/px 1.3333333333) (u/px (u/pt 1))))
-    (is (thrown? IllegalArgumentException (u/px (u/deg 1))))
-    (is (thrown? IllegalArgumentException (u/px (u/grad 1))))
-    (is (thrown? IllegalArgumentException (u/px (u/rad 1))))
-    (is (thrown? IllegalArgumentException (u/px (u/turn 1))))
-    (is (thrown? IllegalArgumentException (u/px (u/s 1))))
-    (is (thrown? IllegalArgumentException (u/px (u/ms 1))))
-    (is (thrown? IllegalArgumentException (u/px (u/Hz 1))))
-    (is (thrown? IllegalArgumentException (u/px (u/kHz 1))))))
+    (is (= (px 1) (px (px 1))))
+    (is (= (px 37.795275591) (px (cm 1))))
+    (is (= (px 16) (px (pc 1))))
+    (is (= (px 3.7795275591) (px (mm 1))))
+    (is (= (px 1.3333333333) (px (pt 1))))
+    (is (thrown? IllegalArgumentException (px (deg 1))))
+    (is (thrown? IllegalArgumentException (px (grad 1))))
+    (is (thrown? IllegalArgumentException (px (rad 1))))
+    (is (thrown? IllegalArgumentException (px (turn 1))))
+    (is (thrown? IllegalArgumentException (px (s 1))))
+    (is (thrown? IllegalArgumentException (px (ms 1))))
+    (is (thrown? IllegalArgumentException (px (Hz 1))))
+    (is (thrown? IllegalArgumentException (px (kHz 1))))))
+
+(deftest unit-utils
+  (testing "read-unit"
+    (is (= (px 1) (read-unit (px 1))))
+    (is (= (px 1.3) (read-unit (px 1.3))))
+    (is (= (cm 1) (read-unit "1cm")))
+    (is (= (mm 1) (read-unit "1mm")))
+    (is (= (in 1) (read-unit "1in")))
+    (is (= (px 1) (read-unit "1px")))
+    (is (= (pt 1) (read-unit "1pt")))
+    (is (= (pc 1) (read-unit "1pc")))
+    (is (= (percent 1) (read-unit "1%")))
+    (is (= (em 1) (read-unit "1em")))
+    (is (= (ex 1) (read-unit "1ex")))
+    (is (= (ch 1) (read-unit "1ch")))
+    (is (= (CSSUnit. 1 :rem) (read-unit "1rem")))
+    (is (= (vw 1) (read-unit "1vw")))
+    (is (= (vh 1) (read-unit "1vh")))
+    (is (= (vmin 1) (read-unit "1vmin")))
+    (is (= (vmax 1) (read-unit "1vmax")))
+    (is (= (deg 1) (read-unit "1deg")))
+    (is (= (grad 1) (read-unit "1grad")))
+    (is (= (rad 1) (read-unit "1rad")))
+    (is (= (turn 1) (read-unit "1turn")))
+    (is (= (ms 1) (read-unit "1ms")))
+    (is (= (s 1) (read-unit "1s")))
+    (is (= (kHz 1) (read-unit "1kHz")))
+    (is (= (Hz 1) (read-unit "1Hz")))
+    (is (= (dpi 1) (read-unit "1dpi")))
+    (is (= (dpcm 1) (read-unit "1dpcm")))
+    (is (= (dppx 1) (read-unit "1dppx")))))
 

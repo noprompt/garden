@@ -1,7 +1,8 @@
 (ns garden.units
   "Functions and macros for working with CSS units."
   (:refer-clojure :exclude [rem])
-  (:require garden.types)
+  (:require garden.types
+            [garden.util :as u])
   (:import garden.types.CSSUnit))
 
 ;;;; Unit conversion
@@ -70,6 +71,20 @@
   "True if x is of type Unit."
   [x]
   (instance? CSSUnit x))
+
+(def ^{:doc "Regular expression for matching a CSS unit. The magnitude
+             and unit are captured."}
+  unit-re
+  #"([+-]?\d+(?:\.?\d+)?)(p[xtc]|in|[cm]m|%|r?em|ex|ch|v(?:[wh]|m(?:in|ax))|deg|g?rad|turn|m?s|k?Hz|dp(?:i|cm|px))")
+
+(defn read-unit
+  "Reads a CSSUnit object from the input x. If x is a CSSUnit then it
+   is returned. Otherwise an attempt is made to parse the input."
+  [x]
+  (if (unit? x)
+    x
+    (when-let [[_ m u] (re-find unit-re (u/to-str x))]
+      (CSSUnit. (read-string m) (keyword u)))))
 
 (defn length?
   "True if x is a length Unit (in, cm, pc, mm, pt, or px)."
@@ -202,6 +217,16 @@
 
 ;; # Predefined units
 
+;; Absolute units
+
+(defunit cm)
+(defunit mm)
+(defunit in)
+(defunit px)
+(defunit pt)
+(defunit pc)
+(defunit percent "%")
+
 ;; Font-relative units
 
 (defunit em)
@@ -215,16 +240,6 @@
 (defunit vh)
 (defunit vmin)
 (defunit vmax)
-
-;; Absolute units
-
-(defunit cm)
-(defunit mm)
-(defunit in)
-(defunit px)
-(defunit pt)
-(defunit pc)
-(defunit percent (keyword "%"))
 
 ;; Angles
 
