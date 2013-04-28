@@ -64,7 +64,7 @@
     (let [x (first (drop-while convertable? [left right]))]
       (throw (IllegalArgumentException. (str "Inconvertible unit " (name x)))))))
 
-;;;; Unit helpers
+;; # Unit helpers
 
 (defn unit?
   "True if x is of type Unit."
@@ -96,12 +96,12 @@
   [x]
   (boolean (and (unit? x) (#{:dpi :dpcm :dppx} (:unit x)))))
 
-(defn- make-unit-checker
+(defn make-unit-checker
   "Creates a function for verifying the given unit type."
   [unit]
   (fn [x] (and (unit? x) (= (:unit x) unit))))
 
-(defn- make-unit-fn
+(defn make-unit-fn
   "Creates a function for creating and converting CSS units for the given
    unit. If a number n is passed to the function it will produce a new Unit
    record with a the magnitued set to n. If a Unit is passed the function
@@ -119,7 +119,7 @@
                            (.getName (type x))
                            (name unit)))))))
 
-(defn- make-unit-adder
+(defn make-unit-adder
   "Create a addition function for adding Units."
   [unit]
   (let [u (make-unit-fn unit)]
@@ -133,7 +133,7 @@
       ([x y & more]
        (reduce u+ (u+ x y) more)))))
 
-(defn- make-unit-subtractor
+(defn make-unit-subtractor
   "Create a subtraction function for subtracting Units."
   [unit]
   (let [u (make-unit-fn unit)]
@@ -146,7 +146,7 @@
       ([x y & more]
        (reduce u- (u- x y) more)))))
 
-(defn- make-unit-multiplier
+(defn make-unit-multiplier
   "Create a multiplication function for multiplying Units."
   [unit]
   (let [u (make-unit-fn unit)]
@@ -160,7 +160,7 @@
       ([x y & more]
        (reduce u* (u* x y) more)))))
 
-(defn- make-unit-divider
+(defn make-unit-divider
   "Create a division function for dividing Units."
   [unit]
   (let [u (make-unit-fn unit)]
@@ -200,7 +200,7 @@
   (def px* (make-unit-multiplier :px))
   (def px-div (make-unit-divider :px)))
 
-;;;; Predefined units
+;; # Predefined units
 
 ;; Font-relative units
 
