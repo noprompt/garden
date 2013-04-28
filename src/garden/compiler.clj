@@ -55,10 +55,10 @@
           (expand-declaration (into m (map prefix value)))
           (assoc m prop value))))
     {}
-    declaration))
+    declaration)) 
 
 (defn- make-declaration
-  "Make a CSS declaration."
+  "Make a CSS declaration from a double of property and value."
   [[prop v]]
   (let [v (if (sequential? v) (u/space-join v) (u/to-str v))]
     (str (indent) (u/to-str prop) (u/colon) v)))
@@ -78,7 +78,7 @@
        (string/join (u/semicolon))))
 
 (defn- extract-attachment
-  "Extracts the selector portion of an attachment selector."
+  "Extracts the selector portion of a parent selector reference."
   [selector]
   (when-let [attachment (re-find #"^&.+" (u/to-str (last selector)))]
     (apply str (rest attachment))))
@@ -118,7 +118,7 @@
 (defn- extract-media-query
   "Extracts media query information from rule meta data."
   [rule]
-  (let [mq (select-keys (meta rule) m/media-features)]
+  (let [mq (select-keys(meta rule) m/media-features)]
     (when (seq mq) mq)))
 
 (defn- render-rule
@@ -145,23 +145,6 @@
 
 ;; # Media query generation.
 
-(def ^{:private true
-       :doc "Map for associng output-style to characters used in rendering a CSS
-             media query."}
-  media-output-style
-  {:expanded {:left-brace " {\n\n"
-              :right-brace "}"}
-   :compact {:left-brace " {\n"
-             :right-brace "}"}
-   :compressed {:left-brace "{"
-                :right-brace "}"}})
-
-(defn- media-left-brace []
-  (get-in media-output-style [u/*output-style* :left-brace]))
-
-(defn- media-right-brace []
-  (get-in media-output-style [u/*output-style* :right-brace]))
-
 (defn make-media-expression
   "Make a media query expession from one or more maps."
   ([expr]
@@ -183,16 +166,14 @@
      (let [expr (if (sequential? expr)
                   (apply make-media-expression expr)
                   (make-media-expression expr))
-           rules  (let [rules (string/join (u/rule-separator)
-                                           (map #(render-rule %1 context) rules))]
+           rules  (let [rules (->> (map #(render-rule %1 context) rules)
+                                   (string/join (u/rule-separator)))]
                     (if (= u/*output-style* :compressed)
                       rules
-                      (let [ind (indent (+ 2 (u/indent-level)))]
-                        (string/replace rules #"(?m:^)" ind))))]
-       (str "@media " expr (media-left-brace)
+                      (string/replace rules #"(?m)(?=[ A-Za-z#.}-]+)^" (indent 2))))]
+       (str "@media " expr (u/media-left-brace)
             rules
-            (u/rule-separator)
-            (media-right-brace)))))
+            (u/media-right-brace)))))
 
 (extend-protocol CSSRenderer
   clojure.lang.IPersistentVector
@@ -242,5 +223,8 @@
   (let [top-level-rules (render-css rules)
         media-queries (render-media-queries!)]
     (if media-queries
-      (str top-level-rules (u/rule-separator) media-queries)
+      (str top-level-rules
+           (when (seq top-level-rules)
+             (u/rule-separator))
+           media-queries)
       top-level-rules)))

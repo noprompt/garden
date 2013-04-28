@@ -34,8 +34,7 @@
 
 ;;;; Output style and formatting
 
-(def ^{:private true
-       :doc "Map associating output-style options to characters used when
+(def ^{:doc "Map associating output-style options to characters used when
              rendering CSS."}
   output-style
   {:expanded {:comma ", "
@@ -43,6 +42,8 @@
               :semicolon ";\n"
               :left-brace " {\n"
               :right-brace ";\n}"
+              :media-left-brace " {\n\n"
+              :media-right-brace "\n\n}"
               :rule-separator "\n\n"
               :newline "\n"
               :indent 2}
@@ -51,6 +52,8 @@
              :semicolon "; "
              :left-brace " { "
              :right-brace "; }"
+             :media-left-brace " {\n"
+             :media-right-brace "\n}"
              :rule-separator "\n"
              :newline "\n"
              :indent 0}
@@ -59,6 +62,8 @@
                 :semicolon ";"
                 :left-brace "{"
                 :right-brace "}"
+                :media-left-brace "{"
+                :media-right-brace "}"
                 :rule-separator ""
                 :newline ""
                 :indent 0}})
@@ -78,6 +83,8 @@
 (def rule-separator (output :rule-separator))
 (def newline (output :newline))
 (def indent-level (output :indent))
+(def media-left-brace (output :media-left-brace))
+(def media-right-brace (output :media-right-brace))
 
 (defmacro with-output-style
   "Set the output style for rendering CSS strings. The value of style may be
