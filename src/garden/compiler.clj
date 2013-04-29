@@ -77,11 +77,11 @@
        (map make-declaration)
        (string/join (u/semicolon))))
 
-(defn- extract-attachment
+(defn- extract-reference
   "Extracts the selector portion of a parent selector reference."
   [selector]
-  (when-let [attachment (re-find #"^&.+" (u/to-str (last selector)))]
-    (apply str (rest attachment))))
+  (when-let [reference (re-find #"^&.+" (u/to-str (last selector)))]
+    (apply str (rest reference))))
 
 (defn- expand-selector
   "Expands a selector within the context and returns a new selector."
@@ -90,10 +90,10 @@
                       (map flatten (cartesian-product context selector))
                       (map vector selector))]
     (map (fn [sel]
-           (if-let [attachment (extract-attachment sel)]
+           (if-let [reference (extract-reference sel)]
              (let [parent (butlast sel)]
                (concat (butlast parent)
-                       (list (u/as-str (last parent) attachment))))
+                       (list (u/as-str (last parent) reference))))
              sel))
          new-context)))
 
