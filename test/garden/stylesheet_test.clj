@@ -1,6 +1,6 @@
 (ns garden.stylesheet-test
-  (:require [clojure.test :refer :all]
-            [garden.stylesheet :refer :all]))
+  (:use clojure.test
+        garden.stylesheet))
 
 (deftest css-functions
   (testing "font-family"
@@ -26,6 +26,49 @@
            "toggle(italic)"))
     (is (= (str (toggle :italic :bold))
            "toggle(italic,bold)")))
+
+  ;; Percentage filters
+
+  (testing "grayscale"
+    (is (= (str (grayscale "10%")) "grayscale(10%)"))
+    (is (thrown? IllegalArgumentException (grayscale "10px"))))
+
+  (testing "sepia"
+    (is (= (str (sepia "10%")) "sepia(10%)"))
+    (is (thrown? IllegalArgumentException (sepia "10px"))))
+
+  (testing "saturate"
+    (is (= (str (saturate "10%")) "saturate(10%)"))
+    (is (thrown? IllegalArgumentException (saturate "10px"))))
+
+  (testing "invert"
+    (is (= (str (invert "10%")) "invert(10%)"))
+    (is (thrown? IllegalArgumentException (invert "10px"))))
+
+  (testing "opacity"
+    (is (= (str (opacity "10%")) "opacity(10%)"))
+    (is (thrown? IllegalArgumentException (opacity "10px"))))
+
+  (testing "brightness"
+    (is (= (str (brightness "10%")) "brightness(10%)"))
+    (is (thrown? IllegalArgumentException (brightness "10px"))))
+
+  (testing "contrast"
+    (is (= (str (contrast "10%")) "contrast(10%)"))
+    (is (thrown? IllegalArgumentException (contrast "10px"))))
+
+  ;; Non-percentage filters
+
+  (testing "blur"
+    (is (= (str (blur "10px")) "blur(10px)"))
+    (is (thrown? IllegalArgumentException (blur "10%"))))
+
+  (testing "hue-rotate"
+    (is (= (str (hue-rotate "10deg")) "hue-rotate(10deg)"))
+    (is (thrown? IllegalArgumentException (hue-rotate "10%"))))
+
+
+  ;; Directives
 
   (testing "at-import"
     (is (= (at-import "http://example.com/foo.css")
