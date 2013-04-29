@@ -87,27 +87,27 @@
       (CSSUnit. (read-string m) (keyword u)))))
 
 (defn length?
-  "True if x is a length Unit (in, cm, pc, mm, pt, or px)."
+  "True if x is a CSS length unit (in, cm, pc, mm, pt, or px)."
   [x]
-  (boolean (and (unit? x) (#{:in :cm :pc :mm :pt :px} (:unit x)))))
+  (boolean (and (unit? x) (#{:in :cm :pc :mm :pt :px (keyword "%")} (:unit x)))))
 
 (defn angle?
-  "True if x is a angular Unit (deg, grad, rad, or turn)."
+  "True if x is a CSS angular unit (deg, grad, rad, or turn)."
   [x]
   (boolean (and (unit? x) (#{:deg :grad :rad :turn} (:unit x)))))
 
 (defn time?
-  "True if x is a time Unit (s or ms)."
+  "True if x is a CSS time unit (s or ms)."
   [x]
   (boolean (and (unit? x) (#{:s :ms} (:unit x)))))
 
 (defn frequency?
-  "True if x is a frequency Unit (Hz or kHz)."
+  "True if x is a CSS frequency unit (Hz or kHz)."
   [x]
   (boolean (and (unit? x) (#{:Hz :kHz} (:unit x)))))
 
 (defn resolution?
-  "True if x is a resolution Unit (dpi, dpcm, or dppx)."
+  "True if x is a CSS resolution unit (dpi, dpcm, or dppx)."
   [x]
   (boolean (and (unit? x) (#{:dpi :dpcm :dppx} (:unit x)))))
 
