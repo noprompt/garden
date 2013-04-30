@@ -34,7 +34,7 @@ syntax is fairly simple.
 From your project's root directory start up a new REPL and try the following:
 
 ```clojure
-user=> (require '[garden.core :refer (css)]))
+user=> (require '[garden.core :refer [css]]))
 nil
 user=> (css [:body {:font-size "16px"}])
 "body{font-size:16px}"
@@ -208,7 +208,7 @@ units. This includes creation, conversion, and arithmetic. To start using units
 use/require the `garden.units` namespace.
 
 ```clojure
-user=> (require '[garden.units :refer (px pt)])
+user=> (require '[garden.units :refer [px pt]])
 nil
 ```
 
@@ -224,7 +224,7 @@ user=> (css (px 16))
 "16px"
 ```
 
-Unit functions take a number _n_ and construct a new `garden.types.Unit` record
+Unit functions take a number _n_ and construct a new `garden.types.CSSUnit` record
 with _n_ as the magnitude. Unit functions also accept other units as values
 returning their conversion if possible. This makes working with unit values
 very flexible.
@@ -312,11 +312,11 @@ user=> (require '[garden.stylesheet :refer [at-media]])
 nil
 user=> (css
          (at-media {:min-width (px 768) :max-width (px 979)}
-                   [:.container {:width (px 960) :padding [0 (px 10)]}]
-                   [:.row {:width (px 940)}])
+           [:.container {:width (px 960) :padding [0 (px 10)]}]
+           [:.row {:width (px 940)}])
          (at-media {:max-width (px 480)}
-                   [:container {:width (px 480) :padding [0 (px 10)]}]
-                   [:.row {:width (px 460)}]))
+           [:container {:width (px 480) :padding [0 (px 10)]}]
+           [:.row {:width (px 460)}]))
 ```
 
 Will out put the equivalent CSS:
@@ -392,15 +392,22 @@ h1 a { text-decoration: none; }
 
 ## TODO
 
-* Create a namespaces for functions/macros dealing with:
-  1. colors
-  2. animations
+* Create a namespace for functions/macros dealing with:
+  1. Colors
+  2. Animations
 
 ## Contributing
 
 For the love of all that's holy, if you find anything wrong with this library
 or see an opportunity to improve it, don't stop yourself from opening an issue
 or submitting a pull request!
+
+## Contributors
+
+Listed by first commit:
+
+* [noprompt](https://github.com/noprompt)
+* [malcolmsparks](https://github.com/malcolmsparks)
 
 ## Thanks
 
