@@ -49,6 +49,7 @@
   [expr rule & rules]
   (with-meta (cons rule rules) expr))
 
+(declare at-keyframes)
 
 ;; # Functions
 
@@ -114,7 +115,7 @@
     (throw
      (IllegalArgumentException. "value must be a CSS angular unit"))))
 
-;; This function currently does not validate if the inputs are correct. 
+;; This function currently does not validate if the inputs are correct.
 (defn drop-shadow
   "Create a CSS drop-shadow function."
   [offset-x offset-y & [a1 a2 a3]]

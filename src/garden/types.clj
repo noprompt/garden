@@ -20,6 +20,8 @@
                  (to-str args))]
       (format "%s(%s)" (to-str function) args))))
 
+(defrecord CSSKeyframes [identifier frames])
+
 (defmethod print-method CSSUnit [unit writer]
   (.write writer (str unit)))
 
