@@ -19,3 +19,9 @@
                  (comma-join args)
                  (to-str args))]
       (format "%s(%s)" (to-str function) args))))
+
+(defmethod print-method CSSUnit [unit writer]
+  (.write writer (str unit)))
+
+(defmethod print-method CSSFunction [function writer]
+  (.write writer (str function)))
