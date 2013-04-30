@@ -82,7 +82,7 @@
   [name]
   `(defn ~name [v#]
      (if (or (number? v#)
-             (= :% (:unit (unit/read-unit v#))))
+             (unit/percent? (unit/read-unit v#)))
        (CSSFunction. (keyword '~name) v#)
        (throw
         (IllegalArgumentException. "value must be a number or CSS percentage")))))
@@ -101,7 +101,7 @@
   [v]
   (let [u (unit/read-unit v)]
     (if (and (unit/length? u)
-             (not= :% (:unit u)))
+             (not (unit/percent? u)))
       (CSSFunction. :blur u)
       (throw
        (IllegalArgumentException. "value must be a non-percentage CSS length")))))
