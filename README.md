@@ -78,7 +78,7 @@ user=> (css [:h1 :h2 {:font-weight "normal"}
 #### Parent selector references
 
 As in Sass, Garden also supports selectors prefixed with the `&`
-character allowing you to reference a parent select.
+character allowing you to reference a parent selector.
 
 ```clojure
 user=> (css [:a
