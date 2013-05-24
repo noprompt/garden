@@ -238,9 +238,9 @@ very flexible.
 
 ```clojure
 user=> (px (px 16))
-"16px"
+16px
 user=> (px (pt 1))
-"1.3333333333px"
+1.3333333333px
 ```
 
 Unit arithmetic is available via the - spoiler alert- unit arithmetic functions.
@@ -249,11 +249,11 @@ Unit arithmetic is available via the - spoiler alert- unit arithmetic functions.
 user=> (require '[garden.units :refer (px+ px* px- px-div)])
 nil
 user=> (px+ 1 2 3 4 6)
-"16px"
+16px
 user=> (px-div 2 4)
-"0.5px"
+0.5px
 user=> (px* 2 2)
-"4px"
+4px
 ```
 
 Since the arithmetic functions use the primary unit functions in their
@@ -261,7 +261,7 @@ definitions, conversion occurs seamlessly (when possible):
 
 ```clojure
 user=> (px* 2 (pt 1))
-"2.6666666666px"
+2.6666666666px
 ```
 
 You might be wondering, which units can be converted to another? This
