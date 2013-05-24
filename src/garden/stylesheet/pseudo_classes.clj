@@ -12,31 +12,32 @@
             target]]
   (eval `(defrule ~c ~(str "&:" c))))
 
-(defrule ^{:doc "CSS3 ::before psuedo selector"}
+(defrule ^{:doc "CSS3 ::before pseudo selector"}
   before "&::before")
 
-(defrule ^{:doc "CSS3/CSS2 :before psuedo selector."}
+(defrule ^{:doc "CSS3/CSS2 :before pseudo selector."}
   before' "&::before" "&:before")
 
-(defrule ^{:doc "CSS3 ::after psuedo selector"}
+(defrule ^{:doc "CSS3 ::after pseudo selector"}
   after "&::after")
 
-(defrule ^{:doc "CSS3/CSS2 :after psuedo selector."}
+(defrule ^{:doc "CSS3/CSS2 :after pseudo selector."}
   after' "&::after" "&:after")
 
-(defrule ^{:doc "CSS3 ::first-line psuedo selector"}
+(defrule ^{:doc "CSS3 ::first-line pseudo selector"}
   first-line "&::first-line")
 
-(defrule ^{:doc "CSS3/CSS2 :first-line psuedo selector."}
+(defrule ^{:doc "CSS3/CSS2 :first-line pseudo selector."}
   first-line' "&::first-line" "&:first-line")
 
-(defrule ^{:doc "CSS3 ::first-letter psuedo selector"}
+(defrule ^{:doc "CSS3 ::first-letter pseudo selector"}
   first-letter "&::first-letter")
 
-(defrule ^{:doc "CSS3/CSS2 :first-letter psuedo selector."}
+(defrule ^{:doc "CSS3/CSS2 :first-letter pseudo selector."}
   first-letter' "&::first-letter" "&:first-letter")
 
-(defrule selection "&::selection" "&::-moz-selection")
+(defrule ^{:doc "::selection pseudo selector."}
+  selection "&::selection" "&::-moz-selection")
 
 (defn lang
   [l & children]
