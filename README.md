@@ -22,7 +22,7 @@ working with units.
 Add the following dependency to your `project.clj` file:
 
 ```clojure
-[garden "0.1.0-beta2"]
+[garden "0.1.0-beta3"]
 ```
 
 ## Syntax
@@ -224,15 +224,22 @@ user=> (css (px 16))
 "16px"
 ```
 
+For easy experimentation in the REPL you can omit the use of `css`.
+
+```clojure
+user=> (px 16)
+16px
+```
+
 Unit functions take a number _n_ and construct a new `garden.types.CSSUnit` record
 with _n_ as the magnitude. Unit functions also accept other units as values
 returning their conversion if possible. This makes working with unit values
 very flexible.
 
 ```clojure
-user=> (css (px (px 16)))
+user=> (px (px 16))
 "16px"
-user=> (css (px (pt 1)))
+user=> (px (pt 1))
 "1.3333333333px"
 ```
 
@@ -241,11 +248,11 @@ Unit arithmetic is available via the - spoiler alert- unit arithmetic functions.
 ```clojure
 user=> (require '[garden.units :refer (px+ px* px- px-div)])
 nil
-user=> (css (px+ 1 2 3 4 6))
+user=> (px+ 1 2 3 4 6)
 "16px"
-user=> (css (px-div 2 4))
+user=> (px-div 2 4)
 "0.5px"
-user=> (css (px* 2 2))
+user=> (px* 2 2)
 "4px"
 ```
 
@@ -253,7 +260,7 @@ Since the arithmetic functions use the primary unit functions in their
 definitions, conversion occurs seamlessly (when possible):
 
 ```clojure
-user=> (css (px* 2 (pt 1)))
+user=> (px* 2 (pt 1))
 "2.6666666666px"
 ```
 
