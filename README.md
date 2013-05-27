@@ -351,7 +351,7 @@ Will out put the equivalent CSS:
 
 To understand how media expressions are interpreted refer to this table:
 
- Map | Interpetation
+ Map | Interpretation
  --- | ---
  `{:screen true}` | `screen`
  `{:screen false}` | `not screen`
