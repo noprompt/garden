@@ -72,19 +72,18 @@
        :doc "The stylesheet output style."}
   *output-style* :compressed)
 
-(defn- output [k]
-  (fn [] (-> output-style *output-style* k)))
-
-(def comma (output :comma))
-(def colon (output :colon))
-(def semicolon (output :semicolon))
-(def left-brace (output :left-brace))
-(def right-brace (output :right-brace))
-(def rule-separator (output :rule-separator))
-(def newline (output :newline))
-(def indent-level (output :indent))
-(def media-left-brace (output :media-left-brace))
-(def media-right-brace (output :media-right-brace))
+(letfn [(output [k]
+          #(get-in output-style [*output-style* k]))]
+  (def comma (output :comma))
+  (def colon (output :colon))
+  (def semicolon (output :semicolon))
+  (def left-brace (output :left-brace))
+  (def right-brace (output :right-brace))
+  (def rule-separator (output :rule-separator))
+  (def newline (output :newline))
+  (def indent-level (output :indent))
+  (def media-left-brace (output :media-left-brace))
+  (def media-right-brace (output :media-right-brace)))
 
 (defmacro with-output-style
   "Set the output style for rendering CSS strings. The value of style may be
