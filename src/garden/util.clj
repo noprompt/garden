@@ -27,6 +27,13 @@
   [n]
   (and (integer? n) (pos? n)))
 
+(defn between?
+  "True if n is a number between a and b."
+  [n a b]
+  (let [bottom (min a b)
+        top (max a b)]
+    (and (>= n bottom) (<= n top))))
+
 (defn ^String wrap-quotes
   "Wrap a string with double quotes."
   [s]
