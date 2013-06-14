@@ -63,7 +63,7 @@
              lead by a \"#\". The color portion is captured."}
   hex-re #"#?([\da-fA-F]{3}|[\da-fA-F]{6})")
 
-(defn hex->color
+(defn hex->rgb
   "Convert a hexadecimal color to an RGB color map."
   [s]
   (when-let [[_ hex] (re-matches hex-re s)]
@@ -72,9 +72,44 @@
                 hex)]
       (rgb (map #(Integer/parseInt % 16) (re-seq #"[\da-fA-F]{2}" hex))))))
 
-(defn color->hex
+(defn rgb->hex
   "Convert an RGB color map to a hexadecimal color."
   [{r :red g :green b :blue}]
   (letfn [(hex-part [v]
             (s/replace (format "%2s" (Integer/toString v 16)) " " "0"))]
-    (apply str \# (map hex-part [r g b]))))
+    (apply str "#" (map hex-part [r g b]))))
+
+
+;; SEE: http://www.w3.org/TR/css3-color/#hsl-color.
+
+(declare hue->rgb)
+
+(defn hsl->rgb
+  "Convert an HSL color map to an RGB color map."
+  [{:keys  [hue saturation lightness] :as color}]
+  (if (rgb? color)
+    color
+    (let [h (/ hue 360.0)
+          s (/ saturation 100.0)
+          l (/ lightness 100.0)
+          m2 (if (<= l 0.5)
+               (* l (inc s))
+               (- (+ l s) (* l s)))
+          m1 (- (* 2 l) m2)
+          [r g b] (map #(Math/round (* % 0xff))
+                       [(hue->rgb m1 m2 (+ h (/ 1.0 3)))
+                        (hue->rgb m1 m2 h)
+                        (hue->rgb m1 m2 (- h (/ 1.0 3)))])]
+      {:red r :green g :blue b})))
+
+(defn- hue->rgb
+  [m1 m2 h]
+  (let [h (cond
+           (< h 0) (inc h)
+           (> h 1) (dec h)
+           :else h)]
+    (cond
+     (< (* 6 h) 1) (+ m1 (* (- m2 m1) h 6))
+     (< (* 2 h) 1) m2
+     (< (* 3 h) 2) (+ m1 (* (- m2 m1) (/ 2.0 3) 6))
+     :else m1)))
