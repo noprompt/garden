@@ -79,11 +79,9 @@
             (s/replace (format "%2s" (Integer/toString v 16)) " " "0"))]
     (apply str "#" (map hex-part [r g b]))))
 
-
-;; SEE: http://www.w3.org/TR/css3-color/#hsl-color.
-
 (declare hue->rgb)
 
+;; SEE: http://www.w3.org/TR/css3-color/#hsl-color.
 (defn hsl->rgb
   "Convert an HSL color map to an RGB color map."
   [{:keys  [hue saturation lightness] :as color}]
