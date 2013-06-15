@@ -1,15 +1,15 @@
-(ns ^{:doc "Utility functions for CSS properties, directives and
-            functions."}
-    garden.stylesheet
+(ns garden.stylesheet
+  "Utility functions for CSS properties, directives and functions."
   (:require [garden.util :as util]
             [garden.units :as unit]
-            [garden.compiler :refer [make-media-expression]])
+            [garden.compiler :refer [make-media-expression]]
+            [garden.color :as color])
   (:refer-clojure :exclude [empty]))
 
-;; # Properties
+;;;; Properties
 
 (defn font-family
-  "Returns a font-family declaration for at least one font. Strings
+  "Return a font-family declaration for at least one font. Strings
    containing whitespace are automatically escaped."
   [font & fonts]
   (let [f (fn [x] (if (and (string? x)
@@ -19,7 +19,7 @@
         fonts (flatten (cons font fonts))]
     {:font-family [(map f fonts)]}))
 
-;; # Directives
+;;;; Directives
 
 (defn at-font-face
   "Create a CSS @font-face rule."
@@ -50,3 +50,15 @@
 
 (declare at-keyframes)
 
+;;;; Functions
+
+(defn rgb
+  "Create a color from RGB values."
+  [r g b]
+  (color/rgb [r g b]))
+
+(defn hsl
+  "Create a color from HSL values."
+  [h s l]
+  (let [[h s l] (map #(:magnitude % %) [h s l])]
+    (color/hsl [h s l])))
