@@ -60,5 +60,4 @@
 (defn hsl
   "Create a color from HSL values."
   [h s l]
-  (let [[h s l] (map #(:magnitude % %) [h s l])]
-    (color/hsl [h s l])))
+  (color/hsl [h s l]))

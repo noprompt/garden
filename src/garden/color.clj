@@ -47,11 +47,13 @@
 (defn hsl
   "Create an HSL color."
   ([[h s l]]
-     (if (and (u/between? s 0 100)
-              (u/between? l 0 100))
-       (as-color {:hue (mod h 360) :saturation s :lightness l})
-       (throw
-        (IllegalArgumentException. "Saturation and luminosity must be between 0(%) and 100(%)"))))
+     ;; Handle CSSUnits. 
+     (let [[h s l] (map #(:magnitude % %) [h s l])]
+       (if (and (u/between? s 0 100)
+                (u/between? l 0 100))
+         (as-color {:hue (mod h 360) :saturation s :lightness l})
+         (throw
+          (IllegalArgumentException. "Saturation and luminosity must be between 0(%) and 100(%)")))))
   ([h s l]
      (hsl [h s l])))
 
