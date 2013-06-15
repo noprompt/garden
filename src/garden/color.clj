@@ -17,6 +17,7 @@
   (toString [this]
     (color->hex this)))
 
+;; Show colors as hexadecimal values (ie. #000000) in the REPL. 
 (defmethod print-method CSSColor [color writer]
   (.write writer (str color)))
 
@@ -69,13 +70,15 @@
   (and (map? color)
        (every? color #{:red :green :blue})))
 
-(defn hsl? [color]
+(defn hsl?
   "Return true if color is an HSL color."
+  [color]
   (and (map? color)
        (every? color #{:hue :saturation :lightness})))
 
-(defn color? [x]
+(defn color?
   "Return true if x is a color."
+  [x]
   (or (rgb? x) (hsl? x)))
 
 (def ^{:doc "Regular expression for matching a hexadecimal color.
@@ -154,10 +157,12 @@
      :else m1)))
 
 (defn hsl->hex
+  "Convert an HSL color map to a hexadecimal string."
   [color]
   (rgb->hex (hsl->rgb color)))
 
 (defn color->hex
+  "Convert a color map to a hexadecimal string."
   [color]
   (cond
    (rgb? color) (rgb->hex color)
