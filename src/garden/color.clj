@@ -79,6 +79,27 @@
             (s/replace (format "%2s" (Integer/toString v 16)) " " "0"))]
     (apply str "#" (map hex-part [r g b]))))
 
+(defn rgb->hsl
+  "Convert an RGB color map to an HSL color map."
+  [{:keys [red green blue] :as color}]
+  (if (hsl? color)
+    color
+    (let [[r g b] (map #(/ % 255) [red green blue])
+          mx (max r g b)
+          mn (min r g b)
+          d (- mx mn)
+          h (condp = mx
+              mn 0
+              r (* 60 (/ (- g b) d))
+              g (+ (* 60 (/ (- b r) d)) 120)
+              b (+ (* 60 (/ (- r g) d)) 240))
+          l (/ (+ mx mn) 2)
+          s (cond
+             (= mx mn) 0
+             (< l 0.5) (/ d (* 2 l))
+             :else (/ d (- 2 (* 2 l))))]
+      {:hue (mod h 360) :saturation (* 100 s) :lightness (* 100 l)})))
+
 (declare hue->rgb)
 
 ;; SEE: http://www.w3.org/TR/css3-color/#hsl-color.

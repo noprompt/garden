@@ -18,7 +18,7 @@
 (def hsl-red {:hue 0 :saturation 100 :lightness 50})
 (def hsl-green {:hue 120 :saturation 100 :lightness 50})
 (def hsl-blue {:hue 240 :saturation 100 :lightness 50})
-(def hsl-white {:hue 0 :saturation 100 :lightness 100})
+(def hsl-white {:hue 0 :saturation 0 :lightness 100})
 
 (deftest color-conversion-test 
   (testing "hex->rgb"
@@ -54,4 +54,15 @@
            rgb-blue))
     (is (= (hsl->rgb hsl-white)
            rgb-white)))
-  )
+
+  (testing "rgb->hsl"
+    (is (= (rgb->hsl rgb-black)
+           hsl-black))
+    (is (= (rgb->hsl rgb-red)
+           hsl-red))
+    (is (= (rgb->hsl rgb-green)
+           hsl-green))
+    (is (= (rgb->hsl rgb-blue)
+           hsl-blue))
+    (is (= (rgb->hsl rgb-white)
+           hsl-white)))) 
