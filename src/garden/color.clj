@@ -86,6 +86,11 @@
              lead by a \"#\". The color portion is captured."}
   hex-re #"#?([\da-fA-F]{3}|[\da-fA-F]{6})")
 
+(defn hex?
+  "Returns true if x is a hexadecimal color."
+  [x]
+  (boolean (and (string? x) (re-matches hex-re x))))
+
 (defn hex->rgb
   "Convert a hexadecimal color to an RGB color map."
   [s]
@@ -165,5 +170,6 @@
   "Convert a color map to a hexadecimal string."
   [color]
   (cond
+   (hex? color) color
    (rgb? color) (rgb->hex color)
    (hsl? color) (hsl->hex color)))
