@@ -1,4 +1,5 @@
 (ns garden.color
+  "Utilities for color creation and conversion"
   (:require [clojure.string :as s]
             [garden.util :as u]))
 
