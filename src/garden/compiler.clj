@@ -51,7 +51,7 @@
             prefix (fn [[k v]]
                      {(str prop \- (u/to-str k)) v})]
         (if (and (map? value)
-                 (not (instance? clojure.lang.IRecord value)))
+                 (not (u/record? value)))
           (expand-declaration (into m (map prefix value)))
           (assoc m prop value))))
     {}

@@ -121,3 +121,8 @@
   "Return obj with meta removed."
   [obj]
   (with-meta obj nil))
+
+(defn record?
+  "Return true if obj is an instance of clojure.lang.IRecord."
+  [obj]
+  (instance? clojure.lang.IRecord obj))
