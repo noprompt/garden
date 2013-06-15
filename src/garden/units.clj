@@ -18,7 +18,7 @@
    :Hz  12 :kHz  13                            ;; Frequencies
    })
 
-;; Note: Typically, commas are avoided in sequences, but in this case they are
+;; Typically, commas are avoided in sequences, but in this case they are
 ;; useful for displaying the table in a readable manner.
 (def
   ^{:private true
