@@ -2,11 +2,31 @@
   (:require [clojure.string :as s]
             [garden.util :as u]))
 
+(declare color->hex)
+
+(defrecord CSSColor [red green blue hue saturation lightness alpha]
+  clojure.lang.IFn
+  (invoke [this] this)
+  (invoke [this k]
+    (get this k))
+  (invoke [this k missing]
+    (get this k missing))
+  (applyTo [this args]
+    (clojure.lang.AFn/applyToHelper this args))
+  Object
+  (toString [this]
+    (color->hex this)))
+
+(defmethod print-method CSSColor [color writer]
+  (.write writer (str color)))
+
+(def as-color map->CSSColor)
+
 (defn rgb
   "Create an RGB color map."
   ([[r g b :as vs]]
      (if (every? #(u/between? % 0 255) vs)
-       {:red r :green g :blue b}
+       (as-color {:red r :green g :blue b})
        (throw
         (IllegalArgumentException. "RGB values must be between 0 and 255"))))
   ([r g b]
@@ -16,7 +36,7 @@
   "Create an RGBA color."
   ([[r g b a]]
      (if (u/between? a 0 1)
-       (assoc (rgb [r g b]) :alpha a)
+       (as-color (assoc (rgb [r g b]) :alpha a))
        (throw
         (IllegalArgumentException. "Alpha value must be between 0 and 1"))))
   ([r g b a]
@@ -27,7 +47,7 @@
   ([[h s l]]
      (if (and (u/between? s 0 100)
               (u/between? l 0 100))
-       {:hue (mod h 360) :saturation s :lightness l}
+       (as-color {:hue (mod h 360) :saturation s :lightness l})
        (throw
         (IllegalArgumentException. "Saturation and luminosity must be between 0(%) and 100(%)"))))
   ([h s l]
@@ -37,7 +57,7 @@
   "Create an HSLA color."
   ([[h s l a]]
      (if (u/between? a 0 1)
-       (assoc (hsl [h s l]) :alpha a)
+       (as-color (assoc (hsl [h s l]) :alpha a))
        (throw
         (IllegalArgumentException. "Alpha value must be between 0 and 1"))))
   ([h s l a]
@@ -47,12 +67,12 @@
   "Return true if color is an RGB color."
   [color]
   (and (map? color)
-       (every? #{:red :green :blue} color)))
+       (every? color #{:red :green :blue})))
 
 (defn hsl? [color]
   "Return true if color is an HSL color."
   (and (map? color)
-       (every? #{:hue :saturation :lightness} color)))
+       (every? color #{:hue :saturation :lightness})))
 
 (defn color? [x]
   "Return true if x is a color."
@@ -98,7 +118,7 @@
              (= mx mn) 0
              (< l 0.5) (/ d (* 2 l))
              :else (/ d (- 2 (* 2 l))))]
-      {:hue (mod h 360) :saturation (* 100 s) :lightness (* 100 l)})))
+      (hsl (mod h 360) (* 100 s) (* 100 l)))))
 
 (declare hue->rgb)
 
@@ -119,7 +139,7 @@
                        [(hue->rgb m1 m2 (+ h (/ 1.0 3)))
                         (hue->rgb m1 m2 h)
                         (hue->rgb m1 m2 (- h (/ 1.0 3)))])]
-      {:red r :green g :blue b})))
+      (rgb r g b))))
 
 (defn- hue->rgb
   [m1 m2 h]
@@ -132,3 +152,13 @@
      (< (* 2 h) 1) m2
      (< (* 3 h) 2) (+ m1 (* (- m2 m1) (/ 2.0 3) 6))
      :else m1)))
+
+(defn hsl->hex
+  [color]
+  (rgb->hex (hsl->rgb color)))
+
+(defn color->hex
+  [color]
+  (cond
+   (rgb? color) (rgb->hex color)
+   (hsl? color) (hsl->hex color)))
