@@ -1,8 +1,7 @@
 (ns garden.util
   "Utility functions used by Garden."
   (:refer-clojure :exclude [newline])
-  (:require [clojure.string :as string]
-            [garden.color :as color]))
+  (:require [clojure.string :as string]))
 
 (defprotocol ToString
   (^String to-str [this] "Convert a value into a string."))
@@ -11,10 +10,6 @@
   clojure.lang.Keyword
   (to-str [this]
     (name this))
-  java.awt.Color
-  (to-str [this]
-    (color/rgb->hex
-     (color/rgb (.getRed this) (.getGreen this) (.getBlue this))))
   Object
   (to-str [this]
     (str this))
