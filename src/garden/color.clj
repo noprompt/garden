@@ -1,5 +1,5 @@
 (ns garden.color
-  "Utilities for color creation and conversion"
+  "Utilities for color creation, conversion, and manipulation."
   (:refer-clojure :exclude [complement])
   (:require [clojure.string :as s]
             [garden.util :as u]))
