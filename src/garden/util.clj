@@ -131,3 +131,9 @@
   "Return true if obj is an instance of clojure.lang.IRecord."
   [obj]
   (instance? clojure.lang.IRecord obj))
+
+(defn clip
+  "Return a number such that n is no less than a and no more than b."
+  [a b n]
+  (let [[a b] (if (<= a b) [a b] [b a])] 
+    (max a (min b n))))
