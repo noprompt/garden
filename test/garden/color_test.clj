@@ -1,4 +1,5 @@
 (ns garden.color-test
+  (:refer-clojure :exclude [complement])
   (:use clojure.test
         garden.color))
 
@@ -8,17 +9,17 @@
 (def hex-blue "#0000ff")
 (def hex-white "#ffffff")
 
-(def rgb-black {:red 0 :green 0 :blue 0})
-(def rgb-red {:red 255 :green 0 :blue 0})
-(def rgb-green {:red 0 :green 255 :blue 0})
-(def rgb-blue {:red 0 :green 0 :blue 255})
-(def rgb-white {:red 255 :green 255 :blue 255})
+(def rgb-black (rgb 0 0 0))
+(def rgb-red (rgb 255 0 0))
+(def rgb-green (rgb 0 255 0))
+(def rgb-blue (rgb 0 0 255))
+(def rgb-white (rgb 255 255 255))
 
-(def hsl-black {:hue 0 :saturation 0 :lightness 0})
-(def hsl-red {:hue 0 :saturation 100 :lightness 50})
-(def hsl-green {:hue 120 :saturation 100 :lightness 50})
-(def hsl-blue {:hue 240 :saturation 100 :lightness 50})
-(def hsl-white {:hue 0 :saturation 0 :lightness 100})
+(def hsl-black (hsl 0 0 0))
+(def hsl-red (hsl 0 100 50))
+(def hsl-green (hsl 120 100 50))
+(def hsl-blue (hsl 240 100 50))
+(def hsl-white (hsl 0 0 100))
 
 (deftest color-conversion-test 
   (testing "hex->rgb"
@@ -66,3 +67,62 @@
            hsl-blue))
     (is (= (rgb->hsl rgb-white)
            hsl-white)))) 
+
+(deftest color-functions-test
+  (testing "rotate-hue"
+    (is (= (rotate-hue hsl-black 0)
+           (hsl 0 0 0)))
+    (is (= (rotate-hue hsl-black 180)
+           (hsl 180 0 0)))
+    (is (= (rotate-hue hsl-black 360)
+           (hsl 0 0 0)))
+    (is (= (rotate-hue hsl-black -360)
+           (hsl 0 0 0)))
+    (is (= (rotate-hue hsl-black -180)
+           (hsl 180 0 0))))
+
+  (testing "saturate"
+    (is (= (saturate hsl-black 0)
+           (hsl 0 0 0)))
+    (is (= (saturate hsl-black 50)
+           (hsl 0 50 0)))
+    (is (= (saturate hsl-black 100)
+           (hsl 0 100 0)))
+    (is (= (saturate hsl-black 200)
+           (hsl 0 100 0))))
+
+  (testing "desaturate"
+    (is (= (desaturate hsl-red 0)
+           (hsl 0 100 50)))
+    (is (= (desaturate hsl-red 50)
+           (hsl 0 50 50)))
+    (is (= (desaturate hsl-red 100)
+           (hsl 0 0 50)))
+    (is (= (desaturate hsl-red 200)
+           (hsl 0 0 50))))
+
+  (testing "lighten"
+    (is (= (lighten rgb-black 0)
+           (hsl 0 0 0)))
+    (is (= (lighten rgb-black 50)
+           (hsl 0 0 50)))
+    (is (= (lighten rgb-black 100)
+           (hsl 0 0 100)))
+    (is (= (lighten rgb-black 200)
+           (hsl 0 0 100))))
+
+  (testing "darken"
+    (is (= (darken rgb-white 0)
+           (hsl 0 0 100)))
+    (is (= (darken rgb-white 50)
+           (hsl 0 0 50)))
+    (is (= (darken rgb-white 100)
+           (hsl 0 0 0)))
+    (is (= (darken rgb-white 200)
+           (hsl 0 0 0))))
+
+  (testing "invert"
+    (is (= (invert rgb-white)
+           rgb-black))
+    (is (= (invert rgb-black)
+           rgb-white))))
