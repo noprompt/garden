@@ -53,7 +53,7 @@
                 (u/between? l 0 100))
          (as-color {:hue (mod h 360) :saturation s :lightness l})
          (throw
-          (IllegalArgumentException. "Saturation and luminosity must be between 0(%) and 100(%)")))))
+          (IllegalArgumentException. "Saturation and lightness must be between 0(%) and 100(%)")))))
   ([h s l]
      (hsl [h s l])))
 
