@@ -234,7 +234,7 @@
 (def ^:private percent-clip
   (partial u/clip 0 100))
 
-(defn ^:private update-color [color field f v]
+(defn- update-color [color field f v]
   (let [v (or (:magnitude v) v)]
     (update-in (as-hsl color) [field] f v)))
 
@@ -263,12 +263,51 @@
   [color amount]
   (update-color color :lightness (comp percent-clip -) amount))
 
+(defn invert
+  "Return the inversion of a color."
+  [color]
+  (as-color (merge-with - {:red 255 :green 255 :blue 255} (as-rgb color))))
+
+;;;; Color wheel functions. 
+
 (defn complement
   "Return the complement of a color."
   [color]
   (rotate-hue color 180))
 
-(defn invert
-  "Return the inversion of a color."
+(defn- hue-rotations
+  ([color & amounts]
+     (map (partial rotate-hue color) amounts)))
+
+(defn analogous
+  "Given a color return a triple of colors which are 0, 30, and 60
+   degrees clockwise from it. If a second falsy argument is passed the
+   returned values will be in a counter-clockwise direction."
+  ([color]
+     (analogous true))
+  ([color clockwise?]
+     (let [sign (if clockwise? + -)]
+       (hue-rotations color 0 (sign 30) (sign 60)))))
+
+(defn triad
+  "Given a color return a triple of colors which are equidistance apart
+   on the color wheel."
   [color]
-  (as-color (merge-with - {:red 255 :green 255 :blue 255} (as-rgb color))))
+  (hue-rotations color 0 120 240))
+
+(defn split-complement
+  "Given a color return a triple of the color and the two colors on
+   either side of it's complement."
+  ([color]
+     (split-complement color 130))
+  ([color distance-from-complement]
+     (let [d (u/clip 1 179 distance-from-complement)]
+         (hue-rotations color 0 d (- d)))))
+
+(defn tetrad
+  ([color]
+     (tetrad color 90))
+  ([color angle]
+     (let [a (u/clip 1 90 (Math/abs (:magnitude angle angle)))
+           color-2 (rotate-hue color a)]
+       (hue-rotations 0 a 180 (+ 180 a)))))
