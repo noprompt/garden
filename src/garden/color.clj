@@ -26,7 +26,7 @@
 (def as-color map->CSSColor)
 
 (defn rgb
-  "Create an RGB color map."
+  "Create an RGB color."
   ([[r g b :as vs]]
      (if (every? #(u/between? % 0 255) vs)
        (as-color {:red r :green g :blue b})
@@ -305,9 +305,13 @@
          (hue-rotations color 0 d (- d)))))
 
 (defn tetrad
+  "Given a color return a quadruple of four colors which are
+   equidistance on the color wheel (ie. a pair of complements). An
+   optional angle may be given for color of the second complement in the
+   pair (this defaults to 90 when only color is passed)."
   ([color]
      (tetrad color 90))
   ([color angle]
      (let [a (u/clip 1 90 (Math/abs (:magnitude angle angle)))
            color-2 (rotate-hue color a)]
-       (hue-rotations 0 a 180 (+ 180 a)))))
+       [color (complement color) color-2 (complement color-2)])))
