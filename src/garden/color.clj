@@ -174,30 +174,32 @@
   [color]
   (-> color hex->rgb rgb->hsl))
 
-;; TODO: This should throw an exception in the :else clause.
 (defn as-hex
-  "Convert a color map to a hexadecimal string."
-  [color]
+  "Convert a color to a hexadecimal string."
+  [x]
   (cond
-   (hex? color) color
-   (rgb? color) (rgb->hex color)
-   (hsl? color) (hsl->hex color)))
+   (hex? x) x
+   (rgb? x) (rgb->hex x)
+   (hsl? x) (hsl->hex x)
+   :else (throw IllegalArgumentException. (str "Can't convert " x " to a color."))))
 
-;; TODO: This should throw an exception in the :else clause.
 (defn as-rgb
+  "Convert a color to a RGB."
   [x]
   (cond
    (rgb? x) x
    (hsl? x) (hsl->rgb x)
-   (hex? x) (hex->rgb x)))
+   (hex? x) (hex->rgb x)
+   :else (throw IllegalArgumentException. (str "Can't convert " x " to a color."))))
 
-;; TODO: This should throw an exception in the :else clause.
 (defn as-hsl
+  "Convert a color to a HSL."
   [x]
   (cond
    (hsl? x) x
    (rgb? x) (rgb->hsl x)
-   (hex? x) (hex->hsl x)))
+   (hex? x) (hex->hsl x)
+   :else (throw IllegalArgumentException. (str "Can't convert " x " to a color."))))
 
 (defn- make-color-operation
   [op]
