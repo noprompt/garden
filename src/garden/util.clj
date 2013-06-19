@@ -132,3 +132,9 @@
   [a b n]
   (let [[a b] (if (<= a b) [a b] [b a])] 
     (max a (min b n))))
+
+(defn average
+  "Return the average of two or more numbers."
+  [n m & more]
+  (/ (apply + n m more) (+ 2.0 (count more))))
+

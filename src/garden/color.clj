@@ -280,6 +280,15 @@
   [color]
   (as-color (merge-with - {:red 255 :green 255 :blue 255} (as-rgb color))))
 
+(defn mix
+  "Mix two or more colors by averaging their RGB channels."
+  ([color-1 color-2]
+     (let [c1 (restrict-rgb (as-rgb color-1))
+           c2 (restrict-rgb (as-rgb color-2))]
+       (as-color (merge-with u/average c1 c2))))
+  ([color-1 color-2 & more]
+     (reduce mix (mix color-1 color-2) more)))
+
 ;;;; Color wheel functions. 
 
 (defn complement
