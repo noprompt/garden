@@ -181,7 +181,7 @@
    (hex? x) x
    (rgb? x) (rgb->hex x)
    (hsl? x) (hsl->hex x)
-   :else (throw IllegalArgumentException. (str "Can't convert " x " to a color."))))
+   :else (throw (IllegalArgumentException. (str "Can't convert " x " to a color.")))))
 
 (defn as-rgb
   "Convert a color to a RGB."
@@ -190,7 +190,7 @@
    (rgb? x) x
    (hsl? x) (hsl->rgb x)
    (hex? x) (hex->rgb x)
-   :else (throw IllegalArgumentException. (str "Can't convert " x " to a color."))))
+   :else (throw (IllegalArgumentException. (str "Can't convert " x " to a color.")))))
 
 (defn as-hsl
   "Convert a color to a HSL."
@@ -199,7 +199,7 @@
    (hsl? x) x
    (rgb? x) (rgb->hsl x)
    (hex? x) (hex->hsl x)
-   :else (throw IllegalArgumentException. (str "Can't convert " x " to a color."))))
+   :else (throw (IllegalArgumentException. (str "Can't convert " x " to a color.")))))
 
 (defn- make-color-operation
   [op]
