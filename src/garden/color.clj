@@ -4,6 +4,13 @@
   (:require [clojure.string :as s]
             [garden.util :as u]))
 
+;; Many of the functions in this namespace were ported or inspired by
+;; the implementations included with Sass
+;; (http://sass-lang.com/docs/yardoc/Sass/Script/Functions.html).
+;; Some additional functions have been added such as `triad` and
+;; `tetrad` for generating sets of colors. 
+
+;; Converts a color to a hexadecimal string (implementation below). 
 (declare as-hex)
 
 (defrecord CSSColor [red green blue hue saturation lightness alpha]
@@ -19,7 +26,7 @@
   (toString [this]
     (as-hex this)))
 
-;; Show colors as hexadecimal values (ie. #000000) in the REPL. 
+;; Show colors as hexadecimal values (ie. #000000) in the REPL.
 (defmethod print-method CSSColor [color writer]
   (.write writer (str color)))
 
