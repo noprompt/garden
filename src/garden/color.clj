@@ -208,16 +208,19 @@
    (hex? x) (hex->hsl x)
    :else (throw (IllegalArgumentException. (str "Can't convert " x " to a color.")))))
 
+(defn- restrict-rgb
+  [m]
+  (select-keys m [:red :green :blue]))
+
 (defn- make-color-operation
   [op]
   (fn color-op
     ([a] a)
     ([a b]
-       (let [f #(select-keys % [:red :green :blue])
-             o #(max 0 (min (op %1 %2) 255))
-             a (as-rgb a)
-             b (as-rgb b)]
-         (as-color (merge-with o (f a) (f b)))))
+       (let [o #(max 0 (min (op %1 %2) 255))
+             a (restrict-rgb (as-rgb a))
+             b (restrict-rgb (as-rgb b))]
+         (as-color (merge-with o a b))))
     ([a b & more]
        (reduce color-op (color-op a b) more))))
 
