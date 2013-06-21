@@ -21,7 +21,7 @@
 ;; `media-query-rules` vector. The rule is stored as a triple of the
 ;; media query expression (a map), rules (a vector), and the context
 ;; for which the rules belong (either nil or list). 
-;;
+
 (def ^{:private true
        :doc "A vector containing triples of media-query, rules, and context"}
   media-query-rules (atom []))
@@ -77,10 +77,10 @@
        (map make-declaration)
        (string/join (u/semicolon))))
 
-(defn- extract-reference
+(defn extract-reference
   "Extracts the selector portion of a parent selector reference."
   [selector]
-  (when-let [reference (re-find #"^&.+" (u/to-str (last selector)))]
+  (when-let [reference (re-find #"^&.+|^&$" (u/to-str (last selector)))]
     (apply str (rest reference))))
 
 (defn- expand-selector
@@ -89,13 +89,13 @@
   (let [new-context (if (seq context)
                       (map flatten (cartesian-product context selector))
                       (map vector selector))]
-    (map (fn [sel]
-           (if-let [reference (extract-reference sel)]
-             (let [parent (butlast sel)]
-               (concat (butlast parent)
-                       (list (u/as-str (last parent) reference))))
-             sel))
-         new-context)))
+
+    (for [sel new-context]
+      (if-let [reference (extract-reference sel)]
+        (let [parent (butlast sel)]
+          (concat (butlast parent)
+                  (list (u/as-str (last parent) reference))))
+        sel))))
 
 (defn- divide-rule
   "Divide a rule in to triple of selector, declarations, and subrules."

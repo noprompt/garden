@@ -28,5 +28,13 @@
     (is (= (compile-css [:h1 {:a "b"} ^:screen [:&:hover {:c "d"}]])
            "h1{a:b}@media screen{h1:hover{c:d}}"))
     (is (= (compile-css ^:toast [:h1 {:a "b"}])
-           "h1{a:b}"))))
+           "h1{a:b}")))
+
+  (testing "parent selector references"
+    (is (= (compile-css [:a [:&:hover {:font-weight "bold"}]])
+           "a:hover{font-weight:bold}"))
+    (is (= (compile-css [:a [:& {:font-weight "bold"}]])
+           "a{font-weight:bold}"))
+    (is (= (compile-css [:a ^{:max-width "1em"} [:& {:font-weight "bold"}]])
+           "@media (max-width:1em){a{font-weight:bold}}"))))
 
