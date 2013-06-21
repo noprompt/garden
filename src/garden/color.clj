@@ -336,3 +336,14 @@
      (let [a (u/clip 1 90 (Math/abs (:magnitude angle angle)))
            color-2 (rotate-hue color a)]
        [color (complement color) color-2 (complement color-2)])))
+
+(defn shades
+  "Given a color return a list of shades from lightest to darkest by
+   a step. By default the step is 10. White and black are excluded from
+   the returned list."
+  ([color]
+     (shades color 10))
+  ([color step]
+     (let [c (as-hsl color)]
+       (for [i (range 1 (Math/floor (/ 100.0 step)))]
+         (assoc c :lightness (* i step))))))
