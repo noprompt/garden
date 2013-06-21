@@ -21,7 +21,7 @@ rules and maps to represent declarations.
 Add the following dependency to your `project.clj` file:
 
 ```clojure
-[garden "0.1.0-beta3"]
+[garden "0.1.0-beta4"]
 ```
 
 ## Syntax
@@ -398,7 +398,7 @@ h1 a { text-decoration: none; }
 
 ## TODO
 
-1. Colors (In Progress)
+1. ~~Colors~~
 2. CSS animations
 3. CSS2/CSS3 selectors (In Progress)
 4. CSS3 properties
