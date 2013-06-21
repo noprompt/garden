@@ -36,5 +36,7 @@
     (is (= (compile-css [:a [:& {:font-weight "bold"}]])
            "a{font-weight:bold}"))
     (is (= (compile-css [:a ^{:max-width "1em"} [:& {:font-weight "bold"}]])
-           "@media (max-width:1em){a{font-weight:bold}}"))))
+           "@media (max-width:1em){a{font-weight:bold}}"))
+    (is (= (compile-css ^:screen [:a {:f "bar"} ^:print [:& {:g "foo"}]])
+           "@media screen{a{f:bar}}@media print{a{g:foo}}"))))
 
