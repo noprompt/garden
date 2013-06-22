@@ -1,9 +1,20 @@
 (ns garden.units
   "Functions and macros for working with CSS units."
   (:refer-clojure :exclude [rem])
-  (:require garden.types
-            [garden.util :as u])
-  (:import garden.types.CSSUnit))
+  (:require [garden.util :as u]))
+
+(defrecord CSSUnit [magnitude unit]
+  Object
+  (toString [this]
+    (let [m (when (ratio? magnitude)
+              (float magnitude))]
+      (str (if (ratio? magnitude)
+             (float magnitude)
+             magnitude)
+           (name unit)))))
+
+(defmethod print-method CSSUnit [unit writer]
+  (.write writer (str unit)))
 
 ;;;; Unit conversion
 

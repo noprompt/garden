@@ -1,11 +1,12 @@
 (ns garden.compiler
   (:require [clojure.string :as string]
             [clojure.math.combinatorics :refer [cartesian-product]]
-            [garden.util :as u]
-            [garden.media :as m]
-            [garden.types])
+            (garden [util :as u]
+                    [media :as m]
+                    units
+                    types))
   (:import garden.types.CSSFunction
-           garden.types.CSSUnit))
+           garden.units.CSSUnit))
 
 (defprotocol CSSRenderer
   (render-css [this]
@@ -192,7 +193,7 @@
   clojure.lang.Ratio
   (render-css [this]
     (str (float this)))
-  garden.types.CSSUnit
+  CSSUnit
   (render-css [this]
     (str this))
   garden.types.CSSFunction
