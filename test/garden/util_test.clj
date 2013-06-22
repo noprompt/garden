@@ -1,3 +1,4 @@
 (ns garden.util-test
-  (:require [clojure.test :refer :all]
-            [garden.util :refer :all]))
+  (:refer-clojure :exclude [newline])
+  (:use clojure.test
+        garden.util))
