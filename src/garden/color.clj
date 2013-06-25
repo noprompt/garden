@@ -203,6 +203,7 @@
    (rgb? x) x
    (hsl? x) (hsl->rgb x)
    (hex? x) (hex->rgb x)
+   (number? x) (rgb (map rgb-clip [x x x]))
    :else (throw (IllegalArgumentException. (str "Can't convert " x " to a color.")))))
 
 (defn as-hsl
@@ -212,6 +213,7 @@
    (hsl? x) x
    (rgb? x) (rgb->hsl x)
    (hex? x) (hex->hsl x)
+   (number? x) (hsl [x (percent-clip x) (percent-clip x)])
    :else (throw (IllegalArgumentException. (str "Can't convert " x " to a color.")))))
 
 (defn- restrict-rgb
