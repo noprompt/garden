@@ -225,7 +225,7 @@
   (fn color-op
     ([a] a)
     ([a b]
-       (let [o #(max 0 (min (op %1 %2) 255))
+       (let [o (comp rgb-clip op)
              a (restrict-rgb (as-rgb a))
              b (restrict-rgb (as-rgb b))]
          (as-color (merge-with o a b))))
