@@ -68,6 +68,51 @@
     (is (= (rgb->hsl rgb-white)
            hsl-white)))) 
 
+(deftest color-math-test
+  (testing "color+"
+    (is (= (color+ (rgb 0 0 0))
+           (rgb 0 0 0)))
+    (is (= (color+ (rgb 0 0 0) 1)
+           (rgb 1 1 1)))
+    (is (= (color+ (rgb 0 0 0) 256)
+           (rgb 255 255 255)))
+    (is (= (color+ 20 (rgb 130 130 130))
+           (rgb 150 150 150))))
+
+  (testing "color-"
+    (is (= (color- (rgb 0 0 0))
+           (rgb 0 0 0)))
+    (is (= (color- (rgb 255 255 255) 256)
+           (rgb 0 0 0)))
+    (is (= (color- 20 (rgb 150 150 150))
+           (rgb 0 0 0)))
+    (is (= (color- (rgb 150 150 150) 20)
+           (rgb 130 130 130)))
+    (is (= (color- (rgb 150 150 150) 20 30)
+           (rgb 100 100 100))))
+
+  (testing "color*"
+    (is (= (color* (rgb 0 0 0))
+           (rgb 0 0 0)))
+    (is (= (color* (rgb 0 0 0) 1)
+           (rgb 0 0 0)))
+    (is (= (color* (rgb 1 1 1) 5)
+           (rgb 5 5 5)))
+    (is (= (color* 5 (rgb 1 1 1) 5)
+           (rgb 25 25 25))))
+
+  (testing "color-div"
+    (is (= (color-div (rgb 0 0 0))
+           (rgb 0 0 0)))
+    (is (= (color-div (rgb 0 0 0) 1)
+           (rgb 0 0 0)))
+    (is (= (color-div (rgb 1 1 1) 5)
+           (rgb 1/5 1/5 1/5)))
+    (is (= (color-div 5 (rgb 1 1 1))
+           (rgb 5 5 5)))
+    (is (thrown? ArithmeticException
+                 (color-div (rgb 1 1 1) 0)))))
+
 (deftest color-functions-test
   (testing "rotate-hue"
     (is (= (rotate-hue hsl-black 0)
