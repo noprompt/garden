@@ -3,7 +3,7 @@
   (:refer-clojure :exclude [rem])
   (:require [garden.util :as u]))
 
-(defrecord CSSUnit [magnitude unit]
+(defrecord CSSUnit [unit magnitude] 
   Object
   (toString [this]
     (let [m (when (ratio? magnitude)
@@ -66,8 +66,8 @@
           v1 (get-in conversion-table [i j])
           v2 (get-in conversion-table [j i])]
       (cond
-        v1 (CSSUnit. (* v1 m) right)
-        v2 (CSSUnit. (/ m v2) right)
+        v1 (CSSUnit. right (* v1 m))
+        v2 (CSSUnit. right (/ m v2))
         ;; Both units are convertible but no conversion between them exists.
         :else (throw
                 (IllegalArgumentException.
@@ -95,7 +95,7 @@
   (if (unit? x)
     x
     (when-let [[_ m u] (re-find unit-re (u/to-str x))]
-      (CSSUnit. (read-string m) (keyword u)))))
+      (CSSUnit. (keyword u) (read-string m)))))
 
 (defn length?
   "True if x is a CSS length unit (in, cm, pc, mm, pt, or px)."
@@ -128,14 +128,14 @@
   (fn [x] (and (unit? x) (= (:unit x) unit))))
 
 (defn make-unit-fn
-  "Creates a function for creating and converting CSS units for the given
-   unit. If a number n is passed to the function it will produce a new Unit
-   record with a the magnitued set to n. If a Unit is passed the function
-   will attempt to convert it."
+  "Creates a function for creating and converting `CSSUnit`s for the
+   given unit. If a number n is passed the function it will produce a
+   new `CSSUnit` record with a the magnitude set to n. If a `CSSUnit`
+   is passed the function will attempt to convert it."
   [unit]
   (fn [x]
     (cond
-      (number? x) (CSSUnit. x unit)
+      (number? x) (CSSUnit. unit x)
       (unit? x) (if (= (:unit x) unit)
                     x
                     (convert x unit))
