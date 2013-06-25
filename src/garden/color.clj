@@ -181,6 +181,12 @@
   [color]
   (-> color hex->rgb rgb->hsl))
 
+(def percent-clip
+  (partial u/clip 0 100))
+
+(def rgb-clip
+  (partial u/clip 0 255))
+
 (defn as-hex
   "Convert a color to a hexadecimal string."
   [x]
@@ -246,9 +252,6 @@
   ^{:doc "Multiply the RGB components of two or more colors."
     :arglists '([a] [a b] [a b & more])}
   color-div /)
-
-(def ^:private percent-clip
-  (partial u/clip 0 100))
 
 (defn- update-color [color field f v]
   (let [v (or (:magnitude v) v)]
