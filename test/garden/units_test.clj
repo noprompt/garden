@@ -65,7 +65,7 @@
     (is (= (em 1) (read-unit "1em")))
     (is (= (ex 1) (read-unit "1ex")))
     (is (= (ch 1) (read-unit "1ch")))
-    (is (= (CSSUnit. 1 :rem) (read-unit "1rem")))
+    (is (= (CSSUnit. :rem 1) (read-unit "1rem")))
     (is (= (vw 1) (read-unit "1vw")))
     (is (= (vh 1) (read-unit "1vh")))
     (is (= (vmin 1) (read-unit "1vmin")))
