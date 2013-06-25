@@ -228,19 +228,23 @@
   `(def ~name (make-color-operation ~operator)))
 
 (defcolor-operation
-  ^{:doc "Add the RGB components of two or more colors."}
+  ^{:doc "Add the RGB components of two or more colors."
+    :arglists '([a] [a b] [a b & more])}
   color+ +)
 
 (defcolor-operation
-  ^{:doc "Subtract the RGB components of two or more colors."}
+  ^{:doc "Subtract the RGB components of two or more colors."
+    :arglists '([a] [a b] [a b & more])}
   color- -)
 
 (defcolor-operation
-  ^{:doc "Multiply the RGB components of two or more colors."}
+  ^{:doc "Multiply the RGB components of two or more colors."
+    :arglists '([a] [a b] [a b & more])}
   color* *)
 
 (defcolor-operation
-  ^{:doc "Multiply the RGB components of two or more colors."}
+  ^{:doc "Multiply the RGB components of two or more colors."
+    :arglists '([a] [a b] [a b & more])}
   color-div /)
 
 (def ^:private percent-clip
