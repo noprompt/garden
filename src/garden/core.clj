@@ -1,4 +1,4 @@
-(ns ^{:doc "Library for rendering Clojure data structures as CSS."
+(ns ^{:doc "Library for converting Clojure data structures to CSS."
       :author "Joel Holdbrooks"}
   garden.core
   (:require [garden.util :refer [with-output-style]]
