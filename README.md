@@ -310,7 +310,7 @@ We've defined `red` in terms of the HSL value for pure red with the
 of `red` at the REPL we notice it is displayed in the familiar
 hexadecimal format.
 
-Let's apply some color functions to our color. By the way, if you're
+Let's apply some color functions to it. By the way, if you're
 using Emacs, try turning on `rainbow-mode` to see the colors
 highlighted.
 
@@ -333,7 +333,7 @@ user> (c/mix red orange)
 #ff4000
 ;; Make a green color...
 user> (def green (c/hsl 120 100 50))
-;; ...and add it to red to get yello.
+;; ...and add it to red to get yellow.
 user> (c/color+ red green)
 #ffff00
 ;; Get a set of analogous colors.
