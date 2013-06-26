@@ -314,7 +314,7 @@
    degrees clockwise from it. If a second falsy argument is passed the
    returned values will be in a counter-clockwise direction."
   ([color]
-     (analogous true))
+     (analogous color true))
   ([color clockwise?]
      (let [sign (if clockwise? + -)]
        (hue-rotations color 0 (sign 30) (sign 60)))))
