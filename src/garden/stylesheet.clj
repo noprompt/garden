@@ -1,10 +1,9 @@
 (ns garden.stylesheet
   "Utility functions for CSS properties, directives and functions."
-  (:require [garden.util :as util]
-            [garden.units :as unit]
-            [garden.compiler :refer [make-media-expression]]
-            [garden.color :as color])
-  (:refer-clojure :exclude [empty]))
+  (:require [garden.util :as u]
+            [garden.units :as un]
+            [garden.color :as c]
+            [garden.compiler :refer [make-media-expression]]))
 
 ;;;; Properties
 
@@ -12,10 +11,11 @@
   "Return a font-family declaration for at least one font. Strings
    containing whitespace are automatically escaped."
   [font & fonts]
-  (let [f (fn [x] (if (and (string? x)
-                          (re-find #" " x))
-                   (util/wrap-quotes x)
-                   x))
+  (let [f (fn [x]
+            (if (and (string? x)
+                     (re-find #" " x))
+              (u/wrap-quotes x)
+              x))
         fonts (flatten (cons font fonts))]
     {:font-family [(map f fonts)]}))
 
@@ -31,17 +31,17 @@
   ([uri]
      (format "@import %s;" (if (:function uri)
                              uri
-                             (util/wrap-quotes uri))))
+                             (u/wrap-quotes uri))))
   ([uri & media-exprs]
      (let [exprs (for [expr media-exprs]
                    (if (map? expr)
                      (make-media-expression expr)
-                     (util/to-str expr)))]
+                     (u/to-str expr)))]
        (format "@import %s %s;"
                (if (:function uri)
                  uri
-                 (util/wrap-quotes uri))
-               (util/comma-join exprs)))))
+                 (u/wrap-quotes uri))
+               (u/comma-join exprs)))))
 
 (defn at-media
   "Wraps the given rules with meta given by `expr`."
@@ -55,9 +55,9 @@
 (defn rgb
   "Create a color from RGB values."
   [r g b]
-  (color/rgb [r g b]))
+  (c/rgb [r g b]))
 
 (defn hsl
   "Create a color from HSL values."
   [h s l]
-  (color/hsl [h s l]))
+  (c/hsl [h s l]))
