@@ -12,6 +12,8 @@ rules and maps to represent declarations.
     * [Parent selector references](#parent-selector-references)
   * [Declarations](#declarations)
   * [Units](#units)
+  * [Colors](#colors)
+  * [Arithemetic](#arithemetic)
   * [Media queries](#media-queries)
 * [TODO](#todo)
 * [Thanks](#thanks)
@@ -21,7 +23,7 @@ rules and maps to represent declarations.
 Add the following dependency to your `project.clj` file:
 
 ```clojure
-[garden "0.1.0-beta4"]
+[garden "0.1.0-beta5"]
 ```
 
 ## Syntax
@@ -207,7 +209,7 @@ units. This includes creation, conversion, and arithmetic. To start using units
 use/require the `garden.units` namespace.
 
 ```clojure
-user=> (require '[garden.units :refer [px pt]])
+user=> (require '[garden.units :as u :refer [px pt]])
 nil
 ```
 
@@ -273,6 +275,100 @@ groups. This means you cannot, for example, convert `px` to `rad` or `Hz` to
 
 In the future, some exceptions to this rule might apply for working with `em`s
 since it's technically possible to compute their contextual value.
+
+### Color
+
+What would a stylesheet be like with out color? No fun. That's what it
+would be like. And the person who's interested in writing a stylesheet
+in Clojure probably wants tools for working with color. Who wants to
+write a stylesheet where colors are strings that look like `"#A55"`?
+No one. That's who.
+
+Since `0.1.0-beta5` Garden comes with a (mostly) complete set of
+functions for dealing with colors. If you've worked with Sass you'll
+be pleased to know many of the same color functions are available in
+Garden.
+
+Garden's color functions are available in the `garden.color`
+namespace.
+
+```clojure
+user=> (require '[garden.color :as c])
+```
+
+Let's create a color to work with.
+
+```clojure
+user> (def red (c/hsl 0 100 50))
+#'user/red
+user> red
+#ff0000
+```
+
+We've defined `red` in terms of the HSL value for pure red with the
+`hsl` function (`rgb` is also available). When we evaluate the value
+of `red` at the REPL we notice it is displayed in the familiar
+hexadecimal format.
+
+Let's apply some color functions to our color. By the way, if you're
+using Emacs, try turning on `rainbow-mode` to see the colors
+highlighted.
+
+```clojure
+;; Make dark red.
+user> (c/darken red 25)
+#800000
+;; Make light red.
+user> (c/lighten red 25)
+#ff8080
+```
+
+But, wait! There's more!
+
+```clojure
+;; Make an orange color...
+user> (def orange (c/hsl 30 100 50))
+;; ...and mix it with red.
+user> (c/mix red orange)
+#ff4000
+;; Make a green color...
+user> (def green (c/hsl 120 100 50))
+;; ...and add it to red to get yello.
+user> (c/color+ red green)
+#ffff00
+;; Get a set of analogous colors.
+user> (c/analogous red)
+(#ff0000 #ff8000 #ffff00)
+```
+
+As with units, colors can be added, subtracted, divided and
+multiplied with `color+`, `color-`, `color*`, and `color-div`
+respectively. There are several other nice functions available for
+finding color complements, triads, tetrads, and more.
+
+### Arithemetic
+
+Now that we have a solid understanding of how units and colors
+operate, we can talk about Garden's generic arithemetic operators.
+While working with functions like `px+`, `color+`, etc. have their
+advantages, sometimes they can get in the way. To get around this
+you can use the operators in the `garden.arithemetic` namespace.
+
+```clojure
+(ns user
+  ;; Unless you want to see a bunch of warnings add this line.
+  (:refer-clojure :exclude '[+ - * /])
+  (:require '[garden.arithemetic :refer [+ - * /]]))
+```
+
+This will allow you to perform operations like this:
+
+```clojure
+user> (+ 20 (c/hsl 0 0 0) 1 (c/rgb 255 0 0))
+#ff1515
+user> (- 20 (u/px 1) 5 (u/in 5))
+-466px
+```
 
 ### Media queries
 
