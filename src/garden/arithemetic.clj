@@ -12,7 +12,7 @@
 ;; nice to have functions which could transparently perform unit and
 ;; color math without the verbosity.
 
-;; Here such functions are provided.
+;; Here, such functions are provided.
 
 ;; All operations favor `CSSUnit` and `CSSColor` types and fall back to
 ;; the standard `clojure.core` arithemetic functions. The preference for
@@ -29,10 +29,9 @@
      (cond
       (unit? x) ((u/make-unit-adder (:unit x)) x y)
       (color? x) (c/color+ x y)
-      (number? x) (if (or (unit? y) (color? y))
-                    (+ y x)
-                    (clojure.core/+ x y))
-      :else (clojure.core/+ x y)))
+      :else (if (or (unit? y) (color? y))
+              (+ y x)
+              (clojure.core/+ x y))))
   ([x y & more]
      (reduce + (+ x y) more)))
 
@@ -49,11 +48,45 @@
      (cond
       (unit? x) ((u/make-unit-subtractor (:unit x)) x y)
       (color? x) (c/color- x y)
-      (number? x) (cond 
-                   (unit? y) (let [{m :magnitude} y]
-                               (assoc y :magnitude (clojure.core/- x m)))
-                   (color? y) (c/color- x y)
-                   :else (clojure.core/- x y))
-      :else (clojure.core/- x y)))
+      :else (cond 
+             (unit? y) (let [{m :magnitude} y]
+                         (assoc y :magnitude (clojure.core/- x m)))
+             (color? y) (c/color- x y)
+             :else (clojure.core/- x y))))
   ([x y & more]
      (reduce - (- x y) more))) 
+
+(defn *
+  "Generic multiplication operation. Transparently computes the product
+   between `CSSUnit`s, `CSSColor`s, and numbers."
+  ([] 1)
+  ([x] x)
+  ([x y]
+     (cond
+      (unit? x) ((u/make-unit-multiplier (:unit x)) x y)
+      (color? x) (c/color* x y)
+      :else (if (or (unit? y) (color? y))
+              (* y x)
+              (clojure.core/* x y))))
+  ([x y & more]
+     (reduce * (* x y) more)))
+
+(defn /
+  "Generic division operation. Transparently computes the quotient
+   between `CSSUnit`s, `CSSColor`s, and numbers."
+  ([x]
+     (cond
+      (unit? x) (update-in x [:magnitude] clojure.core//)
+      (color? x) (c/color-div x)
+      :else (clojure.core// x)))
+  ([x y]
+     (cond
+      (unit? x) ((u/make-unit-divider (:unit x)) x y)
+      (color? x) (c/color-div x y)
+      :else (cond
+             (unit? y) (let [{m :magnitude} y]
+                         (assoc y :magnitude (clojure.core// x m)))
+             (color? y) (c/color-div x y)
+             :else (clojure.core// x y))))
+  ([x y & more]
+     (reduce / (/ x y) more)))
