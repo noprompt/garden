@@ -344,7 +344,7 @@
   ([color angle]
      (let [a (u/clip 1 90 (Math/abs (:magnitude angle angle)))
            color-2 (rotate-hue color a)]
-       [color (complement color) color-2 (complement color-2)])))
+       [(rotate-hue color 0) (complement color) color-2 (complement color-2)])))
 
 (defn shades
   "Given a color return a list of shades from lightest to darkest by
