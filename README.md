@@ -12,7 +12,7 @@ rules and maps to represent declarations.
     * [Parent selector references](#parent-selector-references)
   * [Declarations](#declarations)
   * [Units](#units)
-  * [Colors](#colors)
+  * [Color](#color)
   * [Arithemetic](#arithemetic)
   * [Media queries](#media-queries)
 * [TODO](#todo)
