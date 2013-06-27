@@ -132,11 +132,17 @@
          (add-media-query-rules! media-query (u/without-meta rule) context)
          nil)
        (let [[selector declarations subrules :as rule] (divide-rule rule)
+       (let [[selector declarations subrules] (divide-rule rule)
              new-context (expand-selector selector context)
              rendered-selector (u/comma-join new-context)
              rendered-rule (when (seq declarations)
                              (make-rule `[~rendered-selector ~@declarations]))]
          
+             rendered-rule (when (every? seq [selector declarations])
+                             (-> (u/comma-join new-context)
+                                 (cons declarations)
+                                 (vec)
+                                 (make-rule)))]
          (if (seq subrules)
            (->> (map #(render-rule %1 new-context) subrules)
                 (cons rendered-rule)
