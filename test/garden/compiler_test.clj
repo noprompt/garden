@@ -28,7 +28,12 @@
     (is (= (compile-css [:h1 {:a "b"} ^:screen [:&:hover {:c "d"}]])
            "h1{a:b}@media screen{h1:hover{c:d}}"))
     (is (= (compile-css ^:toast [:h1 {:a "b"}])
-           "h1{a:b}")))
+           "@media toast{h1{a:b}}"))
+    (is (= (compile-css ^{:screen :only} [:h1 {:a "b"}])
+           "@media only screen{h1{a:b}}"))
+    (is (= (compile-css ^{:-webkit-min-device-pixel-ratio "2"}
+                        [:h1 {:a "b"}])
+           "@media (-webkit-min-device-pixel-ratio:2){h1{a:b}}")))
 
   (testing "parent selector references"
     (is (= (compile-css [:a [:&:hover {:font-weight "bold"}]])

@@ -2,7 +2,6 @@
   (:require [clojure.string :as s]
             [clojure.math.combinatorics :refer [cartesian-product]]
             [garden.util :as u]
-            [garden.media :as m]
             garden.units
             garden.types)
   (:import garden.types.CSSFunction
@@ -129,8 +128,9 @@
 (defn- extract-media-query
   "Extracts media query information from rule meta data."
   [rule]
-  (let [mq (select-keys (meta rule) m/media-features)]
-    (when (seq mq) mq)))
+  (when-let [m (meta rule)]
+    ;; The `:doc` key is reserved for CSS comments.
+    (dissoc m :doc)))
 
 (defn- ^String render-rule
   "Render a rule vector as a CSS rule."
@@ -158,15 +158,22 @@
 ;;;; Media query generation.
 
 (defn ^String make-media-expression
-  "Make a media query expession from one or more maps."
+  "Make a media query expession from one or more maps. Keys are not
+   validated but values have the following semantics:
+
+   `true` as in `{:screen true}` means \"screen\"
+   `false` as in `{:screen false}` means \"not screen\"
+   \"only\" as in `{:screen \"only\"} means \"only screen\""
   ([expr]
    (let [query (for [[k v] expr]
-                 (cond
-                   (true? v) (u/to-str k)
-                   (false? v) (str "not " (u/to-str k))
-                   :else (if (and v (seq (u/to-str v)))
-                           (str "(" (u/to-str k) (u/colon) (u/to-str v) ")")
-                           (str "(" (u/to-str k) ")"))))]
+                 (let [[sk sv] (map u/to-str [k v])]
+                   (cond
+                    (true? v) sk 
+                    (false? v) (str "not " sk)
+                    (= "only" sv) (str "only " sk)
+                    :else (if (and v (seq sv))
+                            (str "(" sk (u/colon) sv ")")
+                            (str "(" sk ")")))))]
      (s/join " and " query)))
   ([expr & more]
    (u/comma-join (map make-media-expression (cons expr more)))))
