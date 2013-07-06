@@ -23,7 +23,7 @@ rules and maps to represent declarations.
 Add the following dependency to your `project.clj` file:
 
 ```clojure
-[garden "0.1.0-beta5"]
+[garden "0.1.0-beta6"]
 ```
 
 ## Syntax
@@ -451,6 +451,7 @@ To understand how media expressions are interpreted refer to this table:
  `{:screen true}` | `screen`
  `{:screen false}` | `not screen`
  `{:screen true :braille false}` | `screen and not braille`
+ `{:screen :only}` | `only screen`
 `{:min-width (px 768) :max-width (px 959)}` | `(min-width: 768px) and (max-width: 959)`
 
 At this time specifying multiple queries is not supported.
