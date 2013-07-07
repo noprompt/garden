@@ -22,5 +22,6 @@
   [name & selectors]
   (let [r (if (seq selectors)
             (apply rule selectors)
-            (rule (keyword name)))]
-    `(def ~name (partial ~r))))
+            (rule (keyword name)))
+        name (vary-meta name assoc :arglists '(list '[& children]))]
+    `(def ~name ~r)))
