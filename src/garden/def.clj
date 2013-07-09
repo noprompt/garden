@@ -1,16 +1,26 @@
 (ns garden.def)
 
 (defn rule
-  "Create a rule function for the given selector. The returned
-   function accepts any number of arguments which represent the
-   selector's children.
+  "Create a rule function for the given selector. The `selector`
+   argument must be valid selector (ie. a keyword, string, or symbol).
+   Additional arguments may consist of extra selectors or
+   declarations.
 
-   ex. (let [text-field (rule \"[type=\"text\"])]
-         (text-field {:border [\"1px\" :solid \"black\"]}))
+   The returned function accepts any number of arguments which represent
+   the rule's children.
+
+   Ex.
+       (let [text-field (rule \"[type=\"text\"])]
+        (text-field {:border [\"1px\" :solid \"black\"]}))
        => [\"[type=\"text\"] {:boder [\"1px\" :solid \"black\"]}]"
   [selector & more]
-  (fn [& children]
-    (into (vec (cons selector more)) children)))
+  (if-not (or (keyword? selector)
+              (string? selector)
+              (symbol? selector))
+    (throw (IllegalArgumentException.
+            "Selector must be either a keyword, string, or symbol."))
+    (fn [& children]
+      (into (apply vector selector more) children))))
 
 (defmacro defrule
   "Define a function for creating rules.
