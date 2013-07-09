@@ -23,15 +23,24 @@
       (into (apply vector selector more) children))))
 
 (defmacro defrule
-  "Define a function for creating rules.
+  "Define a function for creating rules. If only the `name` argument is
+   provided the rule generating function will default to using it as the
+   primary selector.
 
-   ex. (defrule sub-headings :h4 :h5 :h6)
+   Ex.
+       (defrule a)
+       => #'user/a
+       (a {:text-decoration \"none\"})
+       => [:a {:text-decoration \"none\"}]
+
+   Ex.
+       (defrule sub-headings :h4 :h5 :h6)
        => #'user/sub-headings
        (sub-headings {:font-weight \"normal\"})
        => [:h4 :h5 :h6 {:font-weight \"normal\"}]"
   [name & selectors]
-  (let [r (if (seq selectors)
-            (apply rule selectors)
-            (rule (keyword name)))
+  (let [rfn (if (seq selectors)
+              (apply rule selectors)
+              (rule (keyword name)))
         name (vary-meta name assoc :arglists '(list '[& children]))]
-    `(def ~name ~r)))
+    `(def ~name ~rfn)))

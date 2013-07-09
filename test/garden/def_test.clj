@@ -5,7 +5,6 @@
 (defrule a)
 (defrule sub-headings :h4 :h5 :h6)
 
-(deftest defs
 (deftest rule-test
   (testing "rule"
     (is (= ((rule "a") {:text-decoration "none"})
@@ -14,6 +13,7 @@
            [:a {:text-decoration "none"}]))
     (is (thrown? IllegalArgumentException (rule 1)))))
 
+(deftest defrule-test
   (testing "defrule"
     (is (= (a {:font-weight "bold"})
            [:a {:font-weight "bold"}]))
