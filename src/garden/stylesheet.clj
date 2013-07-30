@@ -3,7 +3,7 @@
   (:require [garden.util :as u]
             [garden.units :as un]
             [garden.color :as c]
-            [garden.compiler :refer [make-media-expression]]))
+            [garden.compiler :refer [compile-css make-media-expression]]))
 
 ;;;; Properties
 
@@ -48,7 +48,13 @@
   [expr rule & rules]
   (with-meta (cons rule rules) expr))
 
-(declare at-keyframes)
+(defn at-keyframes
+  "Create CSS at-rule(s) for `anim-name`."
+  ([at-names anim-name rules]
+    (let [render #(str "@" (u/to-str %) " " (u/to-str anim-name) " "
+                       (u/left-brace) (compile-css rules) (u/right-brace))]
+    (reduce str (map render at-names))))
+  ([anim-name rules] (at-keyframes ["keyframes"] anim-name rules)))
 
 ;;;; Functions
 
