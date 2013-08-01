@@ -10,6 +10,8 @@
                  (to-str args))]
       (format "%s(%s)" (to-str function) args))))
 
+(defrecord CSSImport [url media-expr])
+
 (defrecord CSSKeyframes [identifier frames])
 
 (defmethod print-method CSSFunction [function writer]

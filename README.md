@@ -2,7 +2,8 @@
 
 Garden is a library for rendering CSS in Clojure. Conceptually similar to
 [Hiccup](https://github.com/weavejester/hiccup), it uses vectors to represent
-rules and maps to represent declarations.
+rules and maps to represent declarations. Garden provides tools and
+utilities for working with CSS units, media queries, and more.
 
 ## Table of contents
 
@@ -16,7 +17,6 @@ rules and maps to represent declarations.
   * [Arithemetic](#arithemetic)
   * [Media queries](#media-queries)
 * [TODO](#todo)
-* [Thanks](#thanks)
 
 ## Installation
 
@@ -375,39 +375,34 @@ user> (- 20 (u/px 1) 5 (u/in 5))
 Authoring stylesheets these days without media queries is somewhat
 like having prime rib without horseradish. Garden leverages Clojure's
 meta data to provide a convenient notation for specifying a media
-query. At compile time media queries will appear at the bottom of your
+query. Compiled media queries will appear at the bottom of your
 stylesheet grouped in the order they appear in.
 
-You may use the short-hand meta form:
-
 ```clojure
-user=> (css ^:screen [:h1 {:font-weight "bold"}])
+user=> (css ^:media ^:screen [:h1 {:font-weight "bold"}])
 "@media screen{h1{font-weight:bold}}"
-```
-
-or the long-hand form to build more complex media expressions:
-
-```clojure
-user=> (css ^{:min-width (px 768) :max-width (px 979)}
+user=> (css ^:media ^{:min-width (px 768) :max-width (px 979)}
             [:container {:width (px 960)}])
 "@media (max-width:979px) and (min-width:768px){container{width:960px}}"
 ```
 
-Media queries may also be nested and will be properly output at
-compile time.
+Media queries may also be nested:
 
 ```clojure
 user=> (css [:a {:font-weight "normal"}
              [:&:hover {:color "red"}]
-             ^:screen
+             ^:media ^:screen
              [:&:hover {:color "pink"}]])
 "a{font-weight:normal}a:hover{color:red}@media screen{a:hover{color:pink}}"
 ```
 
-To target a group of rules we can use the `at-media` function from the
-`garden.stylesheet` namespace. This function takes a map of
-representing a media query and adds it as meta to the subsequent
-rules.
+Though using meta data directly can be nice for quick hacking it's
+much better to use Garden's `at-media` function from the
+`garden.stylesheet` namespace. Using `at-media` gives you two
+advantages over direct meta data manipulation. First, it allows you to
+target any number of rules. Second, it will always be compatible in
+the face of notation changes. It is *strongly* recommended you use this
+function.
 
 ```clojure
 user=> (require '[garden.stylesheet :refer [at-media]])
@@ -446,13 +441,13 @@ Will out put the equivalent CSS:
 
 To understand how media expressions are interpreted refer to this table:
 
- Map | Interpretation
- --- | ---
- `{:screen true}` | `screen`
- `{:screen false}` | `not screen`
- `{:screen true :braille false}` | `screen and not braille`
- `{:screen :only}` | `only screen`
-`{:min-width (px 768) :max-width (px 959)}` | `(min-width: 768px) and (max-width: 959)`
+ Map                                         | Interpretation                            
+---------------------------------------------|-------------------------------------------
+ `{:screen true}`                            | `screen`                                  
+ `{:screen false}`                           | `not screen`                              
+ `{:screen true :braille false}`             | `screen and not braille`                  
+ `{:screen :only}`                           | `only screen`                             
+ `{:min-width (px 768) :max-width (px 959)}` | `(min-width: 768px) and (max-width: 959)` 
 
 At this time specifying multiple queries is not supported.
 
@@ -500,12 +495,6 @@ h1 a { text-decoration: none; }
 3. CSS2/CSS3 selectors (In Progress)
 4. CSS3 properties
 5. CSS3 functions (In Progress)
-
-## Contributing
-
-For the love of all that's holy, if you find anything wrong with this library
-or see an opportunity to improve it, don't stop yourself from opening an issue
-or submitting a pull request!
 
 ## Contributors
 

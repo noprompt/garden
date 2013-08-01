@@ -1,8 +1,7 @@
 (ns ^{:doc "Library for converting Clojure data structures to CSS."
       :author "Joel Holdbrooks"}
   garden.core
-  (:require [garden.util :refer [with-output-style]]
-            [garden.compiler :refer [compile-css]]))
+  (:require [garden.compiler :refer [with-output-style compile-css]]))
 
 (defmacro css
   "Convert a Clojure data structure to a string of CSS."

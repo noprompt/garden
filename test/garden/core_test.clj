@@ -1,7 +1,7 @@
 (ns garden.core-test
   (:use clojure.test
         garden.core)
-  (:require [garden.util :refer [with-output-style]]))
+  (:require [garden.compiler :refer [with-output-style]]))
 
 (defn output [f]
   (slurp (format "test/garden/output/%s.css" f)))

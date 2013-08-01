@@ -11,3 +11,7 @@
             [clojure.string :as s]
             [clojure.pprint :refer [pprint pp]]
             [clojure.repl :refer [source doc]]))
+
+(defn debug [x]
+  (clojure.pprint/pprint x)
+  x)

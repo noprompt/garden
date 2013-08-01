@@ -1,47 +1,138 @@
 (ns garden.compiler
   (:require [clojure.string :as s]
-            [clojure.math.combinatorics :refer [cartesian-product]]
-            [garden.util :as u]
+            [clojure.math.combinatorics :refer (cartesian-product)]
+            [garden.util :as u :refer (to-str as-str)]
             garden.units
             garden.types)
   (:import garden.types.CSSFunction
+           garden.types.CSSImport
            garden.units.CSSUnit))
 
-(defprotocol CSSRenderer
-  (render-css [this]
-    "Convert a Clojure data type in to a string of CSS."))
-
-;; Meta is allowed to be used as notation for a media query, because
-;; of this the compilation process is divided in to two steps: compiling
-;; rules that do not belong to a media query, and compiling rules that
-;; do.
-
-;; As the stylesheet is compiled, rules tagged with meta, containing
-;; keys which are valid to use in a media expression, are stored in the
-;; `media-query-rules` vector. The rule is stored as a triple of the
-;; media query expression (a map), rules (a vector), and the context
-;; for which the rules belong (either nil or list). 
+(def ^:private punctuation
+  {:expanded
+   {:comma ", "
+    :colon ": "
+    :semicolon ";\n"
+    :l-brace " {\n"
+    :r-brace "}"
+    :l-brace-1 " {\n\n"
+    :r-brace-1 "\n\n}"
+    :rule-sep "\n\n"
+    :indent "  "}
+   :compact
+   {:comma ", "
+    :colon ": "
+    :semicolon "; "
+    :l-brace " { "
+    :r-brace "; }"
+    :l-brace-1 " {\n"
+    :r-brace-1 "\n}"
+    :rule-sep "\n"
+    :indent ""}
+   :compressed
+   {:comma ","
+    :colon ":"
+    :semicolon ";"
+    :l-brace "{"
+    :r-brace "}"
+    :l-brace-1 "{"
+    :r-brace-1 "}"
+    :rule-sep ""
+    :indent ""}})
 
 (def ^{:private true
-       :doc "A vector containing triples of media-query, rules, and context"}
-  media-query-rules (atom []))
+       :doc "Retun a function to call when rendering a media expression.
+             The returned function accepts two arguments: the media
+             expression being evaluated and the current media expression
+             context. Both arguments are maps. This is used to provide
+             semantics for nested media queries."}
+  media-expression-behavior
+  {:merge (fn [expr context] (merge context expr))
+   :default (fn [expr _] expr)})
 
-(defn- add-media-query-rules!
-  [query rules context]
-  (let [rules (if (seq? rules) (vec rules) (vector rules))]
-    (swap! media-query-rules conj [query rules context])))
+(def ^:dynamic ^:private *output-style* :compressed)
 
-(defn- ^String indent
-  "Return an indented string.
+(def ^{:dynamic true
+       :private true
+       :doc "The current compiler flags."}
+  *flags*
+  {:output-style :expanded
+   :media-expressions {:nesting-behavior :default}})
 
-   Ex. (indent 4)
-   => \"    \""
-  ([]
-   (indent (u/indent-level)))
-  ([n]
-   (reduce str (take n (repeat " ")))))
+(def ^{:dynamic true
+       :private true
+       :doc "The current parent selector context."}
+  *selector-context* nil)
 
-;;;; Declaration, rule, and stylesheet generation.
+(def ^{:dynamic true
+       :private true
+       :doc "The current media query context."}
+  *media-context* nil)
+
+(defmacro with-output-style [style & body]
+  (let [style (if (punctuation style) style :compressed)]
+    `(binding [*output-style* ~style] ~@body)))
+
+(defmacro ^:private defpunctuation [name]
+  (let [k (keyword name)]
+    `(defn- ~name []
+       (get-in punctuation [*output-style* ~k]))))
+
+(defpunctuation comma)
+(defpunctuation colon)
+(defpunctuation semicolon)
+(defpunctuation l-brace)
+(defpunctuation r-brace)
+(defpunctuation l-brace)
+(defpunctuation r-brace-1)
+(defpunctuation l-brace-1)
+(defpunctuation rule-sep)
+(defpunctuation new-line)
+(defpunctuation indent)
+
+;; Utilities
+
+(defn- space-join
+  "Return a space separated list of values."
+  [xs]
+  (s/join \space (map to-str xs)))
+
+(defn- comma-join
+  "Return a comma separated list of values. Subsequences are joined with
+   spaces."
+  [xs]
+  (let [ys (for [x xs] (if (sequential? x) (space-join x) (to-str x)))]
+    (s/join (comma) ys)))
+
+(defn- rule-join [xs]
+  (s/join (rule-sep) xs))
+
+(defn- extract-media-query
+  "Extract media query information from obj."
+  [obj]
+  (let [m (meta obj)]
+    (when-let [q (and (:media m) (dissoc m :media))]
+      (when (seq q) q))))
+
+(defn- media-query? [x]
+  (let [m (meta x)]
+    (boolean (and (:media m) (seq (dissoc m :media))))))
+
+;; Match the start of a line if the characters immediately after it
+;; are spaces or used in a CSS id (#), class (.), or tag name.
+(def ^:private indent-location #"(?m)(?=[ A-Za-z#.}-]+)^")
+
+(defn- ^String indent-str [s]
+  (if-not (= :compressed *output-style*)
+    (s/replace s indent-location (indent))
+    s))
+
+;; Expansion
+
+(defprotocol Expandable
+  (expand [this]))
+
+;; Declaration expansion
 
 (defn- expand-declaration
   "Expands nested properties in declarations.
@@ -50,200 +141,239 @@
    => {\"foo-bar\" \"baz\"}"
   [declaration]
   (reduce
-    (fn [m [prop value]]
-      (let [prop (u/to-str prop)
-            prefix (fn [[k v]]
-                     {(str prop "-" (u/to-str k)) v})]
-        (if (and (map? value)
-                 (not (u/record? value)))
-          (expand-declaration (into m (map prefix value)))
-          (assoc m prop value))))
+    (fn [m [prop val]]
+      (let [prefix (fn [[k v]] {(as-str prop "-" k) v})]
+        (if (u/hash-map? val)
+         (->> (map prefix val) (into m) expand-declaration)
+         (assoc m (to-str prop) val))))
     {}
-    declaration)) 
+    declaration))
 
-(defn- ^String make-declaration
-  "Make a CSS declaration from a double of property and value.
+;; Rule expansion
 
-   Ex. (make-declaration [:foo 5])
-   => \"foo:5\"
-   Ex. (make-declaration [:foo [:bar :baz]])
-   => \"foo:bar baz\"
-   Ex. (make-declaration [:foo [[:bar :baz]]])
-   => \"foo:bar,baz\""
-  [[prop v]]
-  (let [v (if (sequential? v) (u/space-join v) (u/to-str v))]
-    (str (indent) (u/to-str prop) (u/colon) v)))
-
-(defn- ^String make-rule
-  "Make a CSS rule from a vector."
-  [[selector & declarations]]
-  (str (u/to-str selector) (u/left-brace)
-       (s/join (u/semicolon) (map render-css declarations))
-       (u/right-brace)))
-
-(defn- ^String render-declaration
-  "Render a declaration map as a CSS declaration."
-  [declaration]
-  (->> (expand-declaration declaration)
-       (map make-declaration)
-       (s/join (u/semicolon))))
+(def ^:private parent-selector-re #"^&.+|^&$")
 
 (defn ^String extract-reference
-  "Extracts the selector portion of a parent selector reference."
+  ;; Extract the selector portion of a parent selector reference.
   [selector]
-  (when-let [reference (re-find #"^&.+|^&$" (u/to-str (last selector)))]
+  (when-let [reference (->> (last selector)
+                            to-str
+                            (re-find parent-selector-re))]
     (apply str (rest reference))))
 
+(defn- expand-selector-reference [selector]
+  (if-let [reference (extract-reference selector)]
+    (let [parent (butlast selector)]
+      (-> (last parent)
+          (as-str reference)
+          (cons (butlast parent))))
+    selector))
+
 (defn- expand-selector
-  "Expands a selector within the context and returns a new selector."
-  [selector context]
-  (let [new-context (if (seq context)
-                      (map flatten (cartesian-product context selector))
-                      (map vector selector))]
-    (for [sel new-context]
-      (if-let [reference (extract-reference sel)]
-        (let [parent (butlast sel)]
-          (concat (butlast parent)
-                  (list (u/as-str (last parent) reference))))
-        sel))))
+  ;; Expand a selector within the context of parent selector and
+  ;; return a new selector.
+  [selector parent]
+  (let [new-selector
+        (if (seq parent)
+          (map flatten (cartesian-product parent selector))
+          (map vector selector))]
+    (map expand-selector-reference new-selector)))
 
-(defn- divide-rule
-  "Divide a rule in to triple of selector, declarations, and subrules."
+(defn- expand-rule
   [rule]
-  (let [[selector children] (split-with (complement coll?) rule)]
-    (loop [children children
-           new-rule [selector [] []]]
-      (if-let [child (first children)]
+  (let [[sel xs] (split-with (complement coll?) rule)
+        sel (expand-selector sel *selector-context*)]
+    (loop [xs xs, ds (transient []), children (transient [])]
+      (if-let [x (first xs)]
         (cond
-         (map? child)
-         (recur (next children) (update-in new-rule [1] conj child))
-         (vector? child)
-         (recur (next children) (update-in new-rule [2] conj child))
-         (seq? child)
-         (recur (apply concat child (rest children)) new-rule)
+         (map? x)
+         (recur (next xs) (conj! ds (expand x)) children)
+         (or (vector? x) (media-query? x))
+         (recur (next xs) ds (conj! children x))
+         (sequential? x)
+         (recur (concat x (next xs)) ds children)
          :else
-         (recur (next children) new-rule))
-        new-rule))))
+         (recur (next xs) ds children))
+        [[sel (persistent! ds)] (persistent! children)]))))
 
-(defn- extract-media-query
-  "Extracts media query information from rule meta data."
-  [rule]
-  (when-let [m (meta rule)]
-    ;; The `:doc` key is reserved for CSS comments.
-    (dissoc m :doc)))
+;; Stylesheet expansion
+
+;; Convert a Garden stylesheet into a level vector of rules and media
+;; queries. Doing this makes compiling the stylesheet significantly
+;; easier since this process is divided into two steps: expansion and
+;; compilation. Also, there is the added benefit of maintaining
+;; stylesheet order. That is, the stylesheet elements will be compiled
+;; in roughly the same order they appear in.
+(defn- expand-stylesheet-1
+  [xs state]
+  (loop [xs xs state state]
+    (if-let [x (first xs)]
+      (cond
+       (media-query? x)
+       (let [q (extract-media-query x)
+             ys (expand (list (u/without-meta x)))
+             {rs false ms true} (group-by (comp map? first) ys)
+             state (conj! state [q rs])
+             state (u/into! state ms)]
+         (recur (next xs) state))
+       (vector? x)
+       (let [[rule children] (expand x)
+             state (conj! state rule)
+             state (binding [*selector-context* (first rule)]
+                     (expand-stylesheet-1 children state))]
+         (recur (next xs) state))
+       (sequential? x)
+       (recur (concat x (next xs)) state)
+       :else
+       (recur (next xs) state))
+      state)))
+
+(defn- expand-stylesheet [xs]
+  (persistent! (expand-stylesheet-1 xs (transient []))))
+
+;; Expandable implementation
+
+(extend-protocol Expandable
+  clojure.lang.IPersistentVector
+  (expand [this] (expand-rule this))
+
+  clojure.lang.IPersistentMap
+  (expand [this] (expand-declaration this))
+
+  clojure.lang.ISeq
+  (expand [this] (expand-stylesheet this)))
+
+;;;; Rendering
+
+;; Declaration rendering
+
+(defprotocol CSSRenderer
+  (render-css [this]
+    "Convert a Clojure data type in to a string of CSS."))
+
+(defn- render-property-and-value
+  [[prop val]]
+  (if (set? val)
+    (->> (interleave (repeat prop) val)
+         (partition 2)
+         (map render-property-and-value)
+         s/join)
+    (let [val (if (sequential? val) (comma-join val) val)]
+      (as-str prop (colon) val (semicolon)))))
+
+(defn- ^String render-declaration
+  [declaration]
+  (s/join (map render-property-and-value declaration)))
+
+;; Rule rendering
+
+(defn- render-selector [selector]
+  (comma-join selector))
 
 (defn- ^String render-rule
-  "Render a rule vector as a CSS rule."
-  ([rule]
-     (render-rule rule []))
-  ([rule context]
-     (if-let [mq (extract-media-query rule)]
-       (do
-         (add-media-query-rules! mq (u/without-meta rule) context)
-         nil)
-       (let [[selector declarations subrules] (divide-rule rule)
-             new-context (expand-selector selector context)
-             rendered-rule (when (every? seq [selector declarations])
-                             (-> (u/comma-join new-context)
-                                 (cons declarations)
-                                 (vec)
-                                 (make-rule)))]
-         (if (seq subrules)
-           (->> (map #(render-rule %1 new-context) subrules)
-                (cons rendered-rule)
-                (remove nil?)
-                (s/join (u/rule-separator)))
-           rendered-rule)))))
+  ;; Convert a vector to a CSS rule string.
+  [[selector declarations :as rule]]
+  (when (every? seq rule)
+    (str (render-selector selector)
+         (l-brace)
+         (->> (map render-css declarations)
+              (s/join)
+              (indent-str))
+         (r-brace))))
 
-;;;; Media query generation.
+;; Media query rendering
 
-(defn ^String make-media-expression
-  "Make a media query expession from one or more maps. Keys are not
-   validated but values have the following semantics:
+(defn- ^String render-media-expr-part [[k v]]
+  (let [[sk sv] (map to-str [k v])]
+    (cond
+     (true? v) sk
+     (false? v) (str "not " sk)
+     (= "only" sv) (str "only " sk)
+     :else (if (and v (seq sv))
+             (str "(" sk (colon) sv ")")
+             (str "(" sk ")")))))
 
-   `true` as in `{:screen true}` means \"screen\"
-   `false` as in `{:screen false}` means \"not screen\"
-   \"only\" as in `{:screen \"only\"} means \"only screen\""
-  ([expr]
-   (let [query (for [[k v] expr]
-                 (let [[sk sv] (map u/to-str [k v])]
-                   (cond
-                    (true? v) sk 
-                    (false? v) (str "not " sk)
-                    (= "only" sv) (str "only " sk)
-                    :else (if (and v (seq sv))
-                            (str "(" sk (u/colon) sv ")")
-                            (str "(" sk ")")))))]
-     (s/join " and " query)))
-  ([expr & more]
-   (u/comma-join (map make-media-expression (cons expr more)))))
+(defn- ^String render-media-expr
+  ;; Make a media query expession from one or more maps. Keys are not
+  ;; validated but values have the following semantics:
+  ;;
+  ;; `true`  as in `{:screen true}`  == "screen"
+  ;; `false` as in `{:screen false}` == "not screen"
+  ;; `:only` as in `{:screen :only}  == "only screen"
+  [expr]
+  (if (sequential? expr)
+    (->> expr
+         (map render-media-expr)
+         comma-join)
+    (->> expr
+         (map render-media-expr-part)
+         (s/join " and "))))
 
-(defn- ^String make-media-query
-  "Make a CSS media query from one or more maps and a sequence of rules."
-  ([expr rules] (make-media-query expr rules []))
-  ([expr rules context]
-     (let [expr (if (sequential? expr)
-                  (apply make-media-expression expr)
-                  (make-media-expression expr))
-           rules  (let [rules (->> (map #(render-rule %1 context) rules)
-                                   (s/join (u/rule-separator)))]
-                    (if (= u/*output-style* :compressed)
-                      rules
-                      (s/replace rules #"(?m)(?=[ A-Za-z#.}-]+)^" (indent 2))))]
-       (str "@media " expr (u/media-left-brace)
-            rules
-            (u/media-right-brace)))))
+(defn render-media-query [expr rules]
+  (when (seq rules)
+    (str "@media "
+         (render-media-expr expr)
+         (l-brace-1)
+         (indent-str rules)
+         (r-brace-1))))
+
+;; Garden type rendering
+
+(defn- ^String render-import [css-import]
+  (let [{:keys [url media-expr]} css-import
+        url (if (string? url)
+              (u/wrap-quotes url)
+              (render-css url))
+        exprs (when media-expr
+                (render-media-expr media-expr))]
+    (str "@import "
+         (if exprs (str url " " exprs) url)
+         (semicolon))))
+
+(defn- ^String render-function [css-function]
+  (let [{:keys [function args]} css-function
+        args (if (sequential? args)
+               (comma-join args)
+               (to-str args))]
+    (format "%s(%s)" (to-str function) args)))
+
+;; CSSRenderer implementation
 
 (extend-protocol CSSRenderer
   clojure.lang.IPersistentVector
-  (render-css [this]
-    (render-rule this))
-  clojure.lang.IPersistentMap
-  (render-css [this]
-    (render-declaration this))
-  clojure.lang.ISeq
-  (render-css [this]
-    (if-let [media-query (extract-media-query this)]
-      (do
-        (add-media-query-rules! media-query (u/without-meta this) nil)
-        nil)
-      (s/join (u/newline) (map render-css this))))
-  clojure.lang.Ratio
-  (render-css [this]
-    (str (float this)))
-  CSSUnit
-  (render-css [this]
-    (str this))
-  garden.types.CSSFunction
-  (render-css [this]
-    (str this))
-  Object
-  (render-css [this]
-    (str this))
-  nil
-  (render-css [this]
-    ""))
+  (render-css [this] (render-rule this))
 
-(defn- ^String render-media-queries!
-  "Compile media-queries."
-  []
-  (loop [rendered-queries []]
-    (if (seq @media-query-rules)
-      (let [[expr rules context] (first @media-query-rules)
-            media-query (make-media-query expr rules context)]
-        (reset! media-query-rules (vec (next @media-query-rules)))
-        (recur (conj rendered-queries media-query)))
-      (when (seq rendered-queries)
-        (s/join (u/rule-separator) rendered-queries)))))
+  clojure.lang.IPersistentMap
+  (render-css [this] (render-declaration this))
+
+  clojure.lang.Ratio
+  (render-css [this] (str (float this)))
+
+  CSSUnit
+  (render-css [this] (str this))
+
+  CSSFunction
+  (render-css [this] (render-function this))
+
+  CSSImport
+  (render-css [this] (render-import this))
+
+  Object
+  (render-css [this] (str this))
+
+  nil
+  (render-css [this] ""))
 
 (defn ^String compile-css
   "Convert any number of Clojure data structures to CSS."
   [& rules]
-  (let [top-level-rules (render-css rules)
-        media-queries (render-media-queries!)]
-    (if media-queries
-      (str top-level-rules
-           (when (seq top-level-rules)
-             (u/rule-separator))
-           media-queries)
-      top-level-rules)))
+  (loop [xs (expand rules) rendered []]
+    (if-let [x (first xs)]
+      (if (map? (first x))
+        (let [[expr children] x
+              mq (->> (map render-css children)
+                      rule-join
+                      (render-media-query expr))]
+          (recur (next xs) (conj rendered mq)))
+        (recur (next xs) (conj rendered (render-css x))))
+      (rule-join (remove nil? rendered)))))

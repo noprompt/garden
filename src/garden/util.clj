@@ -1,21 +1,18 @@
 (ns garden.util
   "Utility functions used by Garden."
-  (:refer-clojure :exclude [newline])
-  (:require [clojure.string :as string]))
+  (:require [clojure.string :as str]))
 
 (defprotocol ToString
   (^String to-str [this] "Convert a value into a string."))
 
 (extend-protocol ToString
   clojure.lang.Keyword
-  (to-str [this]
-    (name this))
+  (to-str [this] (name this))
+
   Object
-  (to-str [this]
-    (str this))
-  nil
-  (to-str [_]
-    ""))
+  (to-str [this] (str this))
+
+  nil (to-str [this] ""))
 
 (defn ^String as-str
   "Convert a variable number of values into strings."
@@ -39,83 +36,18 @@
   [s]
   (str \" s \"))
 
-;;;; Output style and formatting
-
-(def ^{:doc "Map associating output-style options to characters used when
-             rendering CSS."}
-  output-style
-  {:expanded {:comma ", "
-              :colon ": "
-              :semicolon ";\n"
-              :left-brace " {\n"
-              :right-brace ";\n}"
-              :media-left-brace " {\n\n"
-              :media-right-brace "\n\n}"
-              :rule-separator "\n\n"
-              :newline "\n"
-              :indent 2}
-   :compact {:comma ", "
-             :colon ": "
-             :semicolon "; "
-             :left-brace " { "
-             :right-brace "; }"
-             :media-left-brace " {\n"
-             :media-right-brace "\n}"
-             :rule-separator "\n"
-             :newline "\n"
-             :indent 0}
-   :compressed {:comma ","
-                :colon ":"
-                :semicolon ";"
-                :left-brace "{"
-                :right-brace "}"
-                :media-left-brace "{"
-                :media-right-brace "}"
-                :rule-separator ""
-                :newline ""
-                :indent 0}})
-
-(def ^{:dynamic true
-       :doc "The stylesheet output style."}
-  *output-style* :compressed)
-
-(letfn [(output [k]
-          #(get-in output-style [*output-style* k]))]
-  (def comma (output :comma))
-  (def colon (output :colon))
-  (def semicolon (output :semicolon))
-  (def left-brace (output :left-brace))
-  (def right-brace (output :right-brace))
-  (def rule-separator (output :rule-separator))
-  (def newline (output :newline))
-  (def indent-level (output :indent))
-  (def media-left-brace (output :media-left-brace))
-  (def media-right-brace (output :media-right-brace)))
-
-(defmacro with-output-style
-  "Set the output style for rendering CSS strings. The value of style may be
-   either :expanded, :compact, or :compressed. Defaults to compressed."
-  [style & body]
-  (let [k (keyword style)
-        style (if (contains? output-style k) k :compressed)]
-    `(binding [*output-style* ~style]
-       ~@body)))
-
-(declare comma-join space-join)
+(defn space-join
+  "Return a space separated list of values. Subsequences are joined with
+   commas."
+  [xs]
+  (str/join " " xs))
 
 (defn comma-join
   "Return a comma separated list of values. Subsequences are joined with
    spaces."
   [xs]
   (let [ys (for [x xs] (if (sequential? x) (space-join x) (to-str x)))]
-    (string/join (comma) ys)))
-
-(defn space-join
-  "Return a space separated list of values. Subsequences are joined with
-   commas."
-  [xs]
-  (let [ys (for [x xs] (if (sequential? x) (comma-join x) (to-str x)))]
-    (string/join \space ys)))
+    (str/join ", " ys)))
 
 (defn without-meta
   "Return obj with meta removed."
@@ -126,6 +58,11 @@
   "Return true if obj is an instance of clojure.lang.IRecord."
   [obj]
   (instance? clojure.lang.IRecord obj))
+
+(defn hash-map?
+  "Return true if obj is a map but not a record."
+  [obj]
+  (and (map? obj) (not (record? obj))))
 
 (defn clip
   "Return a number such that n is no less than a and no more than b."
@@ -138,3 +75,10 @@
   [n m & more]
   (/ (apply + n m more) (+ 2.0 (count more))))
 
+(defn into!
+  "The same as `into` but for transient vectors."
+  [coll xs]
+  (loop [coll coll xs xs]
+    (if-let [x (first xs)]
+      (recur (conj! coll x) (next xs))
+      coll)))

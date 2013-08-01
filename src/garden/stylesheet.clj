@@ -3,7 +3,8 @@
   (:require [garden.util :as u]
             [garden.units :as un]
             [garden.color :as c]
-            [garden.compiler :refer [make-media-expression]]))
+            garden.types)
+  (:import garden.types.CSSImport))
 
 ;;;; Properties
 
@@ -28,25 +29,13 @@
 
 (defn at-import
   "Create a CSS @import expression."
-  ([uri]
-     (format "@import %s;" (if (:function uri)
-                             uri
-                             (u/wrap-quotes uri))))
-  ([uri & media-exprs]
-     (let [exprs (for [expr media-exprs]
-                   (if (map? expr)
-                     (make-media-expression expr)
-                     (u/to-str expr)))]
-       (format "@import %s %s;"
-               (if (:function uri)
-                 uri
-                 (u/wrap-quotes uri))
-               (u/comma-join exprs)))))
+  ([url] (CSSImport. url nil))
+  ([url media-expr] (CSSImport. url media-expr)))
 
 (defn at-media
-  "Wraps the given rules with meta given by `expr`."
-  [expr rule & rules]
-  (with-meta (cons rule rules) expr))
+  "Wrap the given rules with meta given by `expr`."
+  [expr & rules]
+  (with-meta rules (merge expr {:media true})))
 
 (declare at-keyframes)
 
