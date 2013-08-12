@@ -1,13 +1,13 @@
-(ns garden.arithemetic
-  "Generic arithemetic operators for computing sums, differences,
+(ns garden.arithmetic
+  "Generic arithmetic operators for computing sums, differences,
    products, and quotients between CSSUnits, CSSColors, and numbers."
   (:refer-clojure :exclude [+ - * /])
   (:require [garden.units :as u :refer [unit?]]
             [garden.color :as c :refer [color?]]))
 
 ;; The motivation for the functions in this namespace is the
-;; contention that working with unit arithemetic functions (`px+`,
-;; `px-`, etc.) and color arithemetic functions (`color+`, `color-`,
+;; contention that working with unit arithmetic functions (`px+`,
+;; `px-`, etc.) and color arithmetic functions (`color+`, `color-`,
 ;; etc.) can at times be a bit unweildly. In some cases it would be
 ;; nice to have functions which could transparently perform unit and
 ;; color math without the verbosity.
@@ -15,9 +15,9 @@
 ;; Here, such functions are provided.
 
 ;; All operations favor `CSSUnit` and `CSSColor` types and fall back to
-;; the standard `clojure.core` arithemetic functions. The preference for
+;; the standard `clojure.core` arithmetic functions. The preference for
 ;; this order stems from the assertion that it is far more likely unit
-;; arithemetic will be performed in the context of a stylesheet versus
+;; arithmetic will be performed in the context of a stylesheet versus
 ;; color or numeric.
 
 (defn +

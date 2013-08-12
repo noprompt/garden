@@ -7,7 +7,7 @@
             [garden.def :refer [defrule]]
             ;; Comment this line before running tests to prevent
             ;; warning messages. 
-            ;;[garden.arithemetic :refer [+ - * /]]
+            ;;[garden.arithmetic :refer [+ - * /]]
             [clojure.string :as s]
             [clojure.pprint :refer [pprint pp]]
             [clojure.repl :refer [source doc]]))

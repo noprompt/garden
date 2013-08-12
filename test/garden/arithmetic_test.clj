@@ -1,9 +1,9 @@
-(ns garden.arithemetic-test
+(ns garden.arithmetic-test
   (:refer-clojure :exclude [+ - * /])
   (:require [garden.units :as u]
             [garden.color :as c])
   (:use clojure.test
-        garden.arithemetic))
+        garden.arithmetic))
 
 (deftest sum-test
   (testing "numbers"

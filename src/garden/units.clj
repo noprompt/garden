@@ -201,7 +201,7 @@
 
 (defmacro defunit
   "Create a suite of functions for unit creation, conversion, validation, and
-   arithemetic."
+   arithmetic."
   ([name]
      `(defunit ~name ~name))
   ([name unit]
