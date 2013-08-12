@@ -24,7 +24,7 @@
     :colon ": "
     :semicolon "; "
     :l-brace " { "
-    :r-brace "; }"
+    :r-brace "}"
     :l-brace-1 " {\n"
     :r-brace-1 "\n}"
     :rule-sep "\n"
