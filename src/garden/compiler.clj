@@ -56,7 +56,7 @@
        :private true
        :doc "The current compiler flags."}
   *flags*
-  {:output-style :expanded
+  {:output-style :compressed
    :media-expressions {:nesting-behavior :default}})
 
 (def ^{:dynamic true
