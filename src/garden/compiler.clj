@@ -89,12 +89,12 @@
 
 ;; Utilities
 
-(declare render-value)
+(declare render-css)
 
 (defn- space-join
   "Return a space separated list of values."
   [xs]
-  (s/join \space (map render-value xs)))
+  (s/join \space (map render-css xs)))
 
 (defn- comma-join
   "Return a comma separated list of values. Subsequences are joined with
@@ -103,7 +103,7 @@
   (let [ys (for [x xs]
              (if (sequential? x)
                (space-join x)
-               (render-value x)))]
+               (render-css x)))]
     (s/join (comma) ys)))
 
 (defn- rule-join [xs]
@@ -259,11 +259,6 @@
   (render-css [this]
     "Convert a Clojure data type in to a string of CSS."))
 
-(defn render-value [x]
-  (if (and (string? x) (re-find #" " x))
-    (u/wrap-quotes x)
-    (render-css x)))
-
 (defn- render-property-and-value
   [[prop val]]
   (if (set? val)
@@ -273,7 +268,7 @@
          s/join)
     (let [val (if (sequential? val)
                 (comma-join val)
-                (render-value val))]
+                (render-css val))]
       (as-str prop (colon) val (semicolon)))))
 
 (defn- ^String render-declaration
