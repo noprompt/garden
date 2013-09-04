@@ -1,4 +1,5 @@
-(ns garden.def)
+(ns garden.def
+  (:import garden.types.CSSFunction))
 
 (defn rule
   "Create a rule function for the given selector. The `selector`
@@ -44,3 +45,16 @@
               (rule (keyword name)))
         name (vary-meta name assoc :arglists '(list '[& children]))]
     `(def ~name ~rfn)))
+
+
+(defn cssfn [fn-name]
+  (fn [& args]
+    (CSSFunction. fn-name args)))
+
+(defmacro defcssfn
+  ([name]
+     `(def ~name (cssfn (str '~name))))
+  ([name & fn-tail]
+     `(def ~name
+        (fn [& args#]
+          (CSSFunction. (str '~name) (apply (fn ~@fn-tail) args#))))))
