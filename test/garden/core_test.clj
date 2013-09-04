@@ -28,7 +28,7 @@
         s3 [:a
             {:font-weight "normal"}
             [:&:hover {:font-weight "bold"}]]
-        s4 (vary-meta (list s1 s3) assoc :media true :screen true)]
+        s4 (vary-meta (list s1 s3) assoc :media {:screen true})]
 
     (testing "compressed output"
       (is (= (css-compressed s1) (compressed :s1)))

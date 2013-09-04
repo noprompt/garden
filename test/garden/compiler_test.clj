@@ -62,32 +62,37 @@
       "h1{a:b;}"
 
       [(-> (list [:h1 {:a :b}])
-           (with-meta {:media true :screen true}))]
+           (with-meta {:media {:screen true}}))]
       "@media screen{h1{a:b;}}"
 
       [(-> (list [:h1 {:a :b}])
-           (with-meta {:media true :screen true}))
+           (with-meta {:media {:screen true}}))
        [:h2 {:c :d}]]
       "@media screen{h1{a:b;}}h2{c:d;}"
 
       [[:a {:a "b"}
-        ^:media ^:screen
+        ^{:media {:screen true}}
         [:&:hover {:c "d"}]]]
       "a{a:b;}@media screen{a:hover{c:d;}}"
 
-      [^:media ^:toast
+      [^{:media {:toast true}}
        [:h1 {:a "b"}]]
       "@media toast{h1{a:b;}}"
 
-      [^:media ^{:bacon :only}
+      [^{:media {:bacon :only}}
        [:h1 {:a "b"}]]
       "@media only bacon{h1{a:b;}}"
 
-      [^:media ^{:sad false}
+      [^{:media {:sad false}}
        [:h1 {:a "b"}]]
       "@media not sad{h1{a:b;}}"
 
-      [^:media ^{:-vendor-prefix-blah-blah-blah "2"}
+      [^{:media {:happy true :sad false}}
+       [:h1 {:a "b"}]]
+      "@media happy and not sad{h1{a:b;}}"
+
+
+      [^{:media {:-vendor-prefix-blah-blah-blah "2"}}
        [:h1 {:a "b"}]]
       "@media (-vendor-prefix-blah-blah-blah:2){h1{a:b;}}")))
 
@@ -103,13 +108,13 @@
       "a{x:y;}"
 
       [:a
-       ^:media ^{:max-width "1em"}
+       ^{:media {:max-width "1em"}}
        [:&:hover {:x :y}]]
       "@media (max-width:1em){a:hover{x:y;}}"
 
-      ^:media ^:screen
+      ^{:media {:screen true}}
       [:a {:f "bar"}
-       ^:media ^:print
+       ^{:media {:print true}}
        [:& {:g "foo"}]]
       "@media screen{a{f:bar;}}@media print{a{g:foo;}}")))
 

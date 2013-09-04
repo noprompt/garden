@@ -35,7 +35,7 @@
 (defn at-media
   "Wrap the given rules with meta given by `expr`."
   [expr & rules]
-  (with-meta rules (merge expr {:media true})))
+  (with-meta rules {:media expr}))
 
 (declare at-keyframes)
 

@@ -112,13 +112,13 @@
 (defn- extract-media-query
   "Extract media query information from obj."
   [obj]
-  (let [m (meta obj)]
-    (when-let [q (and (:media m) (dissoc m :media))]
-      (when (seq q) q))))
+  (let [query (:media (meta obj))]
+    (and (seq query) query)))
 
 (defn- media-query? [x]
-  (let [m (meta x)]
-    (boolean (and (:media m) (seq (dissoc m :media))))))
+  (boolean
+   (when-let [m (:media (meta x))]
+    (or (vector? m) (map? m)))))
 
 ;; Match the start of a line if the characters immediately after it
 ;; are spaces or used in a CSS id (#), class (.), or tag name.
