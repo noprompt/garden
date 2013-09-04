@@ -30,7 +30,7 @@
       "a:1 2,3,4 5;"))
 
   (testing "vectors"
-    (are [x y] (= (compile-css x) y)
+    (are [x y] (= (compile-css (list x)) y)
       [:a
        {:x 1}
        {:y 2}]
@@ -56,7 +56,7 @@
 
 (deftest media-query-test
   (testing "media queries"
-    (are [xs res] (= (apply compile-css xs) res)
+    (are [xs res] (= (compile-css (list xs)) res)
       [(-> (list [:h1 {:a :b}])
            (with-meta {:screen true}))]
       "h1{a:b;}"
@@ -93,7 +93,7 @@
 
 (deftest parent-selector-test
   (testing "parent selector references"
-    (are [x res] (= (compile-css x) res)
+    (are [x res] (= (compile-css (list x)) res)
       [:a
        [:&:hover {:x :y}]]
       "a:hover{x:y;}"
@@ -133,4 +133,3 @@
 
         (CSSImport. url {:screen true}) 
         "@import \"http://example.com/foo.css\" screen;"))))
-           

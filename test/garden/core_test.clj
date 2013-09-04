@@ -1,7 +1,6 @@
 (ns garden.core-test
   (:use clojure.test
-        garden.core)
-  (:require [garden.compiler :refer [with-output-style]]))
+        garden.core))
 
 (defn output [f]
   (slurp (format "test/garden/output/%s.css" f)))
@@ -14,6 +13,10 @@
 
 (defn expanded [s]
   (output (str "expanded-" (name s))))
+
+(def css-compressed (partial css {:output-style :compressed}))
+(def css-compact (partial css {:output-style :compact}))
+(def css-expanded (partial css {:output-style :expanded}))
 
 (deftest test-css
   (let [s1 [:h1 {:font-weight "bold"}]
@@ -28,28 +31,25 @@
         s4 (vary-meta (list s1 s3) assoc :media true :screen true)]
 
     (testing "compressed output"
-      (with-output-style :compressed
-        (is (= (css s1) (compressed :s1)))
-        (is (= (css s1') (compressed :s1)))
-        (is (= (css s1'') (compressed :s1)))
-        (is (= (css s2) (compressed :s2)))
-        (is (= (css s3) (compressed :s3)))
-        (is (= (css s4) (compressed :s4)))))
+      (is (= (css-compressed s1) (compressed :s1)))
+      (is (= (css-compressed s1') (compressed :s1)))
+      (is (= (css-compressed s1'') (compressed :s1)))
+      (is (= (css-compressed s2) (compressed :s2)))
+      (is (= (css-compressed s3) (compressed :s3)))
+      (is (= (css-compressed s4) (compressed :s4))))
 
     (testing "compact output"
-      (with-output-style :compact
-        (is (= (css s1) (compact :s1)))
-        (is (= (css s1') (compact :s1)))
-        (is (= (css s1'') (compact :s1)))
-        (is (= (css s2) (compact :s2)))
-        (is (= (css s3) (compact :s3)))
-        (is (= (css s4) (compact :s4)))))
+      (is (= (css-compact s1) (compact :s1)))
+      (is (= (css-compact s1') (compact :s1)))
+      (is (= (css-compact s1'') (compact :s1)))
+      (is (= (css-compact s2) (compact :s2)))
+      (is (= (css-compact s3) (compact :s3)))
+      (is (= (css-compact s4) (compact :s4))))
 
     (testing "exapnded output"
-      (with-output-style :expanded
-        (is (= (css s1) (expanded :s1)))
-        (is (= (css s1') (expanded :s1)))
-        (is (= (css s1'') (expanded :s1)))
-        (is (= (css s2) (expanded :s2)))
-        (is (= (css s3) (expanded :s3)))
-        (is (= (css s4) (expanded :s4)))))))
+      (is (= (css-expanded s1) (expanded :s1)))
+      (is (= (css-expanded s1') (expanded :s1)))
+      (is (= (css-expanded s1'') (expanded :s1)))
+      (is (= (css-expanded s2) (expanded :s2)))
+      (is (= (css-expanded s3) (expanded :s3)))
+      (is (= (css-expanded s4) (expanded :s4))))))

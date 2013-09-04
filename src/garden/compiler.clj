@@ -69,14 +69,11 @@
        :doc "The current media query context."}
   *media-context* nil)
 
-(defmacro with-output-style [style & body]
-  (let [style (if (punctuation style) style :compressed)]
-    `(binding [*output-style* ~style] ~@body)))
-
 (defmacro ^:private defpunctuation [name]
   (let [k (keyword name)]
     `(defn- ~name []
-       (get-in punctuation [*output-style* ~k]))))
+       (or (get-in punctuation [(*flags* :output-style) ~k])
+           (get-in punctuation [:compressed ~k])))))
 
 (defpunctuation comma)
 (defpunctuation colon)
@@ -92,16 +89,21 @@
 
 ;; Utilities
 
+(declare render-value)
+
 (defn- space-join
   "Return a space separated list of values."
   [xs]
-  (s/join \space (map to-str xs)))
+  (s/join \space (map render-value xs)))
 
 (defn- comma-join
   "Return a comma separated list of values. Subsequences are joined with
    spaces."
   [xs]
-  (let [ys (for [x xs] (if (sequential? x) (space-join x) (to-str x)))]
+  (let [ys (for [x xs]
+             (if (sequential? x)
+               (space-join x)
+               (render-value x)))]
     (s/join (comma) ys)))
 
 (defn- rule-join [xs]
@@ -123,7 +125,7 @@
 (def ^:private indent-location #"(?m)(?=[ A-Za-z#.}-]+)^")
 
 (defn- ^String indent-str [s]
-  (if-not (= :compressed *output-style*)
+  (if-not (= :compressed (:output-style *flags*))
     (s/replace s indent-location (indent))
     s))
 
@@ -154,7 +156,7 @@
 (def ^:private parent-selector-re #"^&.+|^&$")
 
 (defn ^String extract-reference
-  ;; Extract the selector portion of a parent selector reference.
+  "Extract the selector portion of a parent selector reference."
   [selector]
   (when-let [reference (->> (last selector)
                             to-str
@@ -170,8 +172,8 @@
     selector))
 
 (defn- expand-selector
-  ;; Expand a selector within the context of parent selector and
-  ;; return a new selector.
+  "Expand a selector within the context of parent selector and
+  return a new selector."
   [selector parent]
   (let [new-selector
         (if (seq parent)
@@ -241,7 +243,13 @@
   (expand [this] (expand-declaration this))
 
   clojure.lang.ISeq
-  (expand [this] (expand-stylesheet this)))
+  (expand [this] (expand-stylesheet this))
+
+  String
+  (expand [this] this)
+
+  nil
+  (expand [this] this))
 
 ;;;; Rendering
 
@@ -251,6 +259,11 @@
   (render-css [this]
     "Convert a Clojure data type in to a string of CSS."))
 
+(defn render-value [x]
+  (if (and (string? x) (re-find #" " x))
+    (u/wrap-quotes x)
+    (render-css x)))
+
 (defn- render-property-and-value
   [[prop val]]
   (if (set? val)
@@ -258,7 +271,9 @@
          (partition 2)
          (map render-property-and-value)
          s/join)
-    (let [val (if (sequential? val) (comma-join val) val)]
+    (let [val (if (sequential? val)
+                (comma-join val)
+                (render-value val))]
       (as-str prop (colon) val (semicolon)))))
 
 (defn- ^String render-declaration
@@ -349,6 +364,9 @@
   clojure.lang.Ratio
   (render-css [this] (str (float this)))
 
+  clojure.lang.Keyword
+  (render-css [this] (name this))
+
   CSSUnit
   (render-css [this] (str this))
 
@@ -364,16 +382,32 @@
   nil
   (render-css [this] ""))
 
+(defn ^String compile-style
+  "Convert a sequence of maps into css for use with the HTML style
+   attribute."
+  [ms]
+  (->> (filter u/hash-map? ms)
+       (reduce merge)
+       (expand)
+       (render-css)))
+
 (defn ^String compile-css
   "Convert any number of Clojure data structures to CSS."
-  [& rules]
-  (loop [xs (expand rules) rendered []]
-    (if-let [x (first xs)]
-      (if (map? (first x))
-        (let [[expr children] x
-              mq (->> (map render-css children)
-                      rule-join
-                      (render-media-query expr))]
-          (recur (next xs) (conj rendered mq)))
-        (recur (next xs) (conj rendered (render-css x))))
-      (rule-join (remove nil? rendered)))))
+  [rules]
+  (let [flags (when (and (u/hash-map? (first rules))
+                         (some (first rules) (keys *flags*)))
+               (first rules))
+        rules (if flags
+                (rest rules)
+                rules)]
+    (binding [*flags* (merge *flags* flags)]
+      (loop [xs (expand rules) rendered []]
+        (if-let [x (first xs)]
+          (if (map? (first x))
+            (let [[expr children] x
+                  mq (->> (map render-css children)
+                          rule-join
+                          (render-media-query expr))]
+              (recur (next xs) (conj rendered mq)))
+            (recur (next xs) (conj rendered (render-css x))))
+          (rule-join (remove nil? rendered)))))))
