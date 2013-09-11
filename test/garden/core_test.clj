@@ -8,15 +8,14 @@
 (defn compressed [s]
   (output (str "compressed-" (name s))))
 
-(defn compact [s]
-  (output (str "compact-" (name s))))
-
 (defn expanded [s]
   (output (str "expanded-" (name s))))
 
-(def css-compressed (partial css {:output-style :compressed}))
-(def css-compact (partial css {:output-style :compact}))
-(def css-expanded (partial css {:output-style :expanded}))
+(def css-compressed
+  (partial css {:pretty-print? false}))
+
+(def css-expanded
+  (partial css {:pretty-print? true}))
 
 (deftest test-css
   (let [s1 [:h1 {:font-weight "bold"}]
@@ -37,14 +36,6 @@
       (is (= (css-compressed s2) (compressed :s2)))
       (is (= (css-compressed s3) (compressed :s3)))
       (is (= (css-compressed s4) (compressed :s4))))
-
-    (testing "compact output"
-      (is (= (css-compact s1) (compact :s1)))
-      (is (= (css-compact s1') (compact :s1)))
-      (is (= (css-compact s1'') (compact :s1)))
-      (is (= (css-compact s2) (compact :s2)))
-      (is (= (css-compact s3) (compact :s3)))
-      (is (= (css-compact s4) (compact :s4))))
 
     (testing "exapnded output"
       (is (= (css-expanded s1) (expanded :s1)))

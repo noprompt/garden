@@ -20,16 +20,6 @@
     :r-brace-1 "\n\n}"
     :rule-sep "\n\n"
     :indent "  "}
-   :compact
-   {:comma ", "
-    :colon ": "
-    :semicolon "; "
-    :l-brace " { "
-    :r-brace "}"
-    :l-brace-1 " {\n"
-    :r-brace-1 "\n}"
-    :rule-sep "\n"
-    :indent ""}
    :compressed
    {:comma ","
     :colon ":"
@@ -61,7 +51,7 @@
        :private true
        :doc "The current compiler flags."}
   *flags*
-  {:output-style :compressed
+  {:pretty-print? false
    :media-expressions {:nesting-behavior :default}})
 
 (def ^{:dynamic true
@@ -77,8 +67,10 @@
 (defmacro ^:private defpunctuation [name]
   (let [k (keyword name)]
     `(defn- ~name []
-       (or (get-in punctuation [(*flags* :output-style) ~k])
-           (get-in punctuation [:compressed ~k])))))
+       (let [mode# (if (*flags* :pretty-print?)
+                     :expanded
+                     :compressed)]
+         (get-in punctuation [mode# ~k])))))
 
 (defpunctuation comma)
 (defpunctuation colon)
@@ -135,7 +127,7 @@
 (def ^:private indent-location #"(?m)(?=[ A-Za-z#.}-]+)^")
 
 (defn- ^String indent-str [s]
-  (if-not (= :compressed (:output-style *flags*))
+  (if (*flags* :pretty-print?)
     (s/replace s indent-location (indent))
     s))
 
