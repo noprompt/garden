@@ -32,12 +32,6 @@
     :indent ""}})
 
 (def ^{:private true
-       :dynamic true
-       :doc "A vector of browser vendors."}
-  *vendors*
-  ["webkit" "moz" "o"])
-
-(def ^{:private true
        :doc "Retun a function to call when rendering a media expression.
              The returned function accepts two arguments: the media
              expression being evaluated and the current media expression
@@ -51,8 +45,19 @@
        :private true
        :doc "The current compiler flags."}
   *flags*
-  {:pretty-print? false
-   :media-expressions {:nesting-behavior :default}})
+  {;; When set to `true` the compiled stylesheet will be "pretty
+   ;; printed." This would be equivalent to setting
+   ;; `{:ouput-style :expanded}` in pre 1.0.0 releases.
+   :pretty-print? false
+   ;; A list of vendor prefixes to append automatically to things like
+   ;; `@keyframes`.
+   :vendors []
+   ;; `@media-query` specific configuration.
+   :media-expressions {;; May either be `:merge` or `:default`. When
+                       ;; set to `:merge` nested media queries will
+                       ;; have their expressions merged with their
+                       ;; parent's.
+                       :nesting-behavior :default}})
 
 (def ^{:dynamic true
        :private true
@@ -92,6 +97,12 @@
   "Save a stylesheet to disk."
   [path stylesheet]
   (spit path stylesheet))
+
+(defn- vendors
+  "Return the list of browser vendors specified in `*flags*`."
+  []
+  (let [vs (:vendors *flags*)]
+    (when (seq vs) vs)))
 
 (defn- space-join
   "Return a space separated list of values."
@@ -360,7 +371,7 @@
                       (r-brace-1))
             prefix (fn [vendor]
                      (str "@" (u/vendor-prefix vendor "keyframes ")))]
-        (->> (map prefix *vendors*)
+        (->> (map prefix (vendors))
              (cons "@keyframes ")
              (map #(str % body))
              (rule-join))))))
