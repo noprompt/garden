@@ -96,6 +96,11 @@
 
 (declare render-css compile-css)
 
+(defn- save-stylesheet
+  "Save a stylesheet to disk."
+  [path stylesheet]
+  (spit path stylesheet))
+
 (defn- space-join
   "Return a space separated list of values."
   [xs]
@@ -410,23 +415,33 @@
        (expand)
        (render-css)))
 
+(defn ^String ^:private compile-stylesheet
+  [flags rules]
+  (binding [*flags* (merge *flags* flags)]
+    (loop [xs (expand rules) rendered []]
+      (if-let [x (first xs)]
+        (if (map? (first x))
+          (let [[expr children] x
+                mq (->> (map render-css children)
+                        rule-join
+                        (render-media-query expr))]
+            (recur (next xs) (conj rendered mq)))
+          (recur (next xs) (conj rendered (render-css x))))
+        (rule-join (remove nil? rendered))))))
+
 (defn ^String compile-css
   "Convert any number of Clojure data structures to CSS."
   [rules]
   (let [flags (when (and (u/hash-map? (first rules))
                          (some (first rules) (keys *flags*)))
                (first rules))
+        output-to (:output-to flags)
         rules (if flags
                 (rest rules)
-                rules)]
-    (binding [*flags* (merge *flags* flags)]
-      (loop [xs (expand rules) rendered []]
-        (if-let [x (first xs)]
-          (if (map? (first x))
-            (let [[expr children] x
-                  mq (->> (map render-css children)
-                          rule-join
-                          (render-media-query expr))]
-              (recur (next xs) (conj rendered mq)))
-            (recur (next xs) (conj rendered (render-css x))))
-          (rule-join (remove nil? rendered)))))))
+                rules)
+        stylesheet (compile-stylesheet flags rules)]
+    (if output-to
+      (do
+        (save-stylesheet output-to stylesheet)
+        stylesheet)
+      stylesheet)))
