@@ -53,8 +53,21 @@
 
 (defmacro defcssfn
   ([name]
-     `(def ~name (cssfn (str '~name))))
+     (let [name (vary-meta name assoc :arglists '(list '[& args]))]
+       `(def ~name (cssfn (str '~name)))))
   ([name & fn-tail]
-     `(def ~name
-        (fn [& args#]
-          (CSSFunction. (str '~name) (apply (fn ~@fn-tail) args#))))))
+     (let [docstring? (when (string? (first fn-tail))
+                        (first fn-tail))
+           fn-tail (if docstring?
+                     (rest fn-tail)
+                     fn-tail)
+           arglists (if (every? list? fn-tail)
+                      (map first fn-tail)
+                      (list (first fn-tail)))
+           name (vary-meta name assoc :arglists `'~arglists)
+           name (if docstring?
+                  (vary-meta name assoc :doc docstring?)
+                  name)]
+       `(def ~name
+          (fn [& args#]
+            (CSSFunction. (str '~name) (apply (fn ~@fn-tail) args#)))))))
