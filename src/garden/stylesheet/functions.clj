@@ -1,25 +1,19 @@
 (ns garden.stylesheet.functions
-  (:import java.net.URI
-           garden.types.CSSFunction))
+  (:require [garden.def :refer [defcssfn]]))
 
-(defn url
-  "Create CSS url function."
-  [uri]
-  (CSSFunction. :url (URI. uri)))
+(defcssfn url
+  ;; Create a CSS `url` function.
+  [url]
+  url)
 
-(defn attr
-  "Create CSS attr function."
-  ([attribute-name]
-     (CSSFunction. :attr attribute-name))
-  ([attribute-name type-or-unit]
-     (attr [[attribute-name type-or-unit]]))
-  ([attribute-name type-or-unit fallback]
-     (attr [[attribute-name type-or-unit] fallback])))
+(defcssfn attr
+  ;; Create a CSS attr function.
+  ([name] name)
+  ([name type-or-unit] [[name type-or-unit]])
+  ([name type-or-unit fallback] [name [type-or-unit fallback]]))
 
-(defn toggle
-  "Create CSS toggle function."
-  ([value]
-     (CSSFunction. :toggle value))
-  ([value & more]
-     (toggle (cons value more))))
+(defcssfn toggle
+  ;; Create CSS toggle function.
+  ([value] value)
+  ([value & more] (cons value more)))
 
