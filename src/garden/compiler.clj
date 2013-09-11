@@ -225,7 +225,9 @@
        (sequential? x)
        (recur (concat x (next xs)) state)
        :else
-       (recur (next xs) state))
+       (if (or (u/hash-map? x) *selector-context*)
+         (recur (next xs) state)
+         (recur (next xs) (conj! state x))))
       state)))
 
 (defn- expand-stylesheet [xs]
