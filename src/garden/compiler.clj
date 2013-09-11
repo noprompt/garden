@@ -1,6 +1,5 @@
 (ns garden.compiler
   (:require [clojure.string :as s]
-            [clojure.math.combinatorics :refer (cartesian-product)]
             [garden.util :as u :refer (to-str as-str)]
             garden.units
             garden.types)
@@ -190,7 +189,7 @@
   [selector parent]
   (let [new-selector
         (if (seq parent)
-          (map flatten (cartesian-product parent selector))
+          (map flatten (u/cartesian-product parent selector))
           (map vector selector))]
     (map expand-selector-reference new-selector)))
 
