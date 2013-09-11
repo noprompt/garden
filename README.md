@@ -111,15 +111,13 @@ user=> (css [:h1 {'font-weight "normal"}])
 "h1{font-weight:normal}"
 ```
 
-At the moment Garden will not raise an error if other key types are used and
-will happily generate invalid CSS:
+Be aware Garden makes no attempt to validate your declarations and
+will not raise an error if other key types are used.
 
 ```clojure
 user=> (css [:h1 {30000 "nom-nom"}])
 "h1{30000:nom-nom}"
 ```
-
-To be on the safe side, just play ball and avoid anything else for now.
 
 #### Values
 
