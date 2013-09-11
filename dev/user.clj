@@ -6,6 +6,7 @@
             [garden.color :as color]
             [garden.def :refer [defrule defcssfn]]
             [garden.stylesheet :as stylesheet]
+            [garden.stylesheet.functions :as functions]
             ;; Comment this line before running tests to prevent
             ;; warning messages. 
             ;;[garden.arithmetic :refer [+ - * /]]
