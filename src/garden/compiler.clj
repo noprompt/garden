@@ -50,8 +50,6 @@
   {:merge (fn [expr context] (merge context expr))
    :default (fn [expr _] expr)})
 
-(def ^:dynamic ^:private *output-style* :compressed)
-
 (def ^{:dynamic true
        :private true
        :doc "The current compiler flags."}
