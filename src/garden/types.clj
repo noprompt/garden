@@ -1,18 +1,19 @@
 (ns garden.types
   "Internal types used by Garden."
-  (:require [garden.util :refer [comma-join to-str]]))
+  (:require [garden.util :as util]))
 
-(defrecord CSSFunction [function args]
-  Object
-  (toString [this]
-    (let [args (if (sequential? args)
-                 (comma-join args)
-                 (to-str args))]
-      (format "%s(%s)" (to-str function) args))))
+(defrecord CSSFunction [function args])
+
+(defmethod print-method CSSFunction [cssfn writer]
+  (let [args (:args cssfn)]
+    (.write writer
+            (format "%s(%s)"
+                    (util/to-str (:function cssfn))
+                    (if (sequential? args)
+                      (util/comma-join (map util/to-str args))
+                      args)))))
 
 (defrecord CSSImport [url media-expr])
 
 (defrecord CSSKeyframes [identifier frames])
 
-(defmethod print-method CSSFunction [function writer]
-  (.write writer (str function)))
