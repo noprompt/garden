@@ -200,7 +200,7 @@
     (loop [xs xs, ds (transient []), children (transient [])]
       (if-let [x (first xs)]
         (cond
-         (map? x)
+         (u/hash-map? x)
          (recur (next xs) (conj! ds (expand x)) children)
          (or (vector? x) (media-query? x))
          (recur (next xs) ds (conj! children x))
