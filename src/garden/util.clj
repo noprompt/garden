@@ -40,7 +40,7 @@
   "Return a space separated list of values. Subsequences are joined with
    commas."
   [xs]
-  (str/join " " xs))
+  (str/join " " (map to-str xs)))
 
 (defn comma-join
   "Return a comma separated list of values. Subsequences are joined with
@@ -82,3 +82,19 @@
     (if-let [x (first xs)]
       (recur (conj! coll x) (next xs))
       coll)))
+
+(defn prefix
+  "Attach a CSS style prefix to s."
+  [p s]
+  (let [p (to-str p)]
+    (if (= \- (last p))
+      (str p s)
+      (str p \- s))))
+
+(defn vendor-prefix
+  "Attach a CSS vendor prefix to s."
+  [p s]
+  (let [p (to-str p)]
+    (if (= \- (first p))
+      (prefix p s) 
+      (prefix (str \- p) s))))
