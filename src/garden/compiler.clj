@@ -94,7 +94,7 @@
 
 ;; Utilities
 
-(declare render-css)
+(declare render-css compile-css)
 
 (defn- space-join
   "Return a space separated list of values."
