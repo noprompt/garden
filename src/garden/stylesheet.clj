@@ -4,7 +4,8 @@
             [garden.units :as un]
             [garden.color :as c]
             garden.types)
-  (:import garden.types.CSSImport))
+  (:import (garden.types CSSImport
+                         CSSKeyframes)))
 
 ;;;; Properties
 
@@ -37,7 +38,8 @@
   [expr & rules]
   (with-meta rules {:media expr}))
 
-(declare at-keyframes)
+(defn at-keyframes [identifier & frames]
+  (CSSKeyframes. identifier frames))
 
 ;;;; Functions
 

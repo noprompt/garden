@@ -4,8 +4,9 @@
             [garden.util :as u :refer (to-str as-str)]
             garden.units
             garden.types)
-  (:import garden.types.CSSFunction
-           garden.types.CSSImport
+  (:import (garden.types CSSFunction
+                         CSSImport
+                         CSSKeyframes)
            garden.units.CSSUnit))
 
 (def ^:private punctuation
@@ -39,6 +40,12 @@
     :r-brace-1 "}"
     :rule-sep ""
     :indent ""}})
+
+(def ^{:private true
+       :dynamic true
+       :doc "A vector of browser vendors."}
+  *vendors*
+  ["webkit" "moz" "o"])
 
 (def ^{:private true
        :doc "Retun a function to call when rendering a media expression.
@@ -329,7 +336,7 @@
 
 ;; Garden type rendering
 
-(defn- ^String render-import [css-import]
+(defn- ^String render-import [^CSSImport css-import]
   (let [{:keys [url media-expr]} css-import
         url (if (string? url)
               (u/wrap-quotes url)
@@ -340,12 +347,26 @@
          (if exprs (str url " " exprs) url)
          (semicolon))))
 
-(defn- ^String render-function [css-function]
+(defn- ^String render-function [^CSSFunction css-function]
   (let [{:keys [function args]} css-function
         args (if (sequential? args)
                (comma-join args)
                (to-str args))]
     (format "%s(%s)" (to-str function) args)))
+
+(defn- ^String render-keyframes [^CSSKeyframes css-keyframes]
+  (let [{:keys [identifier frames]} css-keyframes]
+    (when (seq frames)
+      (let [body (str (to-str identifier)
+                      (l-brace-1)
+                      (indent-str (compile-css frames))
+                      (r-brace-1))
+            prefix (fn [vendor]
+                     (str "@" (u/vendor-prefix vendor "keyframes ")))]
+        (->> (map prefix *vendors*)
+             (cons "@keyframes ")
+             (map #(str % body))
+             (rule-join))))))
 
 ;; CSSRenderer implementation
 
@@ -370,6 +391,9 @@
 
   CSSImport
   (render-css [this] (render-import this))
+
+  CSSKeyframes
+  (render-css [this] (render-keyframes this))
 
   Object
   (render-css [this] (str this))
