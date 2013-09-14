@@ -17,52 +17,35 @@
 
 ;;;; Unit conversion
 
-(def
-  ^{:private true
-    :doc "Map for associating CSS unit types to columns and rows in
-          conversion-table."}
-  convertable-units
-  {:in  0  :cm   1  :pc  2 :mm   3 :pt 4 :px 5 ;; Absolute units
-   :deg 6  :grad 7  :rad 8 :turn 9             ;; Angles
-   :s   10 :ms   11                            ;; Times
-   :Hz  12 :kHz  13                            ;; Frequencies
-   })
-
-;; TODO: Put this information in a map.
-(def
-  ^{:private true
-    :doc "Table for converting CSS units."}
-  conversion-table
-  ; in   , cm   , pc         , mm         , pt         , px           , deg , grad        , rad          , turn        , s   , ms   , Hz  , kHz
-  [[1    , 2.54 , 6          , 25.4       , 72         , 96           , nil , nil         , nil          , nil         , nil , nil  , nil , nil]   ;; in
-   [nil  , 1    , 2.36220473 , 10         , 28.3464567 , 37.795275591 , nil , nil         , nil          , nil         , nil , nil  , nil , nil]   ;; cm
-   [nil  , nil  , 1          , 4.23333333 , 12         , 16           , nil , nil         , nil          , nil         , nil , nil  , nil , nil]   ;; pc
-   [nil  , nil  , nil        , 1          , 2.83464567 , 3.7795275591 , nil , nil         , nil          , nil         , nil , nil  , nil , nil]   ;; mm
-   [nil  , nil  , nil        , nil        , 1          , 1.3333333333 , nil , nil         , nil          , nil         , nil , nil  , nil , nil]   ;; pt
-   [nil  , nil  , nil        , nil        , nil        , 1            , nil , nil         , nil          , nil         , nil , nil  , nil , nil]   ;; px
-   [nil  , nil  , nil        , nil        , nil        , nil          , 1   , 1.111111111 , 0.0174532925 , 0.002777778 , nil , nil  , nil , nil]   ;; deg
-   [nil  , nil  , nil        , nil        , nil        , nil          , nil , 1           , 63.661977237 , 0.0025      , nil , nil  , nil , nil]   ;; grad
-   [nil  , nil  , nil        , nil        , nil        , nil          , nil , nil         , 1            , 0.159154943 , nil , nil  , nil , nil]   ;; rad
-   [nil  , nil  , nil        , nil        , nil        , nil          , nil , nil         , nil          , 1           , nil , nil  , nil , nil]   ;; turn
-   [nil  , nil  , nil        , nil        , nil        , nil          , nil , nil         , nil          , nil         , 1   , 1000 , nil , nil]   ;; s
-   [nil  , nil  , nil        , nil        , nil        , nil          , nil , nil         , nil          , nil         , nil , 1    , nil , nil]   ;; ms
-   [nil  , nil  , nil        , nil        , nil        , nil          , nil , nil         , nil          , nil         , nil , nil  , 1   , 0.001] ;; Hz
-   [nil  , nil  , nil        , nil        , nil        , nil          , nil , nil         , nil          , nil         , nil , nil  , nil , 1]     ;; kHz
-   ])
+(def ^{:private true
+       :doc "Map associating CSS unit types to their conversion values."}
+  conversions
+  {:in {:in 1, :cm 2.54, :pc 6, :mm 25.4, :pt 72, :px 96}
+   :cm {:cm 1, :pc 2.36220473, :mm 10, :pt 28.3464567, :px 37.795275591}
+   :pc {:pc 1, :mm 4.23333333, :pt 12, :px 16}
+   :mm {:mm 1, :pt 2.83464567, :px 3.7795275591}
+   :pt {:pt 1, :px 1.3333333333}
+   :px {:px 1}
+   :deg {:deg 1, :grad 1.111111111, :rad 0.0174532925, :turn 0.002777778}
+   :grad {:grad 1, :rad 63.661977237, :turn 0.0025}
+   :rad {:rad 1, :turn 0.159154943}
+   :turn {:turn 1}
+   :s {:s 1, :ms 1000}
+   :ms {:ms 1}
+   :Hz {:Hz 1, :kHz 0.001}
+   :kHz {:kHz 1}})
 
 (defn- convertable?
   "True if unit is a key of convertable-units, false otherwise."
   [unit]
-  (contains? convertable-units unit))
+  (contains? conversions unit))
 
 (defn- convert
   "Convert a Unit with :unit left to a Unit with :unit right if possible."
   [{m :magnitude left :unit} right]
   (if (every? convertable? [left right])
-    (let [i (left convertable-units)
-          j (right convertable-units)
-          v1 (get-in conversion-table [i j])
-          v2 (get-in conversion-table [j i])]
+    (let [v1 (get-in conversions [left right])
+          v2 (get-in conversions [right left])]
       (cond
         v1 (CSSUnit. right (* v1 m))
         v2 (CSSUnit. right (/ m v2))

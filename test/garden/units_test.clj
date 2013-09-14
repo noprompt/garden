@@ -81,4 +81,3 @@
     (is (= (dpi 1) (read-unit "1dpi")))
     (is (= (dpcm 1) (read-unit "1dpcm")))
     (is (= (dppx 1) (read-unit "1dppx")))))
-
