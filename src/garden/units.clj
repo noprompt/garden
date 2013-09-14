@@ -6,12 +6,11 @@
 (defrecord CSSUnit [unit magnitude] 
   Object
   (toString [this]
-    (let [m (when (ratio? magnitude)
-              (float magnitude))]
-      (str (if (ratio? magnitude)
-             (float magnitude)
-             magnitude)
-           (name unit)))))
+    (let [magnitude (if (ratio? magnitude)
+                      (float magnitude)
+                      magnitude)]
+      (str (if (zero? magnitude) 0 magnitude)
+           (when-not (zero? magnitude) (name unit))))))
 
 (defmethod print-method CSSUnit [unit writer]
   (.write writer (str unit)))
@@ -29,8 +28,7 @@
    :Hz  12 :kHz  13                            ;; Frequencies
    })
 
-;; Typically, commas are avoided in sequences, but in this case they are
-;; useful for displaying the table in a readable manner.
+;; TODO: Put this information in a map.
 (def
   ^{:private true
     :doc "Table for converting CSS units."}
