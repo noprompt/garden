@@ -3,10 +3,10 @@
             [garden.util :as u :refer (to-str as-str)]
             garden.units
             garden.types)
-  (:import (garden.types CSSFunction
-                         CSSImport
-                         CSSKeyframes)
-           garden.units.CSSUnit))
+  (:import garden.types.CSSFunction
+           garden.types.CSSImport
+           garden.types.CSSKeyframes
+           garden.types.CSSUnit))
 
 (def ^:private punctuation
   {:expanded

@@ -1,7 +1,7 @@
 (ns garden.units-test
   (:use clojure.test
         garden.units)
-  (:import garden.units.CSSUnit))
+  (:import garden.types.CSSUnit))
 
 (deftest test-unit-arthimetic
   (let [μm (make-unit-fn :μm)
