@@ -343,6 +343,14 @@
 
 ;; Garden type rendering
 
+(defn- ^String render-unit [^CSSUnit css-unit]
+  (let [{:keys [magnitude unit]} css-unit
+        magnitude (if (ratio? magnitude)
+                    (float magnitude)
+                    magnitude)]
+    (str (if (zero? magnitude) 0 magnitude)
+         (when-not (zero? magnitude) (name unit)))))
+
 (defn- ^String render-import [^CSSImport css-import]
   (let [{:keys [url media-expr]} css-import
         url (if (string? url)
@@ -391,7 +399,7 @@
   (render-css [this] (name this))
 
   CSSUnit
-  (render-css [this] (str this))
+  (render-css [this] (render-unit this))
 
   CSSFunction
   (render-css [this] (render-function this))
