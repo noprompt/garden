@@ -1,35 +1,14 @@
 (ns garden.compiler
   (:require [clojure.string :as s]
             [garden.util :as u :refer (to-str as-str)]
-            garden.units
-            garden.types)
-  (:import garden.types.CSSFunction
-           garden.types.CSSImport
-           garden.types.CSSKeyframes
-           garden.types.CSSUnit))
-
-(def ^:private punctuation
-  {:expanded
-   {:comma ", "
-    :colon ": "
-    :semicolon ";\n"
-    :l-brace " {\n"
-    :r-brace "}"
-    :l-brace-1 " {\n\n"
-    :r-brace-1 "\n\n}"
-    :rule-sep "\n\n"
-    :indent "  "}
-   :compressed
-   {:comma ","
-    :colon ":"
-    :semicolon ";"
-    :l-brace "{"
-    :r-brace "}"
-    :l-brace-1 "{"
-    :r-brace-1 "}"
-    :rule-sep ""
-    :indent ""}})
-
+            [garden.types])
+  (:import (java.io StringReader
+                    StringWriter)
+           (com.yahoo.platform.yui.compressor CssCompressor)
+           (garden.types CSSFunction
+                         CSSImport
+                         CSSKeyframes
+                         CSSUnit)))
 (def ^{:private true
        :doc "Retun a function to call when rendering a media expression.
              The returned function accepts two arguments: the media
@@ -68,25 +47,17 @@
        :doc "The current media query context."}
   *media-context* nil)
 
-(defmacro ^:private defpunctuation [name]
-  (let [k (keyword name)]
-    `(defn- ~name []
-       (let [mode# (if (*flags* :pretty-print?)
-                     :expanded
-                     :compressed)]
-         (get-in punctuation [mode# ~k])))))
+;;;; Punctuation
 
-(defpunctuation comma)
-(defpunctuation colon)
-(defpunctuation semicolon)
-(defpunctuation l-brace)
-(defpunctuation r-brace)
-(defpunctuation l-brace)
-(defpunctuation r-brace-1)
-(defpunctuation l-brace-1)
-(defpunctuation rule-sep)
-(defpunctuation new-line)
-(defpunctuation indent)
+(def comma ", ")
+(def colon ": ")
+(def semicolon ";")
+(def l-brace " {\n")
+(def r-brace "\n}")
+(def l-brace-1 " {\n\n")
+(def r-brace-1 "\n\n}")
+(def rule-sep "\n\n")
+(def indent "  ")
 
 ;; Utilities
 
@@ -106,7 +77,7 @@
 (defn- space-join
   "Return a space separated list of values."
   [xs]
-  (s/join \space (map render-css xs)))
+  (s/join " " (map render-css xs)))
 
 (defn- comma-join
   "Return a comma separated list of values. Subsequences are joined with
@@ -116,10 +87,10 @@
              (if (sequential? x)
                (space-join x)
                (render-css x)))]
-    (s/join (comma) ys)))
+    (s/join comma ys)))
 
 (defn- rule-join [xs]
-  (s/join (rule-sep) xs))
+  (s/join rule-sep xs))
 
 (defn- extract-media-query
   "Extract media query information from obj."
@@ -137,9 +108,7 @@
 (def ^:private indent-location #"(?m)(?=[ A-Za-z#.}-]+)^")
 
 (defn- ^String indent-str [s]
-  (if (*flags* :pretty-print?)
-    (s/replace s indent-location (indent))
-    s))
+  (s/replace s indent-location indent))
 
 ;; Expansion
 
@@ -283,7 +252,7 @@
     (let [val (if (sequential? val)
                 (comma-join val)
                 (render-css val))]
-      (as-str prop (colon) val (semicolon)))))
+      (as-str prop colon val semicolon))))
 
 (defn- ^String render-declaration
   [declaration]
@@ -299,11 +268,11 @@
   [[selector declarations :as rule]]
   (when (every? seq rule)
     (str (render-selector selector)
-         (l-brace)
+         l-brace
          (->> (map render-css declarations)
-              (s/join)
+              (s/join "\n")
               (indent-str))
-         (r-brace))))
+         r-brace)))
 
 ;; Media query rendering
 
@@ -314,7 +283,7 @@
      (false? v) (str "not " sk)
      (= "only" sv) (str "only " sk)
      :else (if (and v (seq sv))
-             (str "(" sk (colon) sv ")")
+             (str "(" sk colon sv ")")
              (str "(" sk ")")))))
 
 (defn- ^String render-media-expr
@@ -337,9 +306,9 @@
   (when (seq rules)
     (str "@media "
          (render-media-expr expr)
-         (l-brace-1)
+         l-brace-1
          (indent-str rules)
-         (r-brace-1))))
+         r-brace-1)))
 
 ;; Garden type rendering
 
@@ -360,7 +329,7 @@
                 (render-media-expr media-expr))]
     (str "@import "
          (if exprs (str url " " exprs) url)
-         (semicolon))))
+         semicolon)))
 
 (defn- ^String render-function [^CSSFunction css-function]
   (let [{:keys [function args]} css-function
@@ -373,9 +342,9 @@
   (let [{:keys [identifier frames]} css-keyframes]
     (when (seq frames)
       (let [body (str (to-str identifier)
-                      (l-brace-1)
+                      l-brace-1
                       (indent-str (compile-css frames))
-                      (r-brace-1))
+                      r-brace-1)
             prefix (fn [vendor]
                      (str "@" (u/vendor-prefix vendor "keyframes ")))]
         (->> (map prefix (vendors))
@@ -416,6 +385,13 @@
   nil
   (render-css [this] ""))
 
+(defn- ^String compress-stylesheet [^String stylesheet]
+  (let [reader (StringReader. stylesheet)
+        writer (StringWriter.)]
+    (doto (CssCompressor. reader)
+      (.compress writer 0))
+    (str writer)))
+
 (defn ^String compile-style
   "Convert a sequence of maps into css for use with the HTML style
    attribute."
@@ -449,7 +425,10 @@
         rules (if flags
                 (rest rules)
                 rules)
-        stylesheet (compile-stylesheet flags rules)]
+        stylesheet (let [stylesheet (compile-stylesheet flags rules)]
+                     (if-not (:pretty-print? flags)
+                       (compress-stylesheet stylesheet)
+                       stylesheet))]
     (if output-to
       (do
         (save-stylesheet output-to stylesheet)
