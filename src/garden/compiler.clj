@@ -49,15 +49,15 @@
 
 ;;;; Punctuation
 
-(def comma ", ")
-(def colon ": ")
-(def semicolon ";")
-(def l-brace " {\n")
-(def r-brace "\n}")
-(def l-brace-1 " {\n\n")
-(def r-brace-1 "\n\n}")
-(def rule-sep "\n\n")
-(def indent "  ")
+(def ^:private comma ", ")
+(def ^:private colon ": ")
+(def ^:private semicolon ";")
+(def ^:private l-brace " {\n")
+(def ^:private r-brace "\n}")
+(def ^:private l-brace-1 " {\n\n")
+(def ^:private r-brace-1 "\n\n}")
+(def ^:private rule-sep "\n\n")
+(def ^:private indent "  ")
 
 ;;;; Utilities
 
