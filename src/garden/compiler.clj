@@ -59,7 +59,7 @@
 (def rule-sep "\n\n")
 (def indent "  ")
 
-;; Utilities
+;;;; Utilities
 
 (declare render-css compile-css)
 
@@ -110,7 +110,7 @@
 (defn- ^String indent-str [s]
   (s/replace s indent-location indent))
 
-;; Expansion
+;;;; Expansion
 
 (defprotocol Expandable
   (expand [this]))
@@ -120,8 +120,9 @@
 (defn- expand-declaration
   "Expands nested properties in declarations.
 
-   Ex. (expand-declaration {:foo {:bar \"baz\"}})
-   => {\"foo-bar\" \"baz\"}"
+  Ex.
+      (expand-declaration {:foo {:bar \"baz\"}})
+      ;; => {\"foo-bar\" \"baz\"}"
   [declaration]
   (reduce
     (fn [m [prop val]]
