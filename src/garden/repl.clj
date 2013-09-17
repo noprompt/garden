@@ -1,28 +1,20 @@
 (ns garden.repl
   "Method definitions for `print-method` with Garden types."
-  (:require [garden.util :as util :refer [ToString to-str]])
-  (:import garden.types.CSSUnit
-           garden.types.CSSFunction))
+  (:require [garden.compiler :as compiler])
+  (:import (garden.types CSSUnit
+                         CSSFunction
+                         CSSImport
+                         CSSKeyframes)))
 
-(extend-protocol ToString
-  CSSUnit
-  (to-str [{:keys [magnitude unit]}]
-    (let [magnitude (if (ratio? magnitude)
-                    (float magnitude)
-                    magnitude)]
-    (str (if (zero? magnitude) 0 magnitude)
-         (when-not (zero? magnitude) (name unit)))))
+(defmethod print-method CSSUnit [css-unit writer]
+  (.write writer (compiler/render-css css-unit)))
 
-  CSSFunction
-  (to-str [{:keys [function args]}]
-    (format "%s(%s)"
-            (util/to-str function)
-            (if (sequential? args)
-              (util/comma-join args)
-              args))))
+(defmethod print-method CSSFunction [css-function writer]
+  (.write writer (compiler/render-css css-function)))
 
-(defmethod print-method CSSUnit [unit writer]
-  (.write writer (to-str unit)))
+(defmethod print-method CSSImport [css-import writer]
+  (.write writer (compiler/render-css css-import)))
 
-(defmethod print-method CSSFunction [cssfn writer]
-  (.write writer (to-str cssfn)))
+(defmethod print-method CSSKeyframes [css-keyframes writer]
+  (.write writer (compiler/render-css css-keyframes)))
+
