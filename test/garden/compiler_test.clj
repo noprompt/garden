@@ -2,8 +2,9 @@
   (:require [clojure.test :refer :all]
             [garden.compiler :refer :all]
             [garden.types])
-  (:import garden.types.CSSFunction
-           garden.types.CSSImport))
+  (:import (garden.types CSSFunction
+                         CSSImport
+                         CSSKeyframes)))
 
 (deftest render-css-test 
   (testing "maps"
@@ -17,7 +18,7 @@
       {:a [[1 2] 3 [4 5]]} "a: 1 2, 3, 4 5;"))
 
   (testing "vectors"
-    (are [x y] (= (compile-css (list x)) y)
+    (are [x y] (= (compile-css (list  x)) y)
       [:a {:x 1} {:y 2}]
       "a{x:1;y:2}"
 
@@ -72,7 +73,6 @@
        [:h1 {:a "b"}]]
       "@media happy and not sad{h1{a:b}}"
 
-
       [^{:media {:-vendor-prefix-blah-blah-blah "2"}}
        [:h1 {:a "b"}]]
       "@media(-vendor-prefix-blah-blah-blah:2){h1{a:b}}")))
@@ -117,3 +117,21 @@
 
         (CSSImport. url {:screen true}) 
         "@import \"http://example.com/foo.css\" screen;"))))
+
+(def test-vendors ["moz" "webkit"])
+
+(deftest flag-tests
+  (testing ":vendors"
+    (let [rule [:a ^:prefix {:a 1 :b 1}]
+          compiled (-> (list {:vendors test-vendors} rule)
+                       (compile-css))]
+      (is (re-find #"-moz-a:1;-webkit-a:1;a:1" compiled))
+      (is (re-find #"-moz-b:1;-webkit-b:1;b:1" compiled)))
+
+    (let [keyframes (CSSKeyframes. "fade" [[:from {:foo "bar"}]
+                                           [:to {:foo "baz"}]])
+          compiled (-> (list {:vendors test-vendors} keyframes)
+                       (compile-css))]
+      (is (re-find #"@-moz-keyframes" compiled))
+      (is (re-find #"@-webkit-keyframes" compiled))
+      (is (re-find #"@keyframes" compiled)))))

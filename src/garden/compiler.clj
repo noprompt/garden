@@ -124,14 +124,14 @@
       (expand-declaration {:foo {:bar \"baz\"}})
       ;; => {\"foo-bar\" \"baz\"}"
   [declaration]
-  (reduce
-    (fn [m [prop val]]
-      (let [prefix (fn [[k v]] {(as-str prop "-" k) v})]
-        (if (util/hash-map? val)
-         (->> (map prefix val) (into m) expand-declaration)
-         (assoc m (to-str prop) val))))
-    {}
-    declaration))
+  (let [m (meta declaration)
+        f (fn [m [prop val]]
+            (let [prefix (fn [[k v]] {(as-str prop "-" k) v})]
+              (if (util/hash-map? val)
+                (->> (map prefix val) (into m) expand-declaration)
+                (assoc m (to-str prop) val))))]
+    (-> (reduce f {} declaration)
+        (with-meta m))))
 
 ;; Rule expansion
 
@@ -255,12 +255,29 @@
                 (render-css val))]
       (as-str prop colon val semicolon))))
 
+(defn- prefix-declaration
+  "If `(:vendors *flags*)` is bound and `declaration` has the meta 
+  `{:prefix true}` automatically create vendor prefixed properties."
+  [declaration]
+  (if-not (and (vendors) (:prefix (meta declaration)))
+    declaration
+    (mapcat 
+     (fn [prop val]
+       (-> (mapv
+            (fn [vendor p v]
+              [(util/vendor-prefix vendor p) v])
+            (vendors)
+            (repeat prop)
+            (repeat val))
+           (conj [prop val])))
+     (keys declaration)
+     (vals declaration))))
+
 (defn- ^String render-declaration
   [declaration]
-  (if (util/record? declaration)
-    (str declaration)
-    (->> (map render-property-and-value declaration)
-         (string/join "\n"))))
+  (->> (prefix-declaration declaration)
+       (map render-property-and-value)
+       (string/join "\n")))
 
 ;; Rule rendering
 
