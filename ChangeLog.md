@@ -12,9 +12,9 @@ When using meta-data as a media query you must now explicitly use the
 `:media` key for which the value represents the query. For example,
 originally to acheive `@media screen` you would simply attach the meta
 `{:screen true}`. The same result now can be produced with `{:media
-{:screen true}`. Although this is not nearly as convenient it prevents
-conflicts with other meta data. Because of these changes the use of
-`garden.stylesheet/at-media` is strongly encouraged.
+{:screen true}}`. Although this is not nearly as convenient it
+prevents conflicts with other meta data. Because of these changes the
+use of `garden.stylesheet/at-media` is strongly encouraged.
 
 ### Library changes
 
