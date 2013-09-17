@@ -1,6 +1,6 @@
 (ns garden.compiler
-  (:require [clojure.string :as s]
-            [garden.util :as u :refer (to-str as-str)]
+  (:require [clojure.string :as string]
+            [garden.util :as util :refer (to-str as-str)]
             [garden.types])
   (:import (java.io StringReader
                     StringWriter)
@@ -77,7 +77,7 @@
 (defn- space-join
   "Return a space separated list of values."
   [xs]
-  (s/join " " (map render-css xs)))
+  (string/join " " (map render-css xs)))
 
 (defn- comma-join
   "Return a comma separated list of values. Subsequences are joined with
@@ -87,10 +87,10 @@
              (if (sequential? x)
                (space-join x)
                (render-css x)))]
-    (s/join comma ys)))
+    (string/join comma ys)))
 
 (defn- rule-join [xs]
-  (s/join rule-sep xs))
+  (string/join rule-sep xs))
 
 (defn- extract-media-query
   "Extract media query information from obj."
@@ -108,7 +108,7 @@
 (def ^:private indent-location #"(?m)(?=[ A-Za-z#.}-]+)^")
 
 (defn- ^String indent-str [s]
-  (s/replace s indent-location indent))
+  (string/replace s indent-location indent))
 
 ;;;; Expansion
 
@@ -127,7 +127,7 @@
   (reduce
     (fn [m [prop val]]
       (let [prefix (fn [[k v]] {(as-str prop "-" k) v})]
-        (if (u/hash-map? val)
+        (if (util/hash-map? val)
          (->> (map prefix val) (into m) expand-declaration)
          (assoc m (to-str prop) val))))
     {}
@@ -159,7 +159,7 @@
   [selector parent]
   (let [new-selector
         (if (seq parent)
-          (map flatten (u/cartesian-product parent selector))
+          (map flatten (util/cartesian-product parent selector))
           (map vector selector))]
     (map expand-selector-reference new-selector)))
 
@@ -170,7 +170,7 @@
     (loop [xs xs, ds (transient []), children (transient [])]
       (if-let [x (first xs)]
         (cond
-         (u/hash-map? x)
+         (util/hash-map? x)
          (recur (next xs) (conj! ds (expand x)) children)
          (or (vector? x) (media-query? x))
          (recur (next xs) ds (conj! children x))
@@ -195,10 +195,10 @@
       (cond
        (media-query? x)
        (let [q (extract-media-query x)
-             ys (expand (list (u/without-meta x)))
+             ys (expand (list (util/without-meta x)))
              {rs false ms true} (group-by (comp map? first) ys)
              state (conj! state [q rs])
-             state (u/into! state ms)]
+             state (util/into! state ms)]
          (recur (next xs) state))
        (vector? x)
        (let [[rule children] (expand x)
@@ -209,7 +209,7 @@
        (sequential? x)
        (recur (concat x (next xs)) state)
        :else
-       (if (or (u/hash-map? x) *selector-context*)
+       (if (or (util/hash-map? x) *selector-context*)
          (recur (next xs) state)
          (recur (next xs) (conj! state x))))
       state)))
@@ -249,7 +249,7 @@
     (->> (interleave (repeat prop) val)
          (partition 2)
          (map render-property-and-value)
-         (s/join "\n"))
+         (string/join "\n"))
     (let [val (if (sequential? val)
                 (comma-join val)
                 (render-css val))]
@@ -257,7 +257,10 @@
 
 (defn- ^String render-declaration
   [declaration]
-  (s/join (map render-property-and-value declaration)))
+  (if (util/record? declaration)
+    (str declaration)
+    (->> (map render-property-and-value declaration)
+         (string/join "\n"))))
 
 ;; Rule rendering
 
@@ -271,7 +274,7 @@
     (str (render-selector selector)
          l-brace
          (->> (map render-css declarations)
-              (s/join "\n")
+              (string/join "\n")
               (indent-str))
          r-brace)))
 
@@ -288,12 +291,12 @@
              (str "(" sk ")")))))
 
 (defn- ^String render-media-expr
-  ;; Make a media query expession from one or more maps. Keys are not
-  ;; validated but values have the following semantics:
-  ;;
-  ;; `true`  as in `{:screen true}`  == "screen"
-  ;; `false` as in `{:screen false}` == "not screen"
-  ;; `:only` as in `{:screen :only}  == "only screen"
+  "Make a media query expession from one or more maps. Keys are not
+  validated but values have the following semantics:
+  
+    `true`  as in `{:screen true}`  == \"screen\"
+    `false` as in `{:screen false}` == \"not screen\"
+    `:only` as in `{:screen :only}  == \"only screen\""
   [expr]
   (if (sequential? expr)
     (->> expr
@@ -301,7 +304,7 @@
          comma-join)
     (->> expr
          (map render-media-expr-part)
-         (s/join " and "))))
+         (string/join " and "))))
 
 (defn render-media-query [expr rules]
   (when (seq rules)
@@ -324,7 +327,7 @@
 (defn- ^String render-import [^CSSImport css-import]
   (let [{:keys [url media-expr]} css-import
         url (if (string? url)
-              (u/wrap-quotes url)
+              (util/wrap-quotes url)
               (render-css url))
         exprs (when media-expr
                 (render-media-expr media-expr))]
@@ -344,10 +347,11 @@
     (when (seq frames)
       (let [body (str (to-str identifier)
                       l-brace-1
-                      (indent-str (compile-css frames))
+                      (-> (compile-css [{:pretty-print? true} frames])
+                          (indent-str))
                       r-brace-1)
             prefix (fn [vendor]
-                     (str "@" (u/vendor-prefix vendor "keyframes ")))]
+                     (str "@" (util/vendor-prefix vendor "keyframes ")))]
         (->> (map prefix (vendors))
              (cons "@keyframes ")
              (map #(str % body))
@@ -397,7 +401,7 @@
   "Convert a sequence of maps into css for use with the HTML style
    attribute."
   [ms]
-  (->> (filter u/hash-map? ms)
+  (->> (filter util/hash-map? ms)
        (reduce merge)
        (expand)
        (render-css)))
@@ -419,7 +423,7 @@
 (defn ^String compile-css
   "Convert any number of Clojure data structures to CSS."
   [rules]
-  (let [flags (when (and (u/hash-map? (first rules))
+  (let [flags (when (and (util/hash-map? (first rules))
                          (some (first rules) (keys *flags*)))
                (first rules))
         output-to (:output-to flags)
