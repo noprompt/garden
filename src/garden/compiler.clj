@@ -248,7 +248,7 @@
     (->> (interleave (repeat prop) val)
          (partition 2)
          (map render-property-and-value)
-         s/join)
+         (s/join "\n"))
     (let [val (if (sequential? val)
                 (comma-join val)
                 (render-css val))]
@@ -266,7 +266,7 @@
 (defn- ^String render-rule
   ;; Convert a vector to a CSS rule string.
   [[selector declarations :as rule]]
-  (when (every? seq rule)
+  (when (and (seq rule) (every? seq rule))
     (str (render-selector selector)
          l-brace
          (->> (map render-css declarations)
