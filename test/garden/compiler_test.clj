@@ -8,37 +8,31 @@
 (deftest render-css-test 
   (testing "maps"
     (are [x y] (= (render-css (expand  x)) y)
-      {:a 1} "a:1;"
-      {:a "b"} "a:b;" 
-      {:a :b} "a:b;"
-      {:a {:b {:c 1}}} "a-b-c:1;"
-      {:a (sorted-set 1 2 3)} "a:1;a:2;a:3;"
-      {:a [1 2 3]} "a:1,2,3;"
-      {:a [[1 2] 3 [4 5]]} "a:1 2,3,4 5;"))
+      {:a 1} "a: 1;"
+      {:a "b"} "a: b;" 
+      {:a :b} "a: b;"
+      {:a {:b {:c 1}}} "a-b-c: 1;"
+      {:a (sorted-set 1 2 3)} "a: 1;\na: 2;\na: 3;"
+      {:a [1 2 3]} "a: 1, 2, 3;"
+      {:a [[1 2] 3 [4 5]]} "a: 1 2, 3, 4 5;"))
 
   (testing "vectors"
     (are [x y] (= (compile-css (list x)) y)
-      [:a
-       {:x 1}
-       {:y 2}]
+      [:a {:x 1} {:y 2}]
       "a{x:1;y:2}"
 
-      [:a {:x 1}
-       [:b {:y 2}]]
+      [:a {:x 1} [:b {:y 2}]]
       "a{x:1}a b{y:2}"
 
-      [:a :b {:x 1}
-       [:c :d {:y 2}]]
+      [:a :b {:x 1} [:c :d {:y 2}]]
       "a,b{x:1}a c,a d,b c,b d{y:2}"
 
       [:a :b
        '({:x 1})
-       '([:c :d
-          {:y 2}])]
+       '([:c :d {:y 2}])]
       "a,b{x:1}a c,a d,b c,b d{y:2}"
 
-      [[:a {:x 1}]
-       [:b {:y 2}]]
+      [[:a {:x 1}] [:b {:y 2}]]
       "a{x:1}b{y:2}")))
 
 (deftest media-query-test
@@ -81,7 +75,7 @@
 
       [^{:media {:-vendor-prefix-blah-blah-blah "2"}}
        [:h1 {:a "b"}]]
-      "@media (-vendor-prefix-blah-blah-blah:2){h1{a:b}}")))
+      "@media(-vendor-prefix-blah-blah-blah:2){h1{a:b}}")))
 
 (deftest parent-selector-test
   (testing "parent selector references"
@@ -95,7 +89,7 @@
       [:a
        ^{:media {:max-width "1em"}}
        [:&:hover {:x :y}]]
-      "@media (max-width:1em){a:hover{x:y}}"
+      "@media(max-width:1em){a:hover{x:y}}"
 
       ^{:media {:screen true}}
       [:a {:f "bar"}
@@ -110,10 +104,10 @@
       "url(background.jpg)"
 
       (CSSFunction. :daughter [:alice :bob])
-      "daughter(alice,bob)"
+      "daughter(alice, bob)"
 
       (CSSFunction. :x [(CSSFunction. :y 1) (CSSFunction. :z 2)])
-      "x(y(1),z(2))"))
+      "x(y(1), z(2))"))
 
   (testing "CSSImport"
     (let [url "http://example.com/foo.css"]
