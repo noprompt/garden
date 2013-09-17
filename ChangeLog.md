@@ -6,7 +6,8 @@
 lists are rendered as space separated lists and the behavior is no longer
 recursive. The rational for this is it prevents situations where you
 would need to nest vetors/lists more than two levels to acheive the
-result you are interested in; gradients being a good example.
+result you are interested in; gradients being a good example. The
+recursive nature was removed simply because it lead to confusing code.
 
 When using meta-data as a media query you must now explicitly use the
 `:media` key for which the value represents the query. For example,
@@ -77,8 +78,8 @@ The `:output-style` flag has been replaced with `:pretty-print?`.
 the flage) are equivalent to `:output-style :expanded` and
 `:output-style :compressed` respectively.
 
-The `:output-to` flag may be specified to save complied CSS to path on
-disk. The return result of `css` will still be a string, however.
+The `:output-to` flag may be specified to save complied CSS to a path
+on disk. The return result of `css` will still be a string, however.
 
 The `:vendors` flag may be set to a vector of browser prefixes for
 which certain types, when rendered, will automatically be prefixed.
@@ -89,7 +90,9 @@ customization for media expression handling. Currently there is only
 one flag in this hash-map which may be set: `:nesting-behavior`. It
 may have one of two values, `:default` or `:merge`. When set to
 `:merge` nested media-queries will use `merge` to combine their
-expression values with their parents.
+expression values with their parents. When unconfigured or set to
+`:default` nested media queries will simply appear after their parent
+when rendered.
 
 ### Unit changes 
 
