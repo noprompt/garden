@@ -389,7 +389,7 @@
   (let [reader (StringReader. stylesheet)
         writer (StringWriter.)]
     (doto (CssCompressor. reader)
-      (.compress writer 0))
+      (.compress writer -1))
     (str writer)))
 
 (defn ^String compile-style
