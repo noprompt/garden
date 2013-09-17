@@ -1,4 +1,4 @@
-## Changes between 0.1.0-beta6 and 1.0.0
+## Changes between 0.1.0-beta6 and 1.0.0-SNAPSHOT
 
 ### Syntax Changes
 
@@ -26,7 +26,7 @@ Added `garden.def/cssfn` and `garden.def/defcssfn` for defining custom
 `CSSFunction`s. `cssfn` and `defcssfn` create functions which
 automatically return new instances of `CSSFunction`.
 
-```
+```clojure
 (require '[garden.def :refer [cssfn defcss]])
 
 (defcssfn example
@@ -39,15 +39,20 @@ automatically return new instances of `CSSFunction`.
 ;; => sel{prop:example(1)}
 
 (css [:sel {:prop (example 1 2)}])
-;; => sel{prop:example(1, 2)}
+;; => sel{prop:example(1,2)}
 
 (css [:sel {:prop (example 1 2 3)}])
-;; => sel{prop:example(1, 2 3);
+;; => sel{prop:example(1,2 3)}
 
 (let [example (cssfn "example")]
   (css [:sel {:prop (example [1 [2 3]])}]))
-;; => sel{prop:example(1, 2 3);
+;; => sel{prop:example(1,2 3)}
 ```
+
+Added the `garden.repl` namespace which includes implementations of
+`print-method` for Garden's internal record types. `require` this when
+you want to see the output of Garden's internal types such as
+`garden.types.CSSFunction`, etc. as they would appear in CSS.
 
 Fixed spelling correction from `garden.arithemetic` to
 `garden.arithmetic`.
@@ -55,12 +60,36 @@ Fixed spelling correction from `garden.arithemetic` to
 All functions from the `garden.stylesheet.functions.filters` have been
 moved to `garden.stylesheet.functions`.
 
+### Compiler changes
+
+The [YUI Compressor](https://github.com/yui/yuicompressor) is now used
+for stylesheet compression instead of the original compression
+techniques. This has the benefit of reducing compiler code and
+providing better and more sophisticated compression overall.
+
+Media queries no longer appear at the bottom of the stylesheet but in
+roughly the same order they were defined in.
+
 ### Compiler flag changes
 
 The `:output-style` flag has been replaced with `:pretty-print?`.
 `:pretty-print? true` and `:pretty-print? false` (or simply omitting
 the flage) are equivalent to `:output-style :expanded` and
 `:output-style :compressed` respectively.
+
+The `:output-to` flag may be specified to save complied CSS to path on
+disk. The return result of `css` will still be a string, however.
+
+The `:vendors` flag may be set to a vector of browser prefixes for
+which certain types, when rendered, will automatically be prefixed.
+Currently this only applies to `@keyframes`.
+
+The `:media-expressions` flag expected to be hash-map provides
+customization for media expression handling. Currently there is only
+one flag in this hash-map which may be set: `:nesting-behavior`. It
+may have one of two values, `:default` or `:merge`. When set to
+`:merge` nested media-queries will use `merge` to combine their
+expression values with their parents.
 
 ### Unit changes 
 
