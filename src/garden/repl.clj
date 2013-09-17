@@ -1,4 +1,5 @@
 (ns garden.repl
+  "Method definitions for `print-method` with Garden types."
   (:require [garden.util :as util :refer [ToString to-str]])
   (:import garden.types.CSSUnit
            garden.types.CSSFunction))

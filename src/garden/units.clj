@@ -61,7 +61,7 @@
 
 (defn read-unit
   "Reads a CSSUnit object from the input x. If x is a CSSUnit then it
-   is returned. Otherwise an attempt is made to parse the input."
+  is returned. Otherwise an attempt is made to parse the input."
   [x]
   (if (unit? x)
     x
@@ -100,9 +100,9 @@
 
 (defn make-unit-fn
   "Creates a function for creating and converting `CSSUnit`s for the
-   given unit. If a number n is passed the function it will produce a
-   new `CSSUnit` record with a the magnitude set to n. If a `CSSUnit`
-   is passed the function will attempt to convert it."
+  given unit. If a number n is passed the function it will produce a
+  new `CSSUnit` record with a the magnitude set to n. If a `CSSUnit`
+  is passed the function will attempt to convert it."
   [unit]
   (fn [x]
     (cond
@@ -171,8 +171,8 @@
        (reduce ud (ud x y) more)))))
 
 (defmacro defunit
-  "Create a suite of functions for unit creation, conversion, validation, and
-   arithmetic."
+  "Create a suite of functions for unit creation, conversion,
+  validation, and arithmetic."
   ([name]
      `(defunit ~name ~name))
   ([name unit]

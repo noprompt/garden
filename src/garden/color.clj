@@ -311,8 +311,8 @@
 
 (defn analogous
   "Given a color return a triple of colors which are 0, 30, and 60
-   degrees clockwise from it. If a second falsy argument is passed the
-   returned values will be in a counter-clockwise direction."
+  degrees clockwise from it. If a second falsy argument is passed the
+  returned values will be in a counter-clockwise direction."
   ([color]
      (analogous color true))
   ([color clockwise?]
@@ -321,13 +321,13 @@
 
 (defn triad
   "Given a color return a triple of colors which are equidistance apart
-   on the color wheel."
+  on the color wheel."
   [color]
   (hue-rotations color 0 120 240))
 
 (defn split-complement
   "Given a color return a triple of the color and the two colors on
-   either side of it's complement."
+  either side of it's complement."
   ([color]
      (split-complement color 130))
   ([color distance-from-complement]
@@ -336,9 +336,9 @@
 
 (defn tetrad
   "Given a color return a quadruple of four colors which are
-   equidistance on the color wheel (ie. a pair of complements). An
-   optional angle may be given for color of the second complement in the
-   pair (this defaults to 90 when only color is passed)."
+  equidistance on the color wheel (ie. a pair of complements). An
+  optional angle may be given for color of the second complement in the
+  pair (this defaults to 90 when only color is passed)."
   ([color]
      (tetrad color 90))
   ([color angle]
@@ -348,8 +348,8 @@
 
 (defn shades
   "Given a color return a list of shades from lightest to darkest by
-   a step. By default the step is 10. White and black are excluded from
-   the returned list."
+  a step. By default the step is 10. White and black are excluded from
+  the returned list."
   ([color]
      (shades color 10))
   ([color step]

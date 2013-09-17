@@ -22,7 +22,7 @@
 
 (defn +
   "Generic addition operator. Transparently computes the sum of
-   `CSSUnit`s,`CSSColor`s, and numbers."
+  `CSSUnit`s,`CSSColor`s, and numbers."
   ([] 0)
   ([x] x)
   ([x y]
@@ -37,7 +37,7 @@
 
 (defn -
   "Generic subtraction operator. Transparently computes the difference
-   between `CSSUnit`s, `CSSColor`s, and numbers."
+  between `CSSUnit`s, `CSSColor`s, and numbers."
   ([x]
      (cond
       (unit? x) (update-in x [:magnitude] clojure.core/-)
@@ -58,7 +58,7 @@
 
 (defn *
   "Generic multiplication operation. Transparently computes the product
-   between `CSSUnit`s, `CSSColor`s, and numbers."
+  between `CSSUnit`s, `CSSColor`s, and numbers."
   ([] 1)
   ([x] x)
   ([x y]
@@ -73,7 +73,7 @@
 
 (defn /
   "Generic division operation. Transparently computes the quotient
-   between `CSSUnit`s, `CSSColor`s, and numbers."
+  between `CSSUnit`s, `CSSColor`s, and numbers."
   ([x]
      (cond
       (unit? x) (update-in x [:magnitude] clojure.core//)

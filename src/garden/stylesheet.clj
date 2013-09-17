@@ -1,9 +1,8 @@
 (ns garden.stylesheet
   "Utility functions for CSS properties, directives and functions."
-  (:require [garden.util :as u]
-            [garden.units :as un]
-            [garden.color :as c]
-            garden.types)
+  (:require [garden.util :as util]
+            [garden.color :as color]
+            [garden.types])
   (:import (garden.types CSSImport
                          CSSKeyframes)))
 
@@ -11,12 +10,12 @@
 
 (defn font-family
   "Return a font-family declaration for at least one font. Strings
-   containing whitespace are automatically escaped."
+  containing whitespace are automatically escaped."
   [font & fonts]
   (let [f (fn [x]
             (if (and (string? x)
                      (re-find #" " x))
-              (u/wrap-quotes x)
+              (util/wrap-quotes x)
               x))
         fonts (flatten (cons font fonts))]
     {:font-family [(map f fonts)]}))
@@ -46,9 +45,9 @@
 (defn rgb
   "Create a color from RGB values."
   [r g b]
-  (c/rgb [r g b]))
+  (color/rgb [r g b]))
 
 (defn hsl
   "Create a color from HSL values."
   [h s l]
-  (c/hsl [h s l]))
+  (color/hsl [h s l]))
