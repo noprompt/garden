@@ -5,16 +5,10 @@
 (defn output [f]
   (slurp (format "test/garden/output/%s.css" f)))
 
-(defn compressed [s]
-  (output (str "compressed-" (name s))))
-
 (defn expanded [s]
   (output (str "expanded-" (name s))))
 
-(def css-compressed
-  (partial css {:pretty-print? false}))
-
-(def css-expanded
+(def css-pretty-print
   (partial css {:pretty-print? true}))
 
 (deftest test-css
@@ -29,18 +23,10 @@
             [:&:hover {:font-weight "bold"}]]
         s4 (vary-meta (list s1 s3) assoc :media {:screen true})]
 
-    (testing "compressed output"
-      (is (= (css-compressed s1) (compressed :s1)))
-      (is (= (css-compressed s1') (compressed :s1)))
-      (is (= (css-compressed s1'') (compressed :s1)))
-      (is (= (css-compressed s2) (compressed :s2)))
-      (is (= (css-compressed s3) (compressed :s3)))
-      (is (= (css-compressed s4) (compressed :s4))))
-
-    (testing "exapnded output"
-      (is (= (css-expanded s1) (expanded :s1)))
-      (is (= (css-expanded s1') (expanded :s1)))
-      (is (= (css-expanded s1'') (expanded :s1)))
-      (is (= (css-expanded s2) (expanded :s2)))
-      (is (= (css-expanded s3) (expanded :s3)))
-      (is (= (css-expanded s4) (expanded :s4))))))
+    (testing "pretty-print output"
+      (is (= (css-pretty-print s1) (expanded :s1)))
+      (is (= (css-pretty-print s1') (expanded :s1)))
+      (is (= (css-pretty-print s1'') (expanded :s1)))
+      (is (= (css-pretty-print s2) (expanded :s2)))
+      (is (= (css-pretty-print s3) (expanded :s3)))
+      (is (= (css-pretty-print s4) (expanded :s4))))))
