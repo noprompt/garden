@@ -79,12 +79,12 @@
     (let [v1 (get-in conversions [left right])
           v2 (get-in conversions [right left])]
       (cond
-        v1 (CSSUnit. right (* v1 m))
-        v2 (CSSUnit. right (/ m v2))
-        ;; Both units are convertible but no conversion between them exists.
-        :else (throw
-                (IllegalArgumentException.
-                  (format "Can't convert %s to %s" (name left) (name right))))))
+       v1 (CSSUnit. right (* v1 m))
+       v2 (CSSUnit. right (/ m v2))
+       ;; Both units are convertible but no conversion between them exists.
+       :else (throw
+              (IllegalArgumentException.
+               (format "Can't convert %s to %s" (name left) (name right))))))
     ;; Display the inconvertible unit.
     (let [x (first (drop-while convertable? [left right]))]
       (throw (IllegalArgumentException. (str "Inconvertible unit " (name x)))))))
@@ -118,14 +118,14 @@
   [unit]
   (fn [x]
     (cond
-      (number? x) (CSSUnit. unit x)
-      (unit? x) (or (and (= (unit x) unit) x)
-                    (convert x unit))
-      :else (throw
-                 (IllegalArgumentException.
-                   (format "Don't know how to convert type %s to %s"
-                           (.getName (type x))
-                           (name unit)))))))
+     (number? x) (CSSUnit. unit x)
+     (unit? x) (or (and (= (unit x) unit) x)
+                   (convert x unit))
+     :else (throw
+            (IllegalArgumentException.
+             (format "Don't know how to convert type %s to %s"
+                     (.getName (type x))
+                     (name unit)))))))
 
 (defn make-unit-adder
   "Create a addition function for adding Units."
@@ -135,11 +135,11 @@
       ([] (u 0))
       ([x] (u x))
       ([x y]
-       (let [{m1 :magnitude} (u x)
-             {m2 :magnitude} (u y)]
-         (u (+ m1 m2))))
+         (let [{m1 :magnitude} (u x)
+               {m2 :magnitude} (u y)]
+           (u (+ m1 m2))))
       ([x y & more]
-       (reduce u+ (u+ x y) more)))))
+         (reduce u+ (u+ x y) more)))))
 
 (defn make-unit-subtractor
   "Create a subtraction function for subtracting Units."
@@ -148,11 +148,11 @@
     (fn u-
       ([x] (u (- x)))
       ([x y]
-       (let [{m1 :magnitude} (u x)
-             {m2 :magnitude} (u y)]
-         (u (- m1 m2))))
+         (let [{m1 :magnitude} (u x)
+               {m2 :magnitude} (u y)]
+           (u (- m1 m2))))
       ([x y & more]
-       (reduce u- (u- x y) more)))))
+         (reduce u- (u- x y) more)))))
 
 (defn make-unit-multiplier
   "Create a multiplication function for multiplying Units."
@@ -162,11 +162,11 @@
       ([] (u 1))
       ([x] (u x))
       ([x y]
-       (let [{m1 :magnitude} (u x)
-             {m2 :magnitude} (u y)]
-         (u (* m1 m2))))
+         (let [{m1 :magnitude} (u x)
+               {m2 :magnitude} (u y)]
+           (u (* m1 m2))))
       ([x y & more]
-       (reduce u* (u* x y) more)))))
+         (reduce u* (u* x y) more)))))
 
 (defn make-unit-divider
   "Create a division function for dividing Units."
@@ -175,11 +175,11 @@
     (fn ud
       ([x] (u (/ 1 x)))
       ([x y]
-       (let [{m1 :magnitude} (u x)
-             {m2 :magnitude} (u y)]
-         (u (/ m1 m2))))
+         (let [{m1 :magnitude} (u x)
+               {m2 :magnitude} (u y)]
+           (u (/ m1 m2))))
       ([x y & more]
-       (reduce ud (ud x y) more)))))
+         (reduce ud (ud x y) more)))))
 
 (defmacro defunit
   "Create a suite of functions for unit creation, conversion,
@@ -198,9 +198,9 @@
           (def ~(append "-div") (make-unit-divider ~k))))))
 
 (comment
-  ; This:
+  ;; This:
   (defunit px)
-  ; Is equivalent to
+  ;; Is equivalent to:
   (def px  (make-unit-fn :px))
   (def px? (make-unit-predicate :px))
   (def px+ (make-unit-adder :px))
@@ -225,7 +225,7 @@
 (defunit em)
 (defunit ex)
 (defunit ch)
-;(defunit rem)
+;;(defunit rem)
 
 ;; Viewport-percentage lengths
 
