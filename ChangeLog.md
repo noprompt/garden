@@ -89,10 +89,18 @@ the meta `{:prefix true}`.
 For example this
 
 ```clojure
+(require '[garden.stylesheet :refer [at-keyframes]])
+
 (css {:vendors ["moz" "webkit"]
       :pretty-print? true}
   [:* :*:after :*:before
-   ^:prefix {:box-sizing "border-box"}])
+   ^:prefix {:box-sizing "border-box"}]
+
+  (at-keyframes "foo"
+    [:from
+     {:foo "bar"}]
+    [:to
+     {:foo "baz"}]))
 ```
 
 will produce
@@ -102,6 +110,42 @@ will produce
   -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
+}
+
+@keyframes foo {
+
+  from {
+    foo: bar;
+  }
+
+  to {
+    foo: baz;
+  }
+
+}
+
+@-moz-keyframes foo {
+
+  from {
+    foo: bar;
+  }
+
+  to {
+    foo: baz;
+  }
+
+}
+
+@-webkit-keyframes foo {
+
+  from {
+    foo: bar;
+  }
+
+  to {
+    foo: baz;
+  }
+
 }
 ```
 
