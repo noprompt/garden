@@ -1,9 +1,51 @@
 (ns garden.units
   "Functions and macros for working with CSS units."
-  (:refer-clojure :exclude [rem])
-  (:require [garden.util :as u]
-            [garden.types])
+  (:require [garden.types])
   (:import garden.types.CSSUnit))
+
+;;;; Unit families
+
+(def length-units #{:in :cm :pc :mm :pt :px (keyword "%")})
+
+(def angular-units #{:deg :grad :rad :turn})
+
+(def time-units #{:s :ms})
+
+(def frequency-units #{:Hz :kHz})
+
+(def resolution-units #{:dpi :dpcm :dppx})
+
+;;;; Unit predicates
+
+(defn unit?
+  "True if x is of type CSSUnit."
+  [x]
+  (instance? CSSUnit x))
+
+(defn length?
+  [x]
+  (and (unit? x)
+       (contains? length-units (:unit x))))
+
+(defn angle?
+  [x]
+  (and (unit? x)
+       (contains? angular-units (:unit x))))
+
+(defn time?
+  [x]
+  (and (unit? x)
+       (contains? time-units (:unit x))))
+
+(defn frequency?
+  [x]
+  (and (unit? x)
+       (contains? frequency-units (:unit x))))
+
+(defn resolution?
+  [x]
+  (and (unit? x)
+       (contains? resolution-units (:unit x))))
 
 ;;;; Unit conversion
 
@@ -49,51 +91,21 @@
 
 ;; # Unit helpers
 
-(defn unit?
-  "True if x is of type Unit."
-  [x]
-  (instance? CSSUnit x))
-
 (def ^{:doc "Regular expression for matching a CSS unit. The magnitude
-             and unit are captured."}
+             and unit are captured."
+       :private true}
   unit-re
   #"([+-]?\d+(?:\.?\d+)?)(p[xtc]|in|[cm]m|%|r?em|ex|ch|v(?:[wh]|m(?:in|ax))|deg|g?rad|turn|m?s|k?Hz|dp(?:i|cm|px))")
 
 (defn read-unit
-  "Reads a CSSUnit object from the input x. If x is a CSSUnit then it
-  is returned. Otherwise an attempt is made to parse the input."
-  [x]
-  (if (unit? x)
-    x
-    (when-let [[_ m u] (re-find unit-re (u/to-str x))]
-      (CSSUnit. (keyword u) (read-string m)))))
+  "Read a `CSSUnit` object from the string `s`."
+  [s]
+  (when-let [[_ magnitude unit] (re-matches unit-re s)]
+    (let [unit (keyword unit)
+          magnitude (if magnitude (read-string magnitude) 0)]
+      (CSSUnit. unit magnitude))))
 
-(defn length?
-  "True if x is a CSS length unit (in, cm, pc, mm, pt, or px)."
-  [x]
-  (boolean (and (unit? x) (#{:in :cm :pc :mm :pt :px (keyword "%")} (:unit x)))))
-
-(defn angle?
-  "True if x is a CSS angular unit (deg, grad, rad, or turn)."
-  [x]
-  (boolean (and (unit? x) (#{:deg :grad :rad :turn} (:unit x)))))
-
-(defn time?
-  "True if x is a CSS time unit (s or ms)."
-  [x]
-  (boolean (and (unit? x) (#{:s :ms} (:unit x)))))
-
-(defn frequency?
-  "True if x is a CSS frequency unit (Hz or kHz)."
-  [x]
-  (boolean (and (unit? x) (#{:Hz :kHz} (:unit x)))))
-
-(defn resolution?
-  "True if x is a CSS resolution unit (dpi, dpcm, or dppx)."
-  [x]
-  (boolean (and (unit? x) (#{:dpi :dpcm :dppx} (:unit x)))))
-
-(defn make-unit-checker
+(defn make-unit-predicate
   "Creates a function for verifying the given unit type."
   [unit]
   (fn [x] (and (unit? x) (= (:unit x) unit))))
@@ -107,8 +119,7 @@
   (fn [x]
     (cond
       (number? x) (CSSUnit. unit x)
-      (unit? x) (if (= (:unit x) unit)
-                    x
+      (unit? x) (or (and (= (unit x) unit) x)
                     (convert x unit))
       :else (throw
                  (IllegalArgumentException.
@@ -180,7 +191,7 @@
            append #(symbol (str name %))]
        `(do
           (def ~name (make-unit-fn ~k))
-          (def ~(append \?) (make-unit-checker ~k))
+          (def ~(append \?) (make-unit-predicate ~k))
           (def ~(append \+) (make-unit-adder ~k))
           (def ~(append \-) (make-unit-subtractor ~k))
           (def ~(append \*) (make-unit-multiplier ~k))
@@ -191,7 +202,7 @@
   (defunit px)
   ; Is equivalent to
   (def px  (make-unit-fn :px))
-  (def px? (make-unit-checker :px))
+  (def px? (make-unit-predicate :px))
   (def px+ (make-unit-adder :px))
   (def px- (make-unit-subtractor :px))
   (def px* (make-unit-multiplier :px))

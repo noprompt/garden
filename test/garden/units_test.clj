@@ -1,6 +1,6 @@
 (ns garden.units-test
-  (:use clojure.test
-        garden.units)
+  (:require [clojure.test :refer :all]
+            [garden.units :refer :all])
   (:import garden.types.CSSUnit))
 
 (deftest test-unit-arthimetic
@@ -53,8 +53,6 @@
 
 (deftest unit-utils
   (testing "read-unit"
-    (is (= (px 1) (read-unit (px 1))))
-    (is (= (px 1.3) (read-unit (px 1.3))))
     (is (= (cm 1) (read-unit "1cm")))
     (is (= (mm 1) (read-unit "1mm")))
     (is (= (in 1) (read-unit "1in")))
