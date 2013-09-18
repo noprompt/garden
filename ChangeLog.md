@@ -83,7 +83,27 @@ on disk. The return result of `css` will still be a string, however.
 
 The `:vendors` flag may be set to a vector of browser prefixes for
 which certain types, when rendered, will automatically be prefixed.
-Currently this only applies to `@keyframes`.
+This automatically applies to `@keyframes` and any declarations with
+the meta `{:prefix true}`.
+
+For example this
+
+```clojure
+(css {:vendors ["moz" "webkit"]
+      :pretty-print? true}
+  [:* :*:after :*:before
+   ^:prefix {:box-sizing "border-box"}])
+```
+
+will produce
+
+```css
+*, *:after, *:before {
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+}
+```
 
 The `:media-expressions` flag expected to be hash-map provides
 customization for media expression handling. Currently there is only
