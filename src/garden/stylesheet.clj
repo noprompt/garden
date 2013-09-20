@@ -4,7 +4,8 @@
             [garden.color :as color]
             [garden.types])
   (:import (garden.types CSSImport
-                         CSSKeyframes)))
+                         CSSKeyframes
+                         CSSMediaQuery)))
 
 ;;;; Properties
 
@@ -18,7 +19,7 @@
               (util/wrap-quotes x)
               x))
         fonts (flatten (cons font fonts))]
-    {:font-family [(map f fonts)]}))
+    {:font-family (map f fonts)}))
 
 ;;;; Directives
 
@@ -33,9 +34,9 @@
   ([url media-expr] (CSSImport. url media-expr)))
 
 (defn at-media
-  "Wrap the given rules with meta given by `expr`."
-  [expr & rules]
-  (with-meta rules {:media expr}))
+  "Create a CSS @media query."
+  [media-expression & children]
+  (CSSMediaQuery. media-expression children))
 
 (defn at-keyframes [identifier & frames]
   (CSSKeyframes. identifier frames))
