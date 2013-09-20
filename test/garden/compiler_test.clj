@@ -4,134 +4,151 @@
             [garden.types])
   (:import (garden.types CSSFunction
                          CSSImport
-                         CSSKeyframes)))
+                         CSSKeyframes
+                         CSSMediaQuery)))
 
-(deftest render-css-test 
-  (testing "maps"
-    (are [x y] (= (render-css (expand  x)) y)
-      {:a 1} "a: 1;"
-      {:a "b"} "a: b;" 
-      {:a :b} "a: b;"
-      {:a {:b {:c 1}}} "a-b-c: 1;"
-      {:a (sorted-set 1 2 3)} "a: 1;\na: 2;\na: 3;"
-      {:a [1 2 3]} "a: 1, 2, 3;"
-      {:a [[1 2] 3 [4 5]]} "a: 1 2, 3, 4 5;"))
+;; Helpers
 
-  (testing "vectors"
-    (are [x y] (= (compile-css (list  x)) y)
-      [:a {:x 1} {:y 2}]
-      "a{x:1;y:2}"
+(defn render= [x y]
+  (= (-> x expand render-css first) y))
 
-      [:a {:x 1} [:b {:y 2}]]
-      "a{x:1}a b{y:2}"
+(defn compile=
+  ([x y & {:as flags}]
+     (= (->> x (compile-css (merge flags {:pretty-print? false}))) y)))
 
-      [:a :b {:x 1} [:c :d {:y 2}]]
-      "a,b{x:1}a c,a d,b c,b d{y:2}"
-
-      [:a :b
-       '({:x 1})
-       '([:c :d {:y 2}])]
-      "a,b{x:1}a c,a d,b c,b d{y:2}"
-
-      [[:a {:x 1}] [:b {:y 2}]]
-      "a{x:1}b{y:2}")))
-
-(deftest media-query-test
-  (testing "media queries"
-    (are [xs res] (= (compile-css (list xs)) res)
-      [(-> (list [:h1 {:a :b}])
-           (with-meta {:screen true}))]
-      "h1{a:b}"
-
-      [(-> (list [:h1 {:a :b}])
-           (with-meta {:media {:screen true}}))]
-      "@media screen{h1{a:b}}"
-
-      [(-> (list [:h1 {:a :b}])
-           (with-meta {:media {:screen true}}))
-       [:h2 {:c :d}]]
-      "@media screen{h1{a:b}}h2{c:d}"
-
-      [[:a {:a "b"}
-        ^{:media {:screen true}}
-        [:&:hover {:c "d"}]]]
-      "a{a:b}@media screen{a:hover{c:d}}"
-
-      [^{:media {:toast true}}
-       [:h1 {:a "b"}]]
-      "@media toast{h1{a:b}}"
-
-      [^{:media {:bacon :only}}
-       [:h1 {:a "b"}]]
-      "@media only bacon{h1{a:b}}"
-
-      [^{:media {:sad false}}
-       [:h1 {:a "b"}]]
-      "@media not sad{h1{a:b}}"
-
-      [^{:media {:happy true :sad false}}
-       [:h1 {:a "b"}]]
-      "@media happy and not sad{h1{a:b}}"
-
-      [^{:media {:-vendor-prefix-blah-blah-blah "2"}}
-       [:h1 {:a "b"}]]
-      "@media(-vendor-prefix-blah-blah-blah:2){h1{a:b}}")))
-
-(deftest parent-selector-test
-  (testing "parent selector references"
-    (are [x res] (= (compile-css (list x)) res)
-      [:a [:&:hover {:x :y}]]
-      "a:hover{x:y}"
-
-      [:a [:& {:x :y}]]
-      "a{x:y}"
-
-      [:a
-       ^{:media {:max-width "1em"}}
-       [:&:hover {:x :y}]]
-      "@media(max-width:1em){a:hover{x:y}}"
-
-      ^{:media {:screen true}}
-      [:a {:f "bar"}
-       ^{:media {:print true}}
-       [:& {:g "foo"}]]
-      "@media screen{a{f:bar}}@media print{a{g:foo}}")))
-
-(deftest type-render-test
-  (testing "CSSFunction"
-    (are [x res] (= (render-css x) res)
-      (CSSFunction. :url "background.jpg")
-      "url(background.jpg)"
-
-      (CSSFunction. :daughter [:alice :bob])
-      "daughter(alice, bob)"
-
-      (CSSFunction. :x [(CSSFunction. :y 1) (CSSFunction. :z 2)])
-      "x(y(1), z(2))"))
-
-  (testing "CSSImport"
-    (let [url "http://example.com/foo.css"]
-      (are [x res] (= (render-css x) res)
-        (CSSImport. url nil)
-        "@import \"http://example.com/foo.css\";"
-
-        (CSSImport. url {:screen true}) 
-        "@import \"http://example.com/foo.css\" screen;"))))
+(defn at-media [e & xs]
+  (CSSMediaQuery. e xs))
 
 (def test-vendors ["moz" "webkit"])
 
+;; Tests
+
+(deftest render-css-test 
+  (testing "maps"
+    (is (render= {:a 1}
+                 "a: 1;"))
+    (is (render= {:a "b"}
+                 "a: b;"))
+    (is (render= {:a :b}
+                 "a: b;"))
+    (is (render= {:a {:b {:c 1}}}
+                 "a-b-c: 1;"))
+    (is (render= {:a (sorted-set 1 2 3)}
+                 "a: 1;\na: 2;\na: 3;"))
+    (is (render= {:a [1 2 3]}
+                 "a: 1, 2, 3;"))
+    (is (render= {:a [[1 2] 3 [4 5]]}
+                 "a: 1 2, 3, 4 5;")))
+  
+  (testing "vectors"
+    (is (compile= [:a {:x 1} {:y 2}]
+                  "a{x:1;y:2}"))
+    (is (compile= [:a {:x 1} [:b {:y 2}]]
+                  "a{x:1}a b{y:2}"))
+    (is (compile= [:a :b {:x 1} [:c :d {:y 2}]]
+                  "a,b{x:1}a c,a d,b c,b d{y:2}"))
+    (is (compile= [:a :b '({:x 1}) '([:c :d {:y 2}])]
+                  "a,b{x:1}a c,a d,b c,b d{y:2}"))
+    (is (compile= [[:a {:x 1}] [:b {:y 2}]]
+                  "a{x:1}b{y:2}"))
+    (is (compile= [:a [{:x 1} [:b {:y 1}]]]
+                  "a b{y:1}"))
+    (is (compile= [:a {:x 1} [[:b {:y 1}]]]
+                  "a{x:1}a b{y:1}"))
+    (is (compile= [:a ^:prefix {:b 1}]
+                  "a{-moz-b:1;-webkit-b:1;b:1}"
+                  :vendors test-vendors)))
+
+  (testing "media queries"
+    (is (compile= (at-media {:screen true} [:h1 {:a :b}])
+                  "@media screen{h1{a:b}}"))
+
+    (is (compile= (list (at-media {:screen true}
+                          [:h1 {:a :b}])
+                        [:h2 {:c :d}])
+                  "@media screen{h1{a:b}}h2{c:d}"))
+
+    (is (compile= (list [:a {:a "b"}
+                         (at-media {:screen true}
+                           [:&:hover {:c "d"}])])
+                  "a{a:b}@media screen{a:hover{c:d}}"))
+
+    (is (compile= (at-media {:toast true}
+                    [:h1 {:a "b"}])
+                  "@media toast{h1{a:b}}"))
+
+    (is (compile= (at-media {:bacon :only}
+                    [:h1 {:a "b"}])
+                  "@media only bacon{h1{a:b}}"))
+
+    (is (compile= (at-media {:sad false}
+                    [:h1 {:a "b"}])
+                  "@media not sad{h1{a:b}}"))
+
+    (is (compile= (at-media {:happy true :sad false}
+                    [:h1 {:a "b"}])
+                  "@media happy and not sad{h1{a:b}}"))
+
+    (is (compile= (at-media {:-vendor-prefix-x "2"}
+                    [:h1 {:a "b"}])
+                  "@media(-vendor-prefix-x:2){h1{a:b}}"))))
+
+(deftest parent-selector-test
+  (testing "parent selector references"
+    (is (compile= [:a [:&:hover {:x :y}]]
+                  "a:hover{x:y}"))
+
+    (is (compile= [:a [:& {:x :y}]]
+                  "a{x:y}"))
+
+    (is (compile= [:a
+                   (at-media {:max-width "1em"}
+                     [:&:hover {:x :y}])]
+                  "@media(max-width:1em){a:hover{x:y}}"))
+
+    (is (compile= (at-media {:screen true}
+                    [:a {:f "bar"}
+                     (at-media {:print true}
+                       [:& {:g "foo"}])])
+                  "@media screen{a{f:bar}}@media print{a{g:foo}}"))))
+
+(deftest type-render-test
+  (testing "CSSFunction"
+    (is (render= (CSSFunction. :url "background.jpg")
+                 "url(background.jpg)"))
+
+    (is (render= (CSSFunction. :daughter [:alice :bob])
+                 "daughter(alice, bob)"))
+
+    (is (render= (CSSFunction. :x [(CSSFunction. :y 1) (CSSFunction. :z 2)])
+                 "x(y(1), z(2))")))
+
+  (testing "CSSImport"
+    (let [url "http://example.com/foo.css"]
+      (is (render= (CSSImport. url nil)
+                   "@import \"http://example.com/foo.css\";"))
+
+      (is (render= (CSSImport. url {:screen true}) 
+                "@import \"http://example.com/foo.css\" screen;")))))
+
 (deftest flag-tests
   (testing ":vendors"
-    (let [rule [:a ^:prefix {:a 1 :b 1}]
-          compiled (-> (list {:vendors test-vendors} rule)
-                       (compile-css))]
+    (let [compiled (compile-css {:vendors test-vendors} [:a ^:prefix {:a 1 :b 1}])]
       (is (re-find #"-moz-a:1;-webkit-a:1;a:1" compiled))
       (is (re-find #"-moz-b:1;-webkit-b:1;b:1" compiled)))
 
-    (let [keyframes (CSSKeyframes. "fade" [[:from {:foo "bar"}]
-                                           [:to {:foo "baz"}]])
-          compiled (-> (list {:vendors test-vendors} keyframes)
-                       (compile-css))]
+    (let [compiled (compile-css {:vendors test-vendors}
+                                (CSSKeyframes. "fade" [[:from {:foo "bar"}]
+                                                       [:to {:foo "baz"}]]))]
       (is (re-find #"@-moz-keyframes" compiled))
       (is (re-find #"@-webkit-keyframes" compiled))
-      (is (re-find #"@keyframes" compiled)))))
+      (is (re-find #"@keyframes" compiled))))
+
+  (testing ":media-expressions :nesting-behavior"
+    (let [compiled (compile-css {:media-expressions {:nesting-behavior :merge}}
+                                (at-media {:screen true}
+                                  [:a {:x 1}]
+                                  (at-media {:print true}
+                                    [:b {:y 1}])))]
+      (is (re-find #"@media screen\{a\{x:1\}\}" compiled))
+      (is (re-find #"@media (?:screen and print|print and screen)\{b\{y:1\}\}" compiled)))))
