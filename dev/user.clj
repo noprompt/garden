@@ -5,15 +5,21 @@
             [garden.units :as units :refer [px]]
             [garden.color :as color]
             [garden.def :refer [defrule defcssfn]]
-            [garden.stylesheet :as stylesheet]
-            [garden.stylesheet.functions :as functions]
+            [garden.stylesheet :refer [at-media at-import at-keyframes]]
+            [garden.stylesheet.functions :refer [url]]
+            [garden.repl]
             ;; Comment this line before running tests to prevent
             ;; warning messages. 
             ;;[garden.arithmetic :refer [+ - * /]]
             [clojure.string :as string]
             [clojure.pprint :refer [pprint pp]]
-            [clojure.repl :refer [source doc]]))
-
+            [clojure.repl :refer [source doc]])
+  (:import (garden.types CSSUnit
+                         CSSImport
+                         CSSFunction
+                         CSSKeyframes
+                         CSSMediaQuery)))
+ 
 (defn debug [x]
   (pprint x)
   x)
