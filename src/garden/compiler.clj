@@ -268,18 +268,22 @@
 
 (defn- space-separated-list
   "Return a space separated list of values."
-  [xs]
-  (string/join " " (map render-css xs)))
+  ([xs]
+     (space-separated-list render-css xs))
+  ([f xs]
+     (string/join " " (map f xs))))
 
 (defn- comma-separated-list
   "Return a comma separated list of values. Subsequences are joined with
    spaces."
-  [xs]
-  (let [ys (for [x xs]
-             (if (sequential? x)
-               (space-separated-list x)
-               (render-css x)))]
-    (string/join comma ys)))
+  ([xs]
+     (comma-separated-list render-css xs))
+  ([f xs]
+     (let [ys (for [x xs]
+                (if (sequential? x)
+                  (space-separated-list f x)
+                  (f x)))]
+       (string/join comma ys))))
 
 (defn- rule-join [xs]
   (string/join rule-sep xs))
@@ -296,6 +300,13 @@
 
 ;; ### Declaration rendering
 
+(defn render-value
+  "Render the value portion of a declaration."
+  [x]
+  (if (util/keyframes? x)
+    (util/to-str (:identifier x))
+    (render-css x)))
+
 (defn render-property-and-value
   [[prop val]]
   (if (set? val)
@@ -304,8 +315,8 @@
          (map render-property-and-value)
          (string/join "\n"))
     (let [val (if (sequential? val)
-                (comma-separated-list val)
-                (render-css val))]
+                (comma-separated-list render-value val)
+                (render-value val))]
       (util/as-str prop colon val semicolon))))
 
 (defn prefix-declaration
