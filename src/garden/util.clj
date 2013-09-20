@@ -1,6 +1,11 @@
 (ns garden.util
   "Utility functions used by Garden."
-  (:require [clojure.string :as str]))
+  (:require [clojure.string :as string]
+            [garden.types])
+  (:import (garden.types CSSUnit
+                         CSSImport
+                         CSSMediaQuery
+                         CSSKeyframes)))
 
 (defprotocol ToString
   (^String to-str [this] "Convert a value into a string."))
@@ -19,7 +24,35 @@
   [& args]
   (apply str (map to-str args)))
 
-(defn ^Boolean natural?
+;;;; Inspection
+ 
+(defn record?
+  "Return true if obj is an instance of clojure.lang.IRecord."
+  [x]
+  (instance? clojure.lang.IRecord x))
+ 
+(defn hash-map?
+  "Return true if obj is a map but not a record."
+  [x]
+  (and (map? x) (not (record? x))))
+
+(def rule? vector?)
+
+(def declaration? hash-map?)
+
+(defn media-query?
+  [x]
+  (instance? CSSMediaQuery x))
+
+(defn keyframes?
+  [x]
+  (instance? CSSKeyframes x))
+
+(defn import?
+  [x]
+  (instance? CSSImport x))
+
+(defn natural?
   "True if n is a natural number."
   [n]
   (and (integer? n) (pos? n)))
@@ -31,7 +64,7 @@
         top (max a b)]
     (and (>= n bottom) (<= n top))))
 
-(defn ^String wrap-quotes
+(defn wrap-quotes
   "Wrap a string with double quotes."
   [s]
   (str \" s \"))
@@ -40,29 +73,20 @@
   "Return a space separated list of values. Subsequences are joined with
    commas."
   [xs]
-  (str/join " " (map to-str xs)))
+  (string/join " " (map to-str xs)))
 
 (defn comma-join
   "Return a comma separated list of values. Subsequences are joined with
    spaces."
   [xs]
   (let [ys (for [x xs] (if (sequential? x) (space-join x) (to-str x)))]
-    (str/join ", " ys)))
+    (string/join ", " ys)))
 
 (defn without-meta
   "Return obj with meta removed."
   [obj]
   (with-meta obj nil))
 
-(defn record?
-  "Return true if obj is an instance of clojure.lang.IRecord."
-  [obj]
-  (instance? clojure.lang.IRecord obj))
-
-(defn hash-map?
-  "Return true if obj is a map but not a record."
-  [obj]
-  (and (map? obj) (not (record? obj))))
 
 (defn clip
   "Return a number such that n is no less than a and no more than b."
