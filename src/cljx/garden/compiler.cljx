@@ -3,7 +3,8 @@
             [garden.util :as util :refer (#+cljs format to-str as-str)]
             [garden.types])
   #+cljs (:require-macros [garden.compiler :refer [with-media-query-context with-selector-context]])
-  (:import #+clj (java.io StringReader
+  (:import #+cljs cljs.core.ISeq
+           #+clj (java.io StringReader
                     StringWriter)
            #+clj (com.yahoo.platform.yui.compressor CssCompressor)
            garden.types.CSSFunction
@@ -227,16 +228,16 @@
  
 (extend-protocol IExpandable
   #+clj clojure.lang.ISeq
-  ;;#+cljs ISeq
-  #+clj (expand [this] (expand-seqs this))
+  #+cljs IndexedSeq
+  (expand [this] (expand-seqs this))
  
   #+clj clojure.lang.IPersistentVector
-  ;;#+cljs IVector
-  #+clj (expand [this] (expand-rule this))
+  #+cljs PersistentVector
+  (expand [this] (expand-rule this))
  
   #+clj clojure.lang.IPersistentMap
-  ;;#+cljs IMap
-  #+clj (expand [this] (list (expand-declaration this)))
+  #+cljs PersistentHashMap
+  (expand [this] (list (expand-declaration this)))
 
   CSSImport
   (expand [this] (list this))
@@ -468,19 +469,22 @@
 
 (extend-protocol CSSRenderer
   #+clj clojure.lang.ISeq
-  ;;#+cljs ISeq
-  #+clj (render-css [this] (map render-css this))
+  #+cljs IndexedSeq
+  (render-css [this] (map render-css this))
   
   #+clj clojure.lang.IPersistentVector
-  ;;#+cljs IVector
-  #+clj (render-css [this] (render-rule this))
+  #+cljs PersistentVector
+  (render-css [this] (render-rule this))
 
   #+clj clojure.lang.IPersistentMap
-  ;;#+cljs IMap
-  #+clj (render-css [this] (render-declaration this))
+  #+cljs PersistentHashMap
+  (render-css [this] (render-declaration this))
 
   #+clj clojure.lang.Ratio
   #+clj (render-css [this] (str (float this)))
+
+  #+cljs number
+  (render-css [this] (str this))
 
   #+clj clojure.lang.Keyword
   #+cljs Keyword
