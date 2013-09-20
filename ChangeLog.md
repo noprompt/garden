@@ -9,19 +9,21 @@ would need to nest vetors/lists more than two levels to acheive the
 result you are interested in; gradients being a good example. The
 recursive nature was removed simply because it lead to confusing code.
 
-When using meta-data as a media query you must now explicitly use the
-`:media` key for which the value represents the query. For example,
-originally to acheive `@media screen` you would simply attach the meta
-`{:screen true}`. The same result now can be produced with `{:media
-{:screen true}}`. Although this is not nearly as convenient it
-prevents conflicts with other meta data. Because of these changes the
-use of `garden.stylesheet/at-media` is strongly encouraged.
+Meta data is no longer interpreted as a media-query. This was adding a
+lot of additional complexity that was simply easier to solve by
+creating a type. If you need to write a media-query use
+`garden.stylesheet/at-media`.
 
 ### Library changes
 
 `garden.core/css` is no longer a macro.
 
 Added `garden.core/style` for use with the HTML `style` attribute. 
+
+Added new types `garden.types.CSSKeyframes`, and
+`garden.types.CSSMediaQuery`.
+
+Added `garden.stylesheet/at-keyframes` for creating `@keyframes` blocks.
 
 Added `garden.def/cssfn` and `garden.def/defcssfn` for defining custom
 `CSSFunction`s. `cssfn` and `defcssfn` create functions which
@@ -48,6 +50,46 @@ automatically return new instances of `CSSFunction`.
 (let [example (cssfn "example")]
   (css [:sel {:prop (example [1 [2 3]])}]))
 ;; => sel{prop:example(1,2 3)}
+```
+
+Added `garden.def/defkeyframes`. This allows for easy reuse of
+animations throughout a project along with providing an in for
+creating animation libraries.
+
+This:
+
+```clojure
+(defkeyframes my-animation
+  [:from
+   {:background "red"}]
+
+  [:to
+   {:background "yellow"}])
+
+(css
+  my-animation ;; Include the animation in the stylesheet.
+  [:div
+   {:animation [[my-animation "5s"]]}])"
+```
+
+will produce:
+
+```css
+@keyframes my-animation {
+
+  from {
+    background: red;
+  }
+
+  to {
+    background: yellow;
+  }
+
+}
+
+div {
+  animation: my-animation 5s;
+}
 ```
 
 Added the `garden.repl` namespace which includes implementations of
