@@ -8,3 +8,5 @@
 (defrecord CSSImport [url media-expr])
 
 (defrecord CSSKeyframes [identifier frames])
+
+(defrecord CSSMediaQuery [expression children])
