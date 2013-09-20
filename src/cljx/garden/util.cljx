@@ -38,7 +38,8 @@
 (defn record?
   "Return true if obj is an instance of clojure.lang.IRecord."
   [x]
-  (instance? #+clj clojure.lang.IRecord #+cljs IRecord x))
+  #+clj (instance? clojure.lang.IRecord x)
+  #+cljs (satisfies? IRecord x))
  
 (defn hash-map?
   "Return true if obj is a map but not a record."
