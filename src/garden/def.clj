@@ -1,5 +1,6 @@
 (ns garden.def
-  (:import garden.types.CSSFunction))
+  (:import (garden.types CSSFunction
+                         CSSKeyframes)))
 
 (defn rule
   "Create a rule function for the given selector. The `selector`
@@ -113,3 +114,23 @@
        `(def ~name
           (fn [& args#]
             (CSSFunction. (str '~name) (apply (fn ~@fn-tail) args#)))))))
+
+(defmacro defkeyframes
+  "Define a CSS @keyframes animation.
+
+  Ex. 
+      (defkeyframes my-animation
+        [:from
+         {:background \"red\"}]
+
+        [:to
+         {:background \"yellow\"}])
+
+      (css {:vendors [\"webkit\"]}
+        my-animation ;; Include the animation in the stylesheet.
+        [:div
+         ^:prefix ;; Use vendor prefixing (optional).
+         {:animation [[my-animation \"5s\"]]}])"
+  [name & frames]
+  `(def ~name
+     (CSSKeyframes. (str '~name) (list ~@frames))))
