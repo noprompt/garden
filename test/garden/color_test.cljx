@@ -1,7 +1,9 @@
 (ns garden.color-test
   (:refer-clojure :exclude [complement])
-  (:use clojure.test
-        garden.color))
+  (:require #+clj [clojure.test :refer :all]
+            #+cljs [cemerick.cljs.test :as t]
+            [garden.color :refer [rgb hex->rgb rgb->hex hsl hsl->rgb rgb->hsl color+ color- color* color-div rotate-hue saturate desaturate lighten darken invert]])
+  #+cljs (:require-macros [cemerick.cljs.test :refer [deftest is testing]]))
 
 (def hex-black "#000000")
 (def hex-red "#ff0000")
@@ -110,7 +112,7 @@
            (rgb 1/5 1/5 1/5)))
     (is (= (color-div 5 (rgb 1 1 1))
            (rgb 5 5 5)))
-    (is (thrown? ArithmeticException
+    #+clj (is (thrown? ArithmeticException
                  (color-div (rgb 1 1 1) 0)))))
 
 (deftest color-functions-test

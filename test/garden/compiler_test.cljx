@@ -1,11 +1,13 @@
 (ns garden.compiler_test
-  (:require [clojure.test :refer :all]
-            [garden.compiler :refer :all]
+  (:require #+clj [clojure.test :refer :all]
+            #+cljs [cemerick.cljs.test :as t]
+            [garden.compiler :refer [compile-css expand render-css]]
             [garden.types])
-  (:import (garden.types CSSFunction
-                         CSSImport
-                         CSSKeyframes
-                         CSSMediaQuery)))
+  #+cljs (:require-macros [cemerick.cljs.test :refer [deftest is testing]])
+  (:import garden.types.CSSFunction
+           garden.types.CSSImport
+           garden.types.CSSKeyframes
+           garden.types.CSSMediaQuery))
 
 ;; Helpers
 

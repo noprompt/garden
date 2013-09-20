@@ -1,20 +1,29 @@
 (ns garden.util
   "Utility functions used by Garden."
   (:require [clojure.string :as string]
-            [garden.types])
-  (:import (garden.types CSSUnit
-                         CSSImport
-                         CSSMediaQuery
-                         CSSKeyframes)))
+            [garden.types]
+            #+cljs [goog.string.format :as gstring])
+  (:import garden.types.CSSUnit
+           garden.types.CSSImport
+           garden.types.CSSMediaQuery
+           garden.types.CSSKeyframes))
+
+#+cljs
+(defn format
+  "Formats a string using goog.string.format."
+  [fmt & args]
+  (apply gstring/format fmt args))
 
 (defprotocol ToString
   (^String to-str [this] "Convert a value into a string."))
 
 (extend-protocol ToString
-  clojure.lang.Keyword
+  #+clj clojure.lang.Keyword
+  #+cljs Keyword
   (to-str [this] (name this))
 
-  Object
+  #+clj Object
+  #+cljs js/Object
   (to-str [this] (str this))
 
   nil (to-str [this] ""))
@@ -29,7 +38,7 @@
 (defn record?
   "Return true if obj is an instance of clojure.lang.IRecord."
   [x]
-  (instance? clojure.lang.IRecord x))
+  (instance? #+clj clojure.lang.IRecord #+cljs IRecord x))
  
 (defn hash-map?
   "Return true if obj is a map but not a record."

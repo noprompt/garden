@@ -22,3 +22,6 @@
 (defmethod print-method CSSMediaQuery [css-media-query writer]
   (.write writer (compiler/compile-css css-media-query)))
 
+;; Show colors as hexadecimal values (ie. #000000) in the REPL.
+(defmethod print-method CSSColor [color writer]
+  (.write writer (str color)))

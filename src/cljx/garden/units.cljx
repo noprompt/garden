@@ -1,6 +1,9 @@
 (ns garden.units
   "Functions and macros for working with CSS units."
-  (:require [garden.types])
+  (:require [garden.types]
+            #+cljs [cljs.reader :refer [read-string]]
+            #+cljs [garden.util :refer [format]])
+  #+cljs (:require-macros [garden.units :refer [defunit]])
   (:import garden.types.CSSUnit))
 
 ;;;; Unit families
@@ -83,11 +86,11 @@
        v2 (CSSUnit. right (/ m v2))
        ;; Both units are convertible but no conversion between them exists.
        :else (throw
-              (IllegalArgumentException.
-               (format "Can't convert %s to %s" (name left) (name right))))))
+              (ex-info
+               (format "Can't convert %s to %s" (name left) (name right)) {}))))
     ;; Display the inconvertible unit.
     (let [x (first (drop-while convertable? [left right]))]
-      (throw (IllegalArgumentException. (str "Inconvertible unit " (name x)))))))
+      (throw (ex-info (str "Inconvertible unit " (name x)) {})))))
 
 ;; # Unit helpers
 
@@ -122,10 +125,10 @@
      (unit? x) (or (and (= (unit x) unit) x)
                    (convert x unit))
      :else (throw
-            (IllegalArgumentException.
+            (ex-info
              (format "Don't know how to convert type %s to %s"
                      (.getName (type x))
-                     (name unit)))))))
+                     (name unit)) {})))))
 
 (defn make-unit-adder
   "Create a addition function for adding Units."
@@ -181,6 +184,7 @@
       ([x y & more]
          (reduce ud (ud x y) more)))))
 
+#+clj
 (defmacro defunit
   "Create a suite of functions for unit creation, conversion,
   validation, and arithmetic."

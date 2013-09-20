@@ -2,7 +2,8 @@
   "Utilities for color creation, conversion, and manipulation."
   (:refer-clojure :exclude [complement])
   (:require [clojure.string :as s]
-            [garden.util :as u]))
+            [garden.util :as u #+cljs :refer #+cljs [format]])
+  #+cljs (:require-macros [garden.color :refer [defcolor-operation]]))
 
 ;; Many of the functions in this namespace were ported or inspired by
 ;; the implementations included with Sass
@@ -14,7 +15,7 @@
 (declare as-hex)
 
 (defrecord CSSColor [red green blue hue saturation lightness alpha]
-  clojure.lang.IFn
+  #+clj clojure.lang.IFn #+cljs IFn
   (invoke [this] this)
   (invoke [this k]
     (get this k))
@@ -22,13 +23,9 @@
     (get this k missing))
   (applyTo [this args]
     (clojure.lang.AFn/applyToHelper this args))
-  Object
+  #+clj Object #+cljs
   (toString [this]
     (as-hex this)))
-
-;; Show colors as hexadecimal values (ie. #000000) in the REPL.
-(defmethod print-method CSSColor [color writer]
-  (.write writer (str color)))
 
 (def as-color map->CSSColor)
 
@@ -38,7 +35,7 @@
      (if (every? #(u/between? % 0 255) vs)
        (as-color {:red r :green g :blue b})
        (throw
-        (IllegalArgumentException. "RGB values must be between 0 and 255"))))
+        (ex-info "RGB values must be between 0 and 255" {}))))
   ([r g b]
      (rgb [r g b])))
 
@@ -48,7 +45,7 @@
      (if (u/between? a 0 1)
        (as-color (assoc (rgb [r g b]) :alpha a))
        (throw
-        (IllegalArgumentException. "Alpha value must be between 0 and 1"))))
+        (ex-info "Alpha value must be between 0 and 1" {}))))
   ([r g b a]
      (rgba [r g b a])))
 
@@ -61,7 +58,7 @@
                 (u/between? l 0 100))
          (as-color {:hue (mod h 360) :saturation s :lightness l})
          (throw
-          (IllegalArgumentException. "Saturation and lightness must be between 0(%) and 100(%)")))))
+          (ex-info "Saturation and lightness must be between 0(%) and 100(%)" {})))))
   ([h s l]
      (hsl [h s l])))
 
@@ -71,7 +68,7 @@
      (if (u/between? a 0 1)
        (as-color (assoc (hsl [h s l]) :alpha a))
        (throw
-        (IllegalArgumentException. "Alpha value must be between 0 and 1"))))
+        (ex-info "Alpha value must be between 0 and 1" {}))))
   ([h s l a]
      (hsla [h s l a])))
 
@@ -194,7 +191,7 @@
    (hex? x) x
    (rgb? x) (rgb->hex x)
    (hsl? x) (hsl->hex x)
-   :else (throw (IllegalArgumentException. (str "Can't convert " x " to a color.")))))
+   :else (throw (ex-info (str "Can't convert " x " to a color.") {}))))
 
 (defn as-rgb
   "Convert a color to a RGB."
@@ -204,7 +201,7 @@
    (hsl? x) (hsl->rgb x)
    (hex? x) (hex->rgb x)
    (number? x) (rgb (map rgb-clip [x x x]))
-   :else (throw (IllegalArgumentException. (str "Can't convert " x " to a color.")))))
+   :else (throw (ex-info (str "Can't convert " x " to a color.") {}))))
 
 (defn as-hsl
   "Convert a color to a HSL."
@@ -214,7 +211,7 @@
    (rgb? x) (rgb->hsl x)
    (hex? x) (hex->hsl x)
    (number? x) (hsl [x (percent-clip x) (percent-clip x)])
-   :else (throw (IllegalArgumentException. (str "Can't convert " x " to a color.")))))
+   :else (throw (ex-info (str "Can't convert " x " to a color.") {}))))
 
 (defn- restrict-rgb
   [m]
@@ -232,6 +229,7 @@
     ([a b & more]
        (reduce color-op (color-op a b) more))))
 
+#+clj
 (defmacro ^:private defcolor-operation [name operator]
   `(def ~name (make-color-operation ~operator)))
 

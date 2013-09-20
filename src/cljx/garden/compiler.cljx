@@ -1,15 +1,16 @@
 (ns garden.compiler
   (:require [clojure.string :as string]
-            [garden.util :as util :refer (to-str as-str)]
+            [garden.util :as util :refer (#+cljs format to-str as-str)]
             [garden.types])
-  (:import (java.io StringReader
+  #+cljs (:require-macros [garden.compiler :refer [with-media-query-context with-selector-context]])
+  (:import #+clj (java.io StringReader
                     StringWriter)
-           (com.yahoo.platform.yui.compressor CssCompressor)
-           (garden.types CSSFunction
-                         CSSImport
-                         CSSKeyframes
-                         CSSUnit
-                         CSSMediaQuery)))
+           #+clj (com.yahoo.platform.yui.compressor CssCompressor)
+           garden.types.CSSFunction
+           garden.types.CSSImport
+           garden.types.CSSKeyframes
+           garden.types.CSSUnit
+           garden.types.CSSMediaQuery))
 
 ;;;; ## Compiler flags
 
@@ -59,11 +60,13 @@
 
 ;;;; ## Utilities
 
+#+clj
 (defmacro with-selector-context
   [selector-context & body]
   `(binding [*selector-context* ~selector-context]
      (do ~@body)))
  
+ #+clj
 (defmacro with-media-query-context
   [selector-context & body]
   `(binding [*media-query-context* ~selector-context]
@@ -74,11 +77,13 @@
   []
   (seq  (:vendors *flags*)))
 
+#+clj
 (defn- save-stylesheet
   "Save a stylesheet to disk."
   [path stylesheet]
   (spit path stylesheet))
 
+#+clj
 (defn- compress-stylesheet
   "Compress a stylesheet with the YUI CSSCompressor."
   [stylesheet]
@@ -221,14 +226,17 @@
        (apply concat)))
  
 (extend-protocol IExpandable
-  clojure.lang.ISeq
-  (expand [this] (expand-seqs this))
+  #+clj clojure.lang.ISeq
+  ;;#+cljs ISeq
+  #+clj (expand [this] (expand-seqs this))
  
-  clojure.lang.IPersistentVector
-  (expand [this] (expand-rule this))
+  #+clj clojure.lang.IPersistentVector
+  ;;#+cljs IVector
+  #+clj (expand [this] (expand-rule this))
  
-  clojure.lang.IPersistentMap
-  (expand [this] (list (expand-declaration this)))
+  #+clj clojure.lang.IPersistentMap
+  ;;#+cljs IMap
+  #+clj (expand [this] (list (expand-declaration this)))
 
   CSSImport
   (expand [this] (list this))
@@ -242,7 +250,8 @@
   CSSKeyframes
   (expand [this] (expand-keyframes this))
  
-  Object
+  #+clj Object
+  #+cljs js/Object
   (expand [this] (list this))
  
   nil
@@ -408,7 +417,8 @@
   "Render a CSSUnit."
   [css-unit]
   (let [{:keys [magnitude unit]} css-unit
-        magnitude (if (ratio? magnitude)
+        magnitude #+cljs magnitude
+            #+clj (if (ratio? magnitude)
                     (float magnitude)
                     magnitude)]
     (str (if (zero? magnitude) 0 magnitude)
@@ -457,19 +467,23 @@
 ;; ### CSSRenderer implementation
 
 (extend-protocol CSSRenderer
-  clojure.lang.ISeq
-  (render-css [this] (map render-css this))
+  #+clj clojure.lang.ISeq
+  ;;#+cljs ISeq
+  #+clj (render-css [this] (map render-css this))
   
-  clojure.lang.IPersistentVector
-  (render-css [this] (render-rule this))
+  #+clj clojure.lang.IPersistentVector
+  ;;#+cljs IVector
+  #+clj (render-css [this] (render-rule this))
 
-  clojure.lang.IPersistentMap
-  (render-css [this] (render-declaration this))
+  #+clj clojure.lang.IPersistentMap
+  ;;#+cljs IMap
+  #+clj (render-css [this] (render-declaration this))
 
-  clojure.lang.Ratio
-  (render-css [this] (str (float this)))
+  #+clj clojure.lang.Ratio
+  #+clj (render-css [this] (str (float this)))
 
-  clojure.lang.Keyword
+  #+clj clojure.lang.Keyword
+  #+cljs Keyword
   (render-css [this] (name this))
 
   CSSUnit
@@ -487,7 +501,8 @@
   CSSMediaQuery
   (render-css [this] (render-media-query this))
 
-  Object
+  #+clj Object
+  #+cljs js/Object
   (render-css [this] (str this))
 
   nil
@@ -520,12 +535,15 @@
                         [flags rules]
                         [*flags* (cons flags rules)])
         output-to (:output-to flags)
-        stylesheet (let [stylesheet (compile-stylesheet flags rules)]
+        stylesheet #+cljs (compile-stylesheet flags rules)
+             #+clj (let [stylesheet (compile-stylesheet flags rules)]
                      (if (:pretty-print? flags)
                        stylesheet
                        (compress-stylesheet stylesheet)))]
+    #+clj
     (if output-to
       (do
         (save-stylesheet output-to stylesheet)
         stylesheet)
-      stylesheet)))
+      stylesheet)
+    #+cljs stylesheet))

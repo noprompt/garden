@@ -1,9 +1,11 @@
 (ns garden.arithmetic-test
   (:refer-clojure :exclude [+ - * /])
-  (:require [garden.units :as u]
+  (:require #+clj [clojure.test :refer :all]
+            #+cljs [cemerick.cljs.test :as t]
+            [garden.arithmetic :refer [+ - * /]]
+            [garden.units :as u]
             [garden.color :as c])
-  (:use clojure.test
-        garden.arithmetic))
+  #+cljs (:require-macros [cemerick.cljs.test :refer [deftest is testing]]))
 
 (deftest sum-test
   (testing "numbers"
@@ -78,7 +80,7 @@
     (is (= (/ 1) 1))
     (is (= (/ 1 2) 1/2))
     (is (= (/ 1 2 4) 1/8))
-    (is (thrown? ArithmeticException
+    #+clj (is (thrown? ArithmeticException
                 (/ 1 0))))
 
   (testing "units"
@@ -88,7 +90,7 @@
           (u/px 1/2)))
    (is (= (/ 1 (u/px 2) 4)
           (u/px 1/8)))
-   (is (thrown? ArithmeticException
+   #+clj (is (thrown? ArithmeticException
                 (/ (u/px 1) 0))))
 
   (testing "colors"
@@ -98,5 +100,5 @@
            (c/rgb 2 4 8)))
     (is (= (/ 1 (c/rgb 2 2 2))
            (c/rgb 1/2 1/2 1/2)))
-    (is (thrown? ArithmeticException
+    #+clj (is (thrown? ArithmeticException
                  (/ (c/rgb 1 1 1) 0)))))

@@ -3,9 +3,9 @@
   (:require [garden.util :as util]
             [garden.color :as color]
             [garden.types])
-  (:import (garden.types CSSImport
-                         CSSKeyframes
-                         CSSMediaQuery)))
+  (:import garden.types.CSSImport
+           garden.types.CSSKeyframes
+           garden.types.CSSMediaQuery))
 
 ;;;; Properties
 
