@@ -7,21 +7,7 @@
                          CSSKeyframes
                          CSSMediaQuery)))
 
-;;;; Properties
-
-(defn font-family
-  "Return a font-family declaration for at least one font. Strings
-  containing whitespace are automatically escaped."
-  [font & fonts]
-  (let [f (fn [x]
-            (if (and (string? x)
-                     (re-find #" " x))
-              (util/wrap-quotes x)
-              x))
-        fonts (flatten (cons font fonts))]
-    {:font-family (map f fonts)}))
-
-;;;; Directives
+;; ## At-rules
 
 (defn at-font-face
   "Create a CSS @font-face rule."
