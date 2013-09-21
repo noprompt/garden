@@ -94,7 +94,7 @@
       (.compress writer -1))
     (str writer)))
 
-(defn- divide
+(defn- divide-vec
   "Return a vector of [(filter pred coll) (remove pred coll)]."
   [pred coll]
   ((juxt filter remove) pred coll))
@@ -185,7 +185,7 @@
   (let [[selector children] (split-with (complement coll?) rule)
         selector (expand-selector selector *selector-context*)
         children (expand children)
-        [declarations xs] (divide util/declaration? children)
+        [declarations xs] (divide-vec util/declaration? children)
         ys (with-selector-context
              (if (seq selector)
                selector
@@ -211,7 +211,7 @@
              (mapcat expand (expand children)))
         ;; Though media-queries may be nested, they may not be nested
         ;; at compile time. Here we make sure this is the case.  
-        [subqueries ys] (divide util/media-query? xs)]
+        [subqueries ys] (divide-vec util/media-query? xs)]
     (cons (CSSMediaQuery. expression ys) subqueries)))
 
 (defn- expand-keyframes [keyframes]
