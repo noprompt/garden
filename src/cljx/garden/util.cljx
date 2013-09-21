@@ -23,7 +23,7 @@
   (to-str [this] (name this))
 
   #+clj Object
-  #+cljs object
+  #+cljs default
   (to-str [this] (str this))
 
   nil (to-str [this] ""))

@@ -252,7 +252,7 @@
   (expand [this] (expand-keyframes this))
  
   #+clj Object
-  #+cljs object
+  #+cljs default
   (expand [this] (list this))
  
   nil
