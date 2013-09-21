@@ -23,7 +23,7 @@
     (get this k missing))
   (applyTo [this args]
     (clojure.lang.AFn/applyToHelper this args))
-  #+clj Object #+cljs
+  #+clj Object #+cljs object
   (toString [this]
     (as-hex this)))
 

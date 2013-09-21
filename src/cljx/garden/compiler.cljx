@@ -252,7 +252,7 @@
   (expand [this] (expand-keyframes this))
  
   #+clj Object
-  #+cljs js/Object
+  #+cljs object
   (expand [this] (list this))
  
   nil
@@ -506,7 +506,7 @@
   (render-css [this] (render-media-query this))
 
   #+clj Object
-  #+cljs js/Object
+  #+cljs object
   (render-css [this] (str this))
 
   nil
