@@ -1,4 +1,5 @@
 (ns garden.compiler
+  "Functions for compiling Clojure data structures to CSS."
   (:require [clojure.string :as string]
             [garden.util :as util :refer (to-str as-str)]
             [garden.types])
@@ -104,7 +105,7 @@
 ;; a new data structure which is a list of only one level.
 
 ;; This intermediate process between input and compilation separates
-;; concerns between parsing data structure and compiling them to CSS.
+;; concerns between parsing data structures and compiling them to CSS.
 
 ;; All data types that implement `IExpandable` should produce a list.
 
@@ -425,6 +426,10 @@
   "Render a CSS at-rule"
   :identifier)
 
+(defmethod render-at-rule :default [_] nil)
+
+;; #### @import rendering
+
 (defmethod render-at-rule :import
   [{:keys [value]}]
   (let [{:keys [url media-queries]} value 
@@ -436,6 +441,8 @@
     (str "@import "
          (if queries (str url " " queries) url)
          semicolon)))
+
+;; #### @keyframes rendering
 
 (defmethod render-at-rule :keyframes
   [{:keys [value]}]
@@ -454,6 +461,8 @@
              (map #(str % body))
              (rule-join))))))
 
+;; #### @media rendering
+
 (defmethod render-at-rule :media
   [{:keys [value]}]
   (let [{:keys [media-queries rules]} value]
@@ -466,8 +475,6 @@
                (indent-str)) 
            r-brace-1))))
 
-(defmethod render-at-rule :default [_]
-  nil)
 
 ;; ### CSSRenderer implementation
 
