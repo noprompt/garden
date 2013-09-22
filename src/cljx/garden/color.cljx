@@ -24,9 +24,11 @@
   #+clj
   (applyTo [this args]
     (clojure.lang.AFn/applyToHelper this args))
-  #+clj Object #+cljs default
-  (toString [this]
-    (as-hex this)))
+  ;;Introduces an infinite loop when as-hex throws an exception
+  ;;Object
+  ;;(toString [this]
+  ;;  (as-hex this))
+  )
 
 (def as-color map->CSSColor)
 
@@ -54,7 +56,7 @@
   "Create an HSL color."
   ([[h s l]]
      ;; Handle CSSUnits. 
-     (let [[h s l] (map #(:magnitude % %) [h s l])]
+     (let [[h s l] (map #(get % :magnitude %) [h s l])]
        (if (and (u/between? s 0 100)
                 (u/between? l 0 100))
          (as-color {:hue (mod h 360) :saturation s :lightness l})
@@ -93,7 +95,7 @@
 (def ^{:doc "Regular expression for matching a hexadecimal color.
              Matches hexadecimal colors of length three or six possibly
              lead by a \"#\". The color portion is captured."}
-  hex-re #"#?([\da-fA-F]{3}|[\da-fA-F]{6})")
+  hex-re #"#?([\da-fA-F]{6}|[\da-fA-F]{3})") ;;Quantifier must be in this order of JavaScript engines will match 3 chars even when 6 are provided (failing re-matches)
 
 (defn hex?
   "Returns true if x is a hexadecimal color."
@@ -107,14 +109,15 @@
     (let [hex (if (= 3 (count hex))
                 (apply str (mapcat #(list % %) hex))
                 hex)]
-      (rgb (map #(Integer/parseInt % 16) (re-seq #"[\da-fA-F]{2}" hex))))))
+      (rgb (map #+clj #(Integer/parseInt % 16) #+cljs #(js/parseInt % 16) (re-seq #"[\da-fA-F]{2}" hex))))))
 
 (defn rgb->hex
   "Convert an RGB color map to a hexadecimal color."
   [{r :red g :green b :blue}]
   (letfn [(hex-part [v]
-            (s/replace (format "%2s" (Integer/toString v 16)) " " "0"))]
+            (s/replace (format "%2s" #+clj (Integer/toString v 16) #+cljs (.toString v 16)) " " "0"))]
     (apply str "#" (map hex-part [r g b]))))
+    
 
 (defn rgb->hsl
   "Convert an RGB color map to an HSL color map."

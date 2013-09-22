@@ -14,9 +14,8 @@
 (defn render= [x y]
   (= (-> x expand render-css first) y))
 
-(defn compile=
-  ([x y & {:as flags}]
-     (= (->> x (compile-css (merge flags {:pretty-print? false}))) y)))
+(defn compile= [x y & {:as flags}]
+   (= (->> x (compile-css (merge flags {:pretty-print? false}))) y))
 
 (defn at-media [e & xs]
   (CSSMediaQuery. e xs))
@@ -24,7 +23,6 @@
 (def test-vendors ["moz" "webkit"])
 
 ;; Tests
-
 (deftest render-css-test 
   (testing "maps"
     (is (render= {:a 1}
@@ -45,17 +43,18 @@
   (testing "vectors"
     (is (compile= [:a {:x 1} {:y 2}]
                   "a{x:1;y:2}"))
+    #+clj
     (is (compile= [:a {:x 1} [:b {:y 2}]]
                   "a{x:1}a b{y:2}"))
-    (is (compile= [:a :b {:x 1} [:c :d {:y 2}]]
+    #+clj (is (compile= [:a :b {:x 1} [:c :d {:y 2}]]
                   "a,b{x:1}a c,a d,b c,b d{y:2}"))
-    (is (compile= [:a :b '({:x 1}) '([:c :d {:y 2}])]
+    #+clj (is (compile= [:a :b '({:x 1}) '([:c :d {:y 2}])]
                   "a,b{x:1}a c,a d,b c,b d{y:2}"))
     (is (compile= [[:a {:x 1}] [:b {:y 2}]]
                   "a{x:1}b{y:2}"))
-    (is (compile= [:a [{:x 1} [:b {:y 1}]]]
+    #+clj (is (compile= [:a [{:x 1} [:b {:y 1}]]]
                   "a b{y:1}"))
-    (is (compile= [:a {:x 1} [[:b {:y 1}]]]
+    #+clj (is (compile= [:a {:x 1} [[:b {:y 1}]]]
                   "a{x:1}a b{y:1}"))
     (is (compile= [:a ^:prefix {:b 1}]
                   "a{-moz-b:1;-webkit-b:1;b:1}"
@@ -70,6 +69,7 @@
                         [:h2 {:c :d}])
                   "@media screen{h1{a:b}}h2{c:d}"))
 
+    #+clj
     (is (compile= (list [:a {:a "b"}
                          (at-media {:screen true}
                            [:&:hover {:c "d"}])])
@@ -95,6 +95,7 @@
                     [:h1 {:a "b"}])
                   "@media(-vendor-prefix-x:2){h1{a:b}}"))))
 
+#+clj
 (deftest parent-selector-test
   (testing "parent selector references"
     (is (compile= [:a [:&:hover {:x :y}]]
@@ -153,4 +154,4 @@
                                   (at-media {:print true}
                                     [:b {:y 1}])))]
       (is (re-find #"@media screen\{a\{x:1\}\}" compiled))
-      (is (re-find #"@media (?:screen and print|print and screen)\{b\{y:1\}\}" compiled)))))
+      #+clj (is (re-find #"@media (?:screen and print|print and screen)\{b\{y:1\}\}" compiled)))))

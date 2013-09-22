@@ -6,8 +6,8 @@
                           [garden.def :refer [defrule]])
   #+clj (:import clojure.lang.ExceptionInfo))
 
-(defrule a)
-(defrule sub-headings :h4 :h5 :h6)
+#+clj (defrule a)
+#+clj (defrule sub-headings :h4 :h5 :h6)
 
 (deftest rule-test
   (testing "rule"
@@ -17,6 +17,7 @@
            [:a {:text-decoration "none"}]))
     (is (thrown? ExceptionInfo (rule 1)))))
 
+#+clj
 (deftest defrule-test
   (testing "defrule"
     (is (= (a {:font-weight "bold"})

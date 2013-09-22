@@ -94,6 +94,17 @@
       (.compress writer -1))
     (str writer)))
 
+#+cljs
+(defn- compress-stylesheet
+  "Compress a stylesheet."
+  [stylesheet]
+  (-> stylesheet
+      (string/replace #"[\n]+|[\s]{2,}" "")
+      (string/replace #";\}" "}")
+      (string/replace #" \{" "{")
+      (string/replace #": " ":")
+      (string/replace #" \(" "(")))
+
 (defn- divide-vec
   "Return a vector of [(filter pred coll) (remove pred coll)]."
   [pred coll]
@@ -230,14 +241,56 @@
   #+clj clojure.lang.ISeq
   #+cljs IndexedSeq
   (expand [this] (expand-seqs this))
+
+  #+cljs LazySeq
+  #+cljs (expand [this] (expand-seqs this))
+
+  #+cljs RSeq
+  #+cljs (expand [this] (expand-seqs this))
+
+  #+cljs NodeSeq
+  #+cljs (expand [this] (expand-seqs this))
+
+  #+cljs ArrayNodeSeq
+  #+cljs (expand [this] (expand-seqs this))
+
+  #+cljs Cons
+  #+cljs (expand [this] (expand-seqs this))
+
+  #+cljs ChunkedCons
+  #+cljs (expand [this] (expand-seqs this))
+
+  #+cljs ChunkedSeq
+  #+cljs (expand [this] (expand-seqs this))
+
+  #+cljs PersistentArrayMapSeq
+  #+cljs (expand [this] (expand-seqs this))
+
+  #+cljs List
+  #+cljs (expand [this] (expand-seqs this))
  
   #+clj clojure.lang.IPersistentVector
   #+cljs PersistentVector
   (expand [this] (expand-rule this))
  
+  #+cljs Subvec
+  #+cljs(expand [this] (expand-rule this))
+
+  #+cljs BlackNode
+  #+cljs(expand [this] (expand-rule this))
+
+  #+cljs RedNode
+  #+cljs(expand [this] (expand-rule this))
+ 
   #+clj clojure.lang.IPersistentMap
-  #+cljs PersistentHashMap
+  #+cljs PersistentArrayMap
   (expand [this] (list (expand-declaration this)))
+
+  #+cljs PersistentHashMap
+  #+cljs (expand [this] (list (expand-declaration this)))
+
+  #+cljs PersistentTreeMap
+  #+cljs (expand [this] (list (expand-declaration this))) 
 
   CSSImport
   (expand [this] (list this))
@@ -303,7 +356,7 @@
     :doc "Match the start of a line if the characters immediately
   after it are spaces or used in a CSS id (#), class (.), or tag name."}
   indent-location
-  #"(?m)(?=[ A-Za-z#.}-]+)^")
+  #"(?m)(?=[\sA-z#.}-]+)^")
 
 (defn- indent-str [s]
   (string/replace s indent-location indent))
@@ -471,20 +524,62 @@
   #+clj clojure.lang.ISeq
   #+cljs IndexedSeq
   (render-css [this] (map render-css this))
-  
+
+  #+cljs LazySeq
+  #+cljs (expand [this] (map render-css this))
+
+  #+cljs RSeq
+  #+cljs (expand [this] (map render-css this))
+
+  #+cljs NodeSeq
+  #+cljs (expand [this] (map render-css this))
+
+  #+cljs ArrayNodeSeq
+  #+cljs (expand [this] (map render-css this))
+
+  #+cljs Cons
+  #+cljs (expand [this] (map render-css this))
+
+  #+cljs ChunkedCons
+  #+cljs (expand [this] (map render-css this))
+
+  #+cljs ChunkedSeq
+  #+cljs (expand [this] (map render-css this))
+
+  #+cljs PersistentArrayMapSeq
+  #+cljs (expand [this] (map render-css this))
+
+  #+cljs List
+  #+cljs (render-css [this] (map render-css this))
+
   #+clj clojure.lang.IPersistentVector
   #+cljs PersistentVector
   (render-css [this] (render-rule this))
 
+  #+cljs Subvec
+  #+cljs (render-css [this] (render-rule this))
+
+  #+cljs BlackNode
+  #+cljs (render-css [this] (render-rule this))
+
+  #+cljs RedNode
+  #+cljs (render-css [this] (render-rule this))
+
   #+clj clojure.lang.IPersistentMap
-  #+cljs PersistentHashMap
+  #+cljs PersistentArrayMap
   (render-css [this] (render-declaration this))
+
+  #+cljs PersistentHashMap
+  #+cljs (render-css [this] (render-declaration this))
+
+  #+cljs PersistentTreeMap
+  #+cljs (render-css [this] (render-declaration this))
 
   #+clj clojure.lang.Ratio
   #+clj (render-css [this] (str (float this)))
 
   #+cljs number
-  (render-css [this] (str this))
+  #+cljs (render-css [this] (str this))
 
   #+clj clojure.lang.Keyword
   #+cljs Keyword
@@ -506,7 +601,7 @@
   (render-css [this] (render-media-query this))
 
   #+clj Object
-  #+cljs object
+  #+cljs default
   (render-css [this] (str this))
 
   nil
@@ -539,8 +634,7 @@
                         [flags rules]
                         [*flags* (cons flags rules)])
         output-to (:output-to flags)
-        stylesheet #+cljs (compile-stylesheet flags rules)
-             #+clj (let [stylesheet (compile-stylesheet flags rules)]
+        stylesheet (let [stylesheet (compile-stylesheet flags rules)]
                      (if (:pretty-print? flags)
                        stylesheet
                        (compress-stylesheet stylesheet)))]

@@ -2,7 +2,8 @@
   "Utility functions used by Garden."
   (:require [clojure.string :as string]
             [garden.types]
-            #+cljs [goog.string.format :as gstring])
+            #+cljs [goog.string :as gstring]
+            #+cljs [goog.string.format])
   (:import garden.types.CSSUnit
            garden.types.CSSImport
            garden.types.CSSMediaQuery

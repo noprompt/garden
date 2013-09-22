@@ -23,7 +23,7 @@
       (is (= (μm 2) (μm* 1 2))))
     (testing "division"
       (is (= (μm 1) (μm-div 1)))
-      (is (= (μm 1/2) (μm-div 2)))
+      (is (= (μm #+clj 1/2 #+cljs 0.5) (μm-div 2)))
       #+clj (is (thrown? ArithmeticException (μm-div 2 0))))))
 
 (deftest test-px

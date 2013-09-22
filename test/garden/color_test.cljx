@@ -69,7 +69,6 @@
            hsl-blue))
     (is (= (rgb->hsl rgb-white)
            hsl-white)))) 
-
 (deftest color-math-test
   (testing "color+"
     (is (= (color+ (rgb 0 0 0))
@@ -109,7 +108,7 @@
     (is (= (color-div (rgb 0 0 0) 1)
            (rgb 0 0 0)))
     (is (= (color-div (rgb 1 1 1) 5)
-           (rgb 1/5 1/5 1/5)))
+           (rgb #+clj 1/5 #+cljs 0.2 #+clj 1/5 #+cljs 0.2 #+clj 1/5 #+cljs 0.2)))
     (is (= (color-div 5 (rgb 1 1 1))
            (rgb 5 5 5)))
     #+clj (is (thrown? ArithmeticException
