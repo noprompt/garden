@@ -502,11 +502,12 @@
   nil
   (render-css [this] ""))
 
+;; ## Compilation
+
 (defn- compile-stylesheet
   [flags rules]
   (binding [*flags* (merge *flags* flags)]
     (->> (expand-stylesheet rules)
-         ;; Declarations may not appear at the top level.
          (filter top-level-expression?) 
          (map render-css)
          (remove nil?)
