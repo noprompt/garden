@@ -192,6 +192,10 @@
 
 (defmulti ^:private expand-at-rule :identifier)
 
+(defmethod expand-at-rule :default
+  [at-rule]
+  (list at-rule))
+
 ;; #### @keyframes expansion
 
 (defmethod expand-at-rule :keyframes
@@ -224,10 +228,6 @@
      (CSSAtRule. :media {:media-queries media-queries
                          :rules rules})
      subqueries)))
-
-(defmethod expand-at-rule :default
-  [at-rule]
-  (list at-rule))
  
 ;; ### Stylesheet expansion
  
