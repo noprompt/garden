@@ -21,6 +21,7 @@
     (get this k))
   (invoke [this k missing]
     (get this k missing))
+  #+clj
   (applyTo [this args]
     (clojure.lang.AFn/applyToHelper this args))
   #+clj Object #+cljs default
