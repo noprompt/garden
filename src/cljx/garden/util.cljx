@@ -4,16 +4,15 @@
             [garden.types]
             #+cljs [goog.string :as gstring]
             #+cljs [goog.string.format])
-  (:import garden.types.CSSUnit
-           garden.types.CSSImport
-           garden.types.CSSMediaQuery
-           garden.types.CSSKeyframes))
+  (:import garden.types.CSSAtRule))
 
 #+cljs
 (defn format
   "Formats a string using goog.string.format."
   [fmt & args]
   (apply gstring/format fmt args))
+
+;; ## String utilities
 
 (defprotocol ToString
   (^String to-str [this] "Convert a value into a string."))
@@ -41,48 +40,9 @@
   [x]
   #+clj (instance? clojure.lang.IRecord x)
   #+cljs (satisfies? IRecord x))
- 
-(defn hash-map?
-  "Return true if obj is a map but not a record."
-  [x]
-  (and (map? x) (not (record? x))))
-
-(def rule? vector?)
-
-(def declaration? hash-map?)
-
-(defn media-query?
-  [x]
-  (instance? CSSMediaQuery x))
-
-(defn keyframes?
-  [x]
-  (instance? CSSKeyframes x))
-
-(defn import?
-  [x]
-  (instance? CSSImport x))
-
-(defn natural?
-  "True if n is a natural number."
-  [n]
-  (and (integer? n) (pos? n)))
-
-(defn between?
-  "True if n is a number between a and b."
-  [n a b]
-  (let [bottom (min a b)
-        top (max a b)]
-    (and (>= n bottom) (<= n top))))
-
-(defn wrap-quotes
-  "Wrap a string with double quotes."
-  [s]
-  (str \" s \"))
 
 (defn space-join
-  "Return a space separated list of values. Subsequences are joined with
-   commas."
+  "Return a space separated list of values."
   [xs]
   (string/join " " (map to-str xs)))
 
@@ -90,33 +50,53 @@
   "Return a comma separated list of values. Subsequences are joined with
    spaces."
   [xs]
-  (let [ys (for [x xs] (if (sequential? x) (space-join x) (to-str x)))]
+  (let [ys (for [x xs]
+             (if (sequential? x)
+               (space-join x)
+               (to-str x)))]
     (string/join ", " ys)))
 
-(defn without-meta
-  "Return obj with meta removed."
-  [obj]
-  (with-meta obj nil))
+(defn wrap-quotes
+  "Wrap a string with double quotes."
+  [s]
+  (str \" s \"))
 
+;; ## Predicates
 
-(defn clip
-  "Return a number such that n is no less than a and no more than b."
-  [a b n]
-  (let [[a b] (if (<= a b) [a b] [b a])] 
-    (max a (min b n))))
+(defn hash-map?
+  "True if `(map? x)` and `x` does not satisfy `clojure.lang.IRecord`."
+  [x]
+  (and (map? x)
+       (not #+clj (instance? clojure.lang.IRecord x) #+cljs (satisfies? IRecord x))))
+ 
+;; ## Stylesheet
 
-(defn average
-  "Return the average of two or more numbers."
-  [n m & more]
-  (/ (apply + n m more) (+ 2.0 (count more))))
+(def
+  ^{:doc "Alias to `vector?`."}
+  rule? vector?)
 
-(defn into!
-  "The same as `into` but for transient vectors."
-  [coll xs]
-  (loop [coll coll xs xs]
-    (if-let [x (first xs)]
-      (recur (conj! coll x) (next xs))
-      coll)))
+(def
+  ^{:doc "Alias to `hash-map?`."}
+  declaration? hash-map?)
+
+(defn at-rule?
+  [x]
+  (instance? CSSAtRule x))
+
+(defn at-media?
+  "True if `x` is a CSS `@media` rule."
+  [x]
+  (and (at-rule? x) (= (:identifier x) :media)))
+
+(defn at-keyframes?
+  "True if `x` is a CSS `@keyframes` rule."
+  [x]
+  (and (at-rule? x) (= (:identifier x) :keyframes)))
+
+(defn at-import?
+  "True if `x` is a CSS `@import` rule."
+  [x]
+  (and (at-rule? x) (= (:identifier x) :import)))
 
 (defn prefix
   "Attach a CSS style prefix to s."
@@ -133,6 +113,31 @@
     (if (= \- (first p))
       (prefix p s) 
       (prefix (str \- p) s))))
+
+;; ## Math
+
+(defn natural?
+  "True if n is a natural number."
+  [n]
+  (and (integer? n) (pos? n)))
+
+(defn between?
+  "True if n is a number between a and b."
+  [n a b]
+  (let [bottom (min a b)
+        top (max a b)]
+    (and (>= n bottom) (<= n top))))
+
+(defn clip
+  "Return a number such that n is no less than a and no more than b."
+  [a b n]
+  (let [[a b] (if (<= a b) [a b] [b a])] 
+    (max a (min b n))))
+
+(defn average
+  "Return the average of two or more numbers."
+  [n m & more]
+  (/ (apply + n m more) (+ 2.0 (count more))))
 
 ;; Taken from clojure.math.combinatorics.
 (defn cartesian-product

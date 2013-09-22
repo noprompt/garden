@@ -1,4 +1,5 @@
 (ns garden.compiler
+  "Functions for compiling Clojure data structures to CSS."
   (:require [clojure.string :as string]
             [garden.util :as util :refer (#+cljs format to-str as-str)]
             [garden.types])
@@ -7,11 +8,9 @@
            #+clj (java.io StringReader
                     StringWriter)
            #+clj (com.yahoo.platform.yui.compressor CssCompressor)
-           garden.types.CSSFunction
-           garden.types.CSSImport
-           garden.types.CSSKeyframes
            garden.types.CSSUnit
-           garden.types.CSSMediaQuery))
+           garden.types.CSSFunction
+           garden.types.CSSAtRule))
 
 ;;;; ## Compiler flags
 
@@ -73,10 +72,10 @@
   `(binding [*media-query-context* ~selector-context]
      (do ~@body)))
 
-(defn vendors
+(defn- vendors
   "Return the current list of browser vendors specified in `*flags*`."
   []
-  (seq  (:vendors *flags*)))
+  (seq (:vendors *flags*)))
 
 #+clj
 (defn- save-stylesheet
@@ -112,9 +111,9 @@
 
 (defn- top-level-expression? [x]
   (or (util/rule? x)
-      (util/import? x)
-      (util/media-query? x)
-      (util/keyframes? x)))
+      (util/at-import? x)
+      (util/at-media? x)
+      (util/at-keyframes? x)))
  
 ;; ## Expansion
 
@@ -123,17 +122,17 @@
 ;; a new data structure which is a list of only one level.
 
 ;; This intermediate process between input and compilation separates
-;; concerns between parsing data structure and compiling them to CSS.
+;; concerns between parsing data structures and compiling them to CSS.
 
 ;; All data types that implement `IExpandable` should produce a list.
 
 (defprotocol IExpandable
   (expand [this]
-    "Return a list containing the expaned form of `this`."))
+    "Return a list containing the expanded form of `this`."))
 
 ;; ### List expansion
 
-(defn expand-seqs
+(defn- expand-seqs
   "Like flatten but only affects seqs."
   [coll]
   (mapcat
@@ -145,7 +144,7 @@
  
 ;; ### Declaration expansion
 
-(defn expand-declaration
+(defn- expand-declaration
   [declaration]
   (when (seq declaration)
     (let [m (meta declaration)
@@ -206,7 +205,25 @@
          (conj [selector])
          (conj ys))))
 
-;; ### Media query expansion
+;;; ### At-rule expansion
+
+(defmulti ^:private expand-at-rule :identifier)
+
+(defmethod expand-at-rule :default
+  [at-rule]
+  (list at-rule))
+
+;; #### @keyframes expansion
+
+(defmethod expand-at-rule :keyframes
+  [{:keys [value]}]
+  (let [{:keys [identifier frames]} value]
+    (->> {:identifier (util/to-str identifier)
+          :frames (mapcat expand frames)}
+         (CSSAtRule. :keyframes)
+         (list))))
+
+;; #### @media expansion
 
 (defn- expand-media-query-expression [expression]
   (if-let [f (->> [:media-expressions :nesting-behavior]
@@ -215,23 +232,22 @@
     (f expression *media-query-context*)
     expression))
 
-(defn- expand-media-query [media-query]
-  (let [{:keys [expression children]} media-query
-        expression (expand-media-query-expression expression)
-        xs (with-media-query-context expression
-             (mapcat expand (expand children)))
+(defmethod expand-at-rule :media
+  [{:keys [value]}]
+  (let [{:keys [media-queries rules]} value 
+        media-queries (expand-media-query-expression media-queries)
+        xs (with-media-query-context media-queries
+             (mapcat expand (expand rules)))
         ;; Though media-queries may be nested, they may not be nested
         ;; at compile time. Here we make sure this is the case.  
-        [subqueries ys] (divide-vec util/media-query? xs)]
-    (cons (CSSMediaQuery. expression ys) subqueries)))
+        [subqueries rules] (divide-vec util/at-media? xs)]
+    (cons
+     (CSSAtRule. :media {:media-queries media-queries
+                         :rules rules})
+     subqueries)))
 
-(defn- expand-keyframes [keyframes]
-  (let [{:keys [identifier frames]} keyframes
-        frames (mapcat expand frames)]
-    (list (CSSKeyframes. (util/to-str identifier) frames))))
- 
 ;; ### Stylesheet expansion
- 
+
 (defn- expand-stylesheet [xs]
   (->> (expand xs)
        (map expand)
@@ -292,17 +308,11 @@
   #+cljs PersistentTreeMap
   #+cljs (expand [this] (list (expand-declaration this))) 
 
-  CSSImport
-  (expand [this] (list this))
-
   CSSFunction
   (expand [this] (list this))
 
-  CSSMediaQuery
-  (expand [this] (expand-media-query this))
-
-  CSSKeyframes
-  (expand [this] (expand-keyframes this))
+  CSSAtRule
+  (expand [this] (expand-at-rule this))
  
   #+clj Object
   #+cljs default
@@ -355,22 +365,22 @@
   ^{:private true
     :doc "Match the start of a line if the characters immediately
   after it are spaces or used in a CSS id (#), class (.), or tag name."}
-  indent-location
+  indent-location-re
   #"(?m)(?=[\sA-z#.}-]+)^")
 
 (defn- indent-str [s]
-  (string/replace s indent-location indent))
+  (string/replace s indent-location-re indent))
 
 ;; ### Declaration rendering
 
-(defn render-value
+(defn- render-value
   "Render the value portion of a declaration."
   [x]
-  (if (util/keyframes? x)
-    (util/to-str (:identifier x))
+  (if (util/at-keyframes? x)
+    (util/to-str (get-in x [:value :identifier]))
     (render-css x)))
 
-(defn render-property-and-value
+(defn- render-property-and-value
   [[prop val]]
   (if (set? val)
     (->> (interleave (repeat prop) val)
@@ -382,7 +392,7 @@
                 (render-value val))]
       (util/as-str prop colon val semicolon))))
 
-(defn prefix-declaration
+(defn- prefix-declaration
   "If `(:vendors *flags*)` is bound and `declaration` has the meta 
   `{:prefix true}` automatically create vendor prefixed properties."
   [declaration]
@@ -400,7 +410,7 @@
      (keys declaration)
      (vals declaration))))
 
-(defn render-declaration
+(defn- render-declaration
   [declaration]
   (->> (prefix-declaration declaration)
        (map render-property-and-value)
@@ -408,7 +418,7 @@
 
 ;; ### Rule rendering
 
-(defn render-selector
+(defn- render-selector
   [selector]
   (comma-separated-list selector))
 
@@ -454,19 +464,6 @@
 
 ;; ### Garden type rendering
 
-(defn- render-media-query
-  "Render a media query. media-query is expected to be fully expanded."
-  [media-query]
-  (let [{:keys [expression children]} media-query]
-    (when (seq children)
-      (str "@media "
-           (render-media-expr expression)
-           l-brace-1
-           (-> (map render-css children)
-               (rule-join)
-               (indent-str)) 
-           r-brace-1))))
-
 (defn- render-unit
   "Render a CSSUnit."
   [css-unit]
@@ -478,19 +475,6 @@
     (str (if (zero? magnitude) 0 magnitude)
          (when-not (zero? magnitude) (name unit)))))
 
-(defn- render-import
-  "Render a CSS @import directive."
-  [css-import]
-  (let [{:keys [url media-expr]} css-import
-        url (if (string? url)
-              (util/wrap-quotes url)
-              (render-css url))
-        exprs (when media-expr
-                (render-media-expr media-expr))]
-    (str "@import "
-         (if exprs (str url " " exprs) url)
-         semicolon)))
-
 (defn- render-function
   "Render a CSS function."
   [css-function]
@@ -500,10 +484,33 @@
                (util/to-str args))]
     (format "%s(%s)" (util/to-str function) args)))
 
-(defn- render-keyframes
-  "Render a CSS @keyframes block."
-  [css-keyframes]
-  (let [{:keys [identifier frames]} css-keyframes]
+;; ### At-rule rendering
+
+(defmulti ^:private render-at-rule
+  "Render a CSS at-rule"
+  :identifier)
+
+(defmethod render-at-rule :default [_] nil)
+
+;; #### @import rendering
+
+(defmethod render-at-rule :import
+  [{:keys [value]}]
+  (let [{:keys [url media-queries]} value 
+        url (if (string? url)
+              (util/wrap-quotes url)
+              (render-css url))
+        queries (when media-queries
+                  (render-media-expr media-queries))]
+    (str "@import "
+         (if queries (str url " " queries) url)
+         semicolon)))
+
+;; #### @keyframes rendering
+
+(defmethod render-at-rule :keyframes
+  [{:keys [value]}]
+  (let [{:keys [identifier frames]} value]
     (when (seq frames)
       (let [body (str (util/to-str identifier)
                       l-brace-1
@@ -517,6 +524,21 @@
              (cons "@keyframes ")
              (map #(str % body))
              (rule-join))))))
+
+;; #### @media rendering
+
+(defmethod render-at-rule :media
+  [{:keys [value]}]
+  (let [{:keys [media-queries rules]} value]
+    (when (seq rules)
+      (str "@media "
+           (render-media-expr media-queries)
+           l-brace-1
+           (-> (map render-css rules)
+               (rule-join)
+               (indent-str)) 
+           r-brace-1))))
+
 
 ;; ### CSSRenderer implementation
 
@@ -591,14 +613,8 @@
   CSSFunction
   (render-css [this] (render-function this))
 
-  CSSImport
-  (render-css [this] (render-import this))
-
-  CSSKeyframes
-  (render-css [this] (render-keyframes this))
-
-  CSSMediaQuery
-  (render-css [this] (render-media-query this))
+  CSSAtRule
+  (render-css [this] (render-at-rule this))
 
   #+clj Object
   #+cljs default
@@ -607,24 +623,25 @@
   nil
   (render-css [this] ""))
 
+;; ## Compilation
+
+(defn- compile-stylesheet
+  [flags rules]
+  (binding [*flags* (merge *flags* flags)]
+    (->> (expand-stylesheet rules)
+         (filter top-level-expression?) 
+         (map render-css)
+         (remove nil?)
+         (rule-join))))
+
 (defn compile-style
-  "Convert a sequence of maps into css for use with the HTML style
+  "Convert a sequence of maps into CSS for use with the HTML style
    attribute."
   [ms]
   (->> (filter util/declaration? ms)
        (reduce merge)
        (expand)
        (render-css)))
-
-(defn- compile-stylesheet
-  [flags rules]
-  (binding [*flags* (merge *flags* flags)]
-    (->> (expand-stylesheet rules)
-         ;; Declarations may not appear at the top level.
-         (filter top-level-expression?) 
-         (map render-css)
-         (remove nil?)
-         (rule-join))))
 
 (defn compile-css
   "Convert any number of Clojure data structures to CSS."

@@ -2,12 +2,10 @@
   (:require #+clj [clojure.test :refer :all]
             #+cljs [cemerick.cljs.test :as t]
             [garden.compiler :refer [compile-css expand render-css]]
+            [garden.stylesheet :refer (at-import at-media at-keyframes)]
             [garden.types])
   #+cljs (:require-macros [cemerick.cljs.test :refer [deftest is testing]])
-  (:import garden.types.CSSFunction
-           garden.types.CSSImport
-           garden.types.CSSKeyframes
-           garden.types.CSSMediaQuery))
+  (:import garden.types.CSSFunction))
 
 ;; Helpers
 
@@ -16,9 +14,6 @@
 
 (defn compile= [x y & {:as flags}]
    (= (->> x (compile-css (merge flags {:pretty-print? false}))) y))
-
-(defn at-media [e & xs]
-  (CSSMediaQuery. e xs))
 
 (def test-vendors ["moz" "webkit"])
 
@@ -58,9 +53,9 @@
                   "a{x:1}a b{y:1}"))
     (is (compile= [:a ^:prefix {:b 1}]
                   "a{-moz-b:1;-webkit-b:1;b:1}"
-                  :vendors test-vendors)))
+                  :vendors test-vendors))))
 
-  (testing "media queries"
+(deftest at-media-test
     (is (compile= (at-media {:screen true} [:h1 {:a :b}])
                   "@media screen{h1{a:b}}"))
 
@@ -93,7 +88,7 @@
 
     (is (compile= (at-media {:-vendor-prefix-x "2"}
                     [:h1 {:a "b"}])
-                  "@media(-vendor-prefix-x:2){h1{a:b}}"))))
+                  "@media(-vendor-prefix-x:2){h1{a:b}}")))
 
 #+clj
 (deftest parent-selector-test
@@ -115,7 +110,7 @@
                        [:& {:g "foo"}])])
                   "@media screen{a{f:bar}}@media print{a{g:foo}}"))))
 
-(deftest type-render-test
+(deftest css-function-test
   (testing "CSSFunction"
     (is (render= (CSSFunction. :url "background.jpg")
                  "url(background.jpg)"))
@@ -124,15 +119,24 @@
                  "daughter(alice, bob)"))
 
     (is (render= (CSSFunction. :x [(CSSFunction. :y 1) (CSSFunction. :z 2)])
-                 "x(y(1), z(2))")))
+                 "x(y(1), z(2))"))))
 
-  (testing "CSSImport"
+(deftest at-rule-test 
+  (testing "@import"
     (let [url "http://example.com/foo.css"]
-      (is (render= (CSSImport. url nil)
+      (is (render= (at-import url)
                    "@import \"http://example.com/foo.css\";"))
+      (is (render= (at-import url {:screen true}) 
+                   "@import \"http://example.com/foo.css\" screen;"))))
 
-      (is (render= (CSSImport. url {:screen true}) 
-                "@import \"http://example.com/foo.css\" screen;")))))
+  (testing "@keyframes"
+    (let [kfs (at-keyframes :id
+                 [:from {:x 0}]
+                 [:to {:x 1}])]
+      (is (compile= kfs 
+                    "@keyframes id{from{x:0}to{x:1}}"))
+      (is (compile= [:a {:d kfs}]
+                    "a{d:id}")))))
 
 (deftest flag-tests
   (testing ":vendors"
@@ -141,8 +145,9 @@
       (is (re-find #"-moz-b:1;-webkit-b:1;b:1" compiled)))
 
     (let [compiled (compile-css {:vendors test-vendors}
-                                (CSSKeyframes. "fade" [[:from {:foo "bar"}]
-                                                       [:to {:foo "baz"}]]))]
+                                (at-keyframes "fade"
+                                  [:from {:foo "bar"}]
+                                  [:to {:foo "baz"}]))]
       (is (re-find #"@-moz-keyframes" compiled))
       (is (re-find #"@-webkit-keyframes" compiled))
       (is (re-find #"@keyframes" compiled))))

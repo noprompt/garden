@@ -20,8 +20,7 @@ creating a type. If you need to write a media-query use
 
 Added `garden.core/style` for use with the HTML `style` attribute. 
 
-Added new types `garden.types.CSSKeyframes`, and
-`garden.types.CSSMediaQuery`.
+Added new type `garden.types.CSSAtRule`
 
 Added `garden.stylesheet/at-keyframes` for creating `@keyframes` blocks.
 
@@ -100,8 +99,12 @@ you want to see the output of Garden's internal types such as
 Fixed spelling correction from `garden.arithemetic` to
 `garden.arithmetic`.
 
-All functions from the `garden.stylesheet.functions.filters` have been
-moved to `garden.stylesheet.functions`.
+Removed the `garden.stylesheet.selectors`,
+`garden.stylesheet.psuedo-classes`, `garden.stylesheet.functions`, and
+`garden.stylesheet.functions.filters` namespaces. These namespace
+provided a nice convenience but added a lot of extra bloat to the library.
+
+Removed `garden.stylesheet/font-family` for the same reason mentioned above.
 
 ### Compiler changes
 

@@ -6,7 +6,6 @@
             [garden.color :as color]
             [garden.def :refer [defrule defcssfn]]
             [garden.stylesheet :refer [at-media at-import at-keyframes]]
-            [garden.stylesheet.functions :refer [url]]
             [garden.repl]
             ;; Comment this line before running tests to prevent
             ;; warning messages. 
@@ -15,10 +14,8 @@
             [clojure.pprint :refer [pprint pp]]
             [clojure.repl :refer [source doc]])
   (:import (garden.types CSSUnit
-                         CSSImport
                          CSSFunction
-                         CSSKeyframes
-                         CSSMediaQuery)))
+                         CSSAtRule)))
  
 (defn debug [x]
   (pprint x)
