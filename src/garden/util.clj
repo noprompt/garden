@@ -3,9 +3,7 @@
   (:require [clojure.string :as string]
             [garden.types])
   (:import (garden.types CSSUnit
-                         CSSImport
-                         CSSMediaQuery
-                         CSSKeyframes)))
+                         CSSAtRule)))
 
 ;; ## String utilities
 
@@ -64,20 +62,24 @@
   ^{:doc "Alias to `hash-map?`."}
   declaration? hash-map?)
 
-(defn media-query?
-  "True if `x` is an instance of `CSSMediaQuery`."
+(defn at-rule?
   [x]
-  (instance? CSSMediaQuery x))
+  (instance? CSSAtRule x))
 
-(defn keyframes?
-  "True if `x` is an instance of `CSSKeyframes`."
+(defn at-media?
+  "True if `x` is a CSS `@media` rule."
   [x]
-  (instance? CSSKeyframes x))
+  (and (at-rule? x) (= (:identifier x) :media)))
 
-(defn import?
-  "True if `x` is an instance of `CSSImport`."
+(defn at-keyframes?
+  "True if `x` is a CSS `@keyframes` rule."
   [x]
-  (instance? CSSImport x))
+  (and (at-rule? x) (= (:identifier x) :keyframes)))
+
+(defn at-import?
+  "True if `x` is a CSS `@import` rule."
+  [x]
+  (and (at-rule? x) (= (:identifier x) :import)))
 
 (defn prefix
   "Attach a CSS style prefix to s."

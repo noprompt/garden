@@ -3,11 +3,12 @@
   (:require [garden.util :as util]
             [garden.color :as color]
             [garden.types])
-  (:import (garden.types CSSImport
-                         CSSKeyframes
-                         CSSMediaQuery)))
+  (:import garden.types.CSSAtRule))
 
 ;; ## At-rules
+
+(defn- at-rule [identifier value]
+  (CSSAtRule. identifier value))
 
 (defn at-font-face
   "Create a CSS @font-face rule."
@@ -15,17 +16,25 @@
   ["@font-face" font-properties])
 
 (defn at-import
-  "Create a CSS @import expression."
-  ([url] (CSSImport. url nil))
-  ([url media-expr] (CSSImport. url media-expr)))
+  "Create a CSS @import rule."
+  ([url]
+     (at-rule :import {:url url
+                       :media-queries nil}))
+  ([url & media-queries]
+     (at-rule :import {:url url
+                       :media-queries media-queries})))
 
 (defn at-media
-  "Create a CSS @media query."
-  [media-expression & children]
-  (CSSMediaQuery. media-expression children))
+  "Create a CSS @media rule."
+  [media-queries & rules]
+  (at-rule :media {:media-queries media-queries
+                   :rules rules}))
 
-(defn at-keyframes [identifier & frames]
-  (CSSKeyframes. identifier frames))
+(defn at-keyframes
+  "Create a CSS @keyframes rule."
+  [identifier & frames]
+  (at-rule :keyframes {:identifier identifier
+                       :frames frames}))
 
 ;;;; Functions
 

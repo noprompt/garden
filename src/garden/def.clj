@@ -1,6 +1,6 @@
 (ns garden.def
   (:import (garden.types CSSFunction
-                         CSSKeyframes)))
+                         CSSAtRule)))
 
 (defn rule
   "Create a rule function for the given selector. The `selector`
@@ -133,4 +133,5 @@
          {:animation [[my-animation \"5s\"]]}])"
   [name & frames]
   `(def ~name
-     (CSSKeyframes. (str '~name) (list ~@frames))))
+     (CSSAtRule. :keyframes {:identifier (str '~name)
+                             :frames (list ~@frames)})))
