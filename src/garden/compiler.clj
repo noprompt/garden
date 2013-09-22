@@ -67,10 +67,10 @@
   `(binding [*media-query-context* ~selector-context]
      (do ~@body)))
 
-(defn vendors
+(defn- vendors
   "Return the current list of browser vendors specified in `*flags*`."
   []
-  (seq  (:vendors *flags*)))
+  (seq (:vendors *flags*)))
 
 (defn- save-stylesheet
   "Save a stylesheet to disk."
