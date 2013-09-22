@@ -514,7 +514,7 @@
          (rule-join))))
 
 (defn compile-style
-  "Convert a sequence of maps into css for use with the HTML style
+  "Convert a sequence of maps into CSS for use with the HTML style
    attribute."
   [ms]
   (->> (filter util/declaration? ms)
