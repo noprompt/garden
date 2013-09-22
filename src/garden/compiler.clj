@@ -502,15 +502,6 @@
   nil
   (render-css [this] ""))
 
-(defn compile-style
-  "Convert a sequence of maps into css for use with the HTML style
-   attribute."
-  [ms]
-  (->> (filter util/declaration? ms)
-       (reduce merge)
-       (expand)
-       (render-css)))
-
 (defn- compile-stylesheet
   [flags rules]
   (binding [*flags* (merge *flags* flags)]
@@ -520,6 +511,15 @@
          (map render-css)
          (remove nil?)
          (rule-join))))
+
+(defn compile-style
+  "Convert a sequence of maps into css for use with the HTML style
+   attribute."
+  [ms]
+  (->> (filter util/declaration? ms)
+       (reduce merge)
+       (expand)
+       (render-css)))
 
 (defn compile-css
   "Convert any number of Clojure data structures to CSS."
