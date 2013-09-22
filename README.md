@@ -371,16 +371,19 @@ user> (- 20 (u/px 1) 5 (u/in 5))
 ### Media queries
 
 Authoring stylesheets these days without media queries is somewhat
-like having prime rib without horseradish. Garden leverages Clojure's
-meta data to provide a convenient notation for specifying a media
-query. Compiled media queries will appear at the bottom of your
+like having prime rib without horseradish. Garden provides the
+`at-media` function available in the `garden.stylesheet` namespace.
+Compiled media queries will appear at the bottom of your
 stylesheet grouped in the order they appear in.
 
 ```clojure
-user=> (css ^:media ^:screen [:h1 {:font-weight "bold"}])
+user=> (require '[garden.stylesheet :refer [at-media]])
+nil
+user=> (css (at-media {:screen true} [:h1 {:font-weight "bold"}]))
 "@media screen{h1{font-weight:bold}}"
-user=> (css ^:media ^{:min-width (px 768) :max-width (px 979)}
-            [:container {:width (px 960)}])
+user=> (css
+         (at-media {:min-width (px 768) :max-width (px 979)}
+           [:container {:width (px 960)}])
 "@media (max-width:979px) and (min-width:768px){container{width:960px}}"
 ```
 
@@ -389,51 +392,28 @@ Media queries may also be nested:
 ```clojure
 user=> (css [:a {:font-weight "normal"}
              [:&:hover {:color "red"}]
-             ^:media ^:screen
-             [:&:hover {:color "pink"}]])
+             (at-media {:screen true}
+               [:&:hover {:color "pink"}])])
 "a{font-weight:normal}a:hover{color:red}@media screen{a:hover{color:pink}}"
-```
-
-Though using meta data directly can be nice for quick hacking it's
-much better to use Garden's `at-media` function from the
-`garden.stylesheet` namespace. Using `at-media` gives you two
-advantages over direct meta data manipulation. First, it allows you to
-target any number of rules. Second, it will always be compatible in
-the face of notation changes. It is *strongly* recommended you use this
-function.
-
-```clojure
-user=> (require '[garden.stylesheet :refer [at-media]])
-nil
-user=> (css
-         (at-media {:min-width (px 768) :max-width (px 979)}
-           [:.container {:width (px 960) :padding [0 (px 10)]}]
-           [:.row {:width (px 940)}])
-         (at-media {:max-width (px 480)}
-           [:container {:width (px 480) :padding [0 (px 10)]}]
-           [:.row {:width (px 460)}]))
 ```
 
 Will out put the equivalent CSS:
 
 ```css
-@media (max-width: 979px) and (min-width: 768px) {
-  .container {
-    padding: 0 10px;
-    width: 960px
-  }
-  .row {
-    width: 940px
-  }
+a {
+  font-weight: normal;
 }
-@media (max-width: 480px) {
-  .container {
-    padding: 0 10px;
-    width: 480px
+
+a:hover {
+  color: red;
+}
+
+@media screen {
+
+  a:hover {
+    color: pink;
   }
-  .row {
-    width: 460px
-  }
+
 }
 ```
 
@@ -485,14 +465,6 @@ h1 a {
 h1 { font-weight: normal; }
 h1 a { text-decoration: none; }
 ```
-
-## TODO
-
-1. ~~Colors~~
-2. CSS animations
-3. CSS2/CSS3 selectors (In Progress)
-4. CSS3 properties
-5. CSS3 functions (In Progress)
 
 ## Contributors
 
