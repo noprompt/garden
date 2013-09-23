@@ -4,8 +4,7 @@
             [garden.util :as util :refer (#+cljs format to-str as-str)]
             [garden.types])
   #+cljs (:require-macros [garden.compiler :refer [with-media-query-context with-selector-context]])
-  (:import #+cljs cljs.core.ISeq
-           #+clj (java.io StringReader
+  (:import #+clj (java.io StringReader
                     StringWriter)
            #+clj (com.yahoo.platform.yui.compressor CssCompressor)
            garden.types.CSSUnit
