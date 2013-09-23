@@ -34,12 +34,6 @@
   (apply str (map to-str args)))
 
 ;;;; Inspection
- 
-(defn record?
-  "Return true if obj is an instance of clojure.lang.IRecord."
-  [x]
-  #+clj (instance? clojure.lang.IRecord x)
-  #+cljs (satisfies? IRecord x))
 
 (defn space-join
   "Return a space separated list of values."
