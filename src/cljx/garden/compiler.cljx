@@ -1,5 +1,6 @@
 (ns garden.compiler
   "Functions for compiling Clojure data structures to CSS."
+  #+cljs (:refer-clojure :exclude [mapcat])
   (:require [clojure.string :as string]
             [garden.util :as util :refer (#+cljs format to-str as-str)]
             [garden.types])
@@ -101,6 +102,7 @@
       (string/replace #";\}" "}")
       (string/replace #" \{" "{")
       (string/replace #": " ":")
+      (string/replace #", " ",")
       (string/replace #" \(" "(")))
 
 (defn- divide-vec
@@ -131,6 +133,15 @@
 
 ;; ### List expansion
 
+#+cljs
+(defn mapcat
+  "Returns the result of applying concat to the result of applying map
+  to f and colls.  Thus function f should return a collection."
+  {:added "1.0"
+   :static true}
+  [f & colls]
+    (apply concat (apply map f colls)))
+
 (defn- expand-seqs
   "Like flatten but only affects seqs."
   [coll]
@@ -140,7 +151,7 @@
        (expand-seqs x)
        (list x)))
    coll))
- 
+
 ;; ### Declaration expansion
 
 (defn- expand-declaration
@@ -188,7 +199,7 @@
                         (map flatten))
                    (map list selector))]
     (map expand-selector-reference selector)))
- 
+
 (defn- expand-rule
   [rule]
   (let [[selector children] (split-with (complement coll?) rule)
