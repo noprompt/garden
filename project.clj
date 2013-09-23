@@ -3,7 +3,7 @@
   :url "https://github.com/noprompt/garden"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :source-paths ["src/clj" "target/generated-src/clj"]
+  :source-paths ["src/clj" "target/generated-src/clj" "target/generated-src/cljs"]
   :test-paths ["test" "target/generated-test"]
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [org.clojure/clojurescript "0.0-1889"]
