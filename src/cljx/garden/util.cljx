@@ -33,8 +33,6 @@
   [& args]
   (apply str (map to-str args)))
 
-;;;; Inspection
-
 (defn space-join
   "Return a space separated list of values."
   [xs]
