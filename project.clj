@@ -22,9 +22,9 @@
                    :output-path "target/generated-test"
                    :rules :cljs}]}
   :cljsbuild {:builds [{:source-paths ["target/generated-src/cljs" "target/generated-test"]
-                        :compiler {:output-to "target/cljs/testable.js"}
-                        :optimizations :whitespace
-                        :pretty-print true}]
+                        :compiler {:output-to "target/cljs/testable.js"
+                                   :optimizations :whitespace
+                                   :pretty-print true}}]
               :test-commands {"unit-tests" ["phantomjs"  "runners/phantomjs.js" "target/cljs/testable.js"]}}
   :profiles {:dev {:dependencies [[criterium "0.4.1"]]
                    :plugins [[com.cemerick/austin "0.1.1"]]}}
