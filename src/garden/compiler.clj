@@ -161,9 +161,10 @@
   [selector]
   (if-let [reference (extract-reference selector)]
     (let [parent (butlast selector)]
-      (-> (last parent)
-          (util/as-str reference)
-          (cons (butlast parent))))
+      (concat (butlast parent)
+              (-> (last parent)
+                  (util/as-str reference)
+                  (list))))
     selector))
 
 (defn- expand-selector [selector parent]
