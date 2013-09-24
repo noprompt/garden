@@ -4,6 +4,7 @@
             [garden.util :as util])
   (:import (garden.types CSSUnit
                          CSSFunction
+                         CSSColor
                          CSSAtRule)))
 
 (defmethod print-method CSSUnit [css-unit writer]
@@ -11,6 +12,10 @@
 
 (defmethod print-method CSSFunction [css-function writer]
   (.write writer (compiler/render-css css-function)))
+
+;; Show colors as hexadecimal values (ie. #000000) in the REPL.
+(defmethod print-method CSSColor [color writer]
+  (.write writer (str color)))
 
 (defmethod print-method CSSAtRule [css-at-rule writer]
   (let [f (if (or (util/at-keyframes? css-at-rule)

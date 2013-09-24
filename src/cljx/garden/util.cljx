@@ -1,9 +1,16 @@
 (ns garden.util
   "Utility functions used by Garden."
   (:require [clojure.string :as string]
-            [garden.types])
-  (:import (garden.types CSSUnit
-                         CSSAtRule)))
+            [garden.types]
+            #+cljs [goog.string :as gstring]
+            #+cljs [goog.string.format])
+  (:import garden.types.CSSAtRule))
+
+#+cljs
+(defn format
+  "Formats a string using goog.string.format."
+  [fmt & args]
+  (apply gstring/format fmt args))
 
 ;; ## String utilities
 
@@ -11,10 +18,12 @@
   (^String to-str [this] "Convert a value into a string."))
 
 (extend-protocol ToString
-  clojure.lang.Keyword
+  #+clj clojure.lang.Keyword
+  #+cljs Keyword
   (to-str [this] (name this))
 
-  Object
+  #+clj Object
+  #+cljs default
   (to-str [this] (str this))
 
   nil (to-str [this] ""))
@@ -45,12 +54,12 @@
   (str \" s \"))
 
 ;; ## Predicates
- 
+
 (defn hash-map?
   "True if `(map? x)` and `x` does not satisfy `clojure.lang.IRecord`."
   [x]
   (and (map? x)
-       (not (instance? clojure.lang.IRecord x))))
+       (not #+clj (instance? clojure.lang.IRecord x) #+cljs (satisfies? IRecord x))))
  
 ;; ## Stylesheet
 
