@@ -1,12 +1,11 @@
 (ns garden.compiler
   "Functions for compiling Clojure data structures to CSS."
-  #+cljs (:refer-clojure :exclude [mapcat])
   (:require [clojure.string :as string]
             [garden.util :as util :refer (#+cljs format to-str as-str)]
             [garden.types])
-  #+cljs (:require-macros [garden.compiler :refer [with-media-query-context with-selector-context]])
-  (:import #+clj (java.io StringReader
-                    StringWriter)
+  #+cljs
+  (:require-macros [garden.compiler :refer [with-media-query-context with-selector-context]])
+  (:import #+clj (java.io StringReader StringWriter)
            #+clj (com.yahoo.platform.yui.compressor CssCompressor)
            garden.types.CSSUnit
            garden.types.CSSFunction
@@ -126,15 +125,6 @@
 
 ;; ### List expansion
 
-#+cljs
-(defn mapcat
-  "Returns the result of applying concat to the result of applying map
-  to f and colls.  Thus function f should return a collection."
-  {:added "1.0"
-   :static true}
-  [f & colls]
-    (apply concat (apply map f colls)))
-
 (defn- expand-seqs
   "Like flatten but only affects seqs."
   [coll]
@@ -204,7 +194,7 @@
              (if (seq selector)
                selector
                *selector-context*)
-             (mapcat expand xs))]
+             (doall (mapcat expand xs)))]
     (->> (mapcat expand declarations)
          (conj [selector])
          (conj ys))))
