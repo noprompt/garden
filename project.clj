@@ -26,8 +26,8 @@
                         :optimizations :whitespace
                         :pretty-print true}]
               :test-commands {"unit-tests" ["phantomjs"  "runners/phantomjs.js" "target/cljs/testable.js"]}}
-  :profiles {:dev {:source-paths ["dev"]
-                   :dependencies [[criterium "0.4.1"]]}}
+  :profiles {:dev {:dependencies [[criterium "0.4.1"]]
+                   :plugins [[com.cemerick/austin "0.1.1"]]}}
   :plugins [[codox "0.6.4"]
             [lein-cljsbuild "0.3.2"]
             [com.keminglabs/cljx "0.3.0"]])
