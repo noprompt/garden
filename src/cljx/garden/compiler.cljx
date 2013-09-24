@@ -94,16 +94,9 @@
     (str writer)))
 
 #+cljs
-(defn- compress-stylesheet
+(def compress-stylesheet
   "Compress a stylesheet."
-  [stylesheet]
-  (-> stylesheet
-      (string/replace #"[\n]+|[\s]{2,}" "")
-      (string/replace #";\}" "}")
-      (string/replace #" \{" "{")
-      (string/replace #": " ":")
-      (string/replace #", " ",")
-      (string/replace #" \(" "(")))
+  identity)
 
 (defn- divide-vec
   "Return a vector of [(filter pred coll) (remove pred coll)]."

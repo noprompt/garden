@@ -35,6 +35,7 @@
     (is (render= {:a [[1 2] 3 [4 5]]}
                  "a: 1 2, 3, 4 5;")))
   
+  #+clj
   (testing "vectors"
     (is (compile= [:a {:x 1} {:y 2}]
                   "a{x:1;y:2}"))
@@ -54,6 +55,7 @@
                   "a{-moz-b:1;-webkit-b:1;b:1}"
                   :vendors test-vendors))))
 
+#+clj
 (deftest at-media-test
     (is (compile= (at-media {:screen true} [:h1 {:a :b}])
                   "@media screen{h1{a:b}}"))
@@ -88,6 +90,7 @@
                     [:h1 {:a "b"}])
                   "@media(-vendor-prefix-x:2){h1{a:b}}")))
 
+#+clj
 (deftest parent-selector-test
   (testing "parent selector references"
     (is (compile= [:a [:&:hover {:x :y}]]
@@ -124,6 +127,7 @@
     (is (render= (CSSFunction. :x [(CSSFunction. :y 1) (CSSFunction. :z 2)])
                  "x(y(1), z(2))"))))
 
+#+clj
 (deftest at-rule-test 
   (testing "@import"
     (let [url "http://example.com/foo.css"]
@@ -141,6 +145,7 @@
       (is (compile= [:a {:d kfs}]
                     "a{d:id}")))))
 
+#+clj
 (deftest flag-tests
   (testing ":vendors"
     (let [compiled (compile-css {:vendors test-vendors} [:a ^:prefix {:a 1 :b 1}])]
