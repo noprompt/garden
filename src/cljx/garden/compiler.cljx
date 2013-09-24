@@ -635,7 +635,8 @@
   (->> (filter util/declaration? ms)
        (reduce merge)
        (expand)
-       (render-css)))
+       (render-css)
+       (first)))
 
 (defn compile-css
   "Convert any number of Clojure data structures to CSS."
