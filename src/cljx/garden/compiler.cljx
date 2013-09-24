@@ -558,28 +558,28 @@
   (render-css [this] (map render-css this))
 
   #+cljs LazySeq
-  #+cljs (expand [this] (map render-css this))
+  #+cljs (render-css [this] (map render-css this))
 
   #+cljs RSeq
-  #+cljs (expand [this] (map render-css this))
+  #+cljs (render-css [this] (map render-css this))
 
   #+cljs NodeSeq
-  #+cljs (expand [this] (map render-css this))
+  #+cljs (render-css [this] (map render-css this))
 
   #+cljs ArrayNodeSeq
-  #+cljs (expand [this] (map render-css this))
+  #+cljs (render-css [this] (map render-css this))
 
   #+cljs Cons
-  #+cljs (expand [this] (map render-css this))
+  #+cljs (render-css [this] (map render-css this))
 
   #+cljs ChunkedCons
-  #+cljs (expand [this] (map render-css this))
+  #+cljs (render-css [this] (map render-css this))
 
   #+cljs ChunkedSeq
-  #+cljs (expand [this] (map render-css this))
+  #+cljs (render-css [this] (map render-css this))
 
   #+cljs PersistentArrayMapSeq
-  #+cljs (expand [this] (map render-css this))
+  #+cljs (render-css [this] (map render-css this))
 
   #+cljs List
   #+cljs (render-css [this] (map render-css this))
