@@ -96,6 +96,12 @@
     (is (compile= [:a [:& {:x :y}]]
                   "a{x:y}"))
 
+    (is (compile= [:a [:&:b {:x :y}]]
+                  "a:b{x:y}"))
+
+    (is (compile= [:a [:&:b :&:c {:x :y}]]
+                  "a:b,a:c{x:y}"))
+
     (is (compile= [:a
                    (at-media {:max-width "1em"}
                      [:&:hover {:x :y}])]
