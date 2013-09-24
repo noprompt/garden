@@ -490,3 +490,9 @@ random questions and pushing me to keep working on this library.
 Thanks to everyone in `#clojure` on IRC for answering my questions and being
 patient with me. If you're looking for an example of a great community, look no
 further.
+
+## License
+
+Copyright © 2013 Joel Holdbrooks
+
+Distributed under the Eclipse Public License, the same as Clojure.
