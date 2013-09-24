@@ -1,6 +1,7 @@
 (ns garden.def
-  (:import (garden.types CSSFunction
-                         CSSAtRule)))
+  #+cljs (:require-macros [garden.def :refer [defcssfn defrule]])
+  (:import garden.types.CSSFunction
+           garden.types.CSSAtRule))
 
 (defn rule
   "Create a rule function for the given selector. The `selector`
@@ -19,11 +20,12 @@
   (if-not (or (keyword? selector)
               (string? selector)
               (symbol? selector))
-    (throw (IllegalArgumentException.
-            "Selector must be either a keyword, string, or symbol."))
+    (throw (ex-info
+            "Selector must be either a keyword, string, or symbol." {}))
     (fn [& children]
       (into (apply vector selector more) children))))
 
+#+clj
 (defmacro defrule
   "Define a function for creating rules. If only the `name` argument is
   provided the rule generating function will default to using it as the
@@ -54,6 +56,7 @@
   (fn [& args]
     (CSSFunction. fn-name args)))
 
+#+clj
 (defmacro ^{:arglists '([name] [name docstring? & fn-tail])}
   defcssfn
   "Define a function for creating custom CSS functions. The generated
@@ -115,6 +118,7 @@
           (fn [& args#]
             (CSSFunction. (str '~name) (apply (fn ~@fn-tail) args#)))))))
 
+#+clj
 (defmacro defkeyframes
   "Define a CSS @keyframes animation.
 

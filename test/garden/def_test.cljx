@@ -1,11 +1,15 @@
 (ns garden.def-test
-  (:use clojure.test
-        garden.def)
-  (:import (garden.types CSSFunction
-                         CSSAtRule)))
+ (:require #+clj [clojure.test :refer :all]
+           #+cljs [cemerick.cljs.test :as t]
+           [garden.def :refer [rule #+clj defcssfn #+clj defkeyframes #+clj defrule]])
+  #+cljs (:require-macros [cemerick.cljs.test :refer [deftest is testing]]
+                          [garden.def :refer [defcssfn defkeyframes defrule]])
+  #+clj (:import clojure.lang.ExceptionInfo)
+  (:import garden.types.CSSFunction
+           garden.types.CSSAtRule))
 
-(defrule a)
-(defrule sub-headings :h4 :h5 :h6)
+#+clj (defrule a)
+#+clj (defrule sub-headings :h4 :h5 :h6)
 
 (deftest rule-test
   (testing "rule"
@@ -13,8 +17,9 @@
            ["a" {:text-decoration "none"}]))
     (is (= ((rule :a {:text-decoration "none"}))
            [:a {:text-decoration "none"}]))
-    (is (thrown? IllegalArgumentException (rule 1)))))
+    (is (thrown? ExceptionInfo (rule 1)))))
 
+#+clj
 (deftest defrule-test
   (testing "defrule"
     (is (= (a {:font-weight "bold"})

@@ -1,7 +1,10 @@
 (ns garden.units-test
-  (:require [clojure.test :refer :all]
-            [garden.units :refer :all])
-  (:import garden.types.CSSUnit))
+  (:require #+clj [clojure.test :refer :all]
+            #+cljs [cemerick.cljs.test :as t]
+            [garden.units :refer [make-unit-fn make-unit-adder make-unit-subtractor make-unit-multiplier make-unit-divider read-unit px px+ px- px* px-div px? cm mm in pt pc percent em  ex ch vw vh vmin vmax deg grad rad turn ms s kHz Hz dpi dpcm dppx]])
+  #+cljs (:require-macros [cemerick.cljs.test :refer [deftest is testing]])
+  (:import garden.types.CSSUnit
+           #+clj clojure.lang.ExceptionInfo))
 
 (deftest test-unit-arthimetic
   (let [μm (make-unit-fn :μm)
@@ -20,8 +23,8 @@
       (is (= (μm 2) (μm* 1 2))))
     (testing "division"
       (is (= (μm 1) (μm-div 1)))
-      (is (= (μm 1/2) (μm-div 2)))
-      (is (thrown? ArithmeticException (μm-div 2 0))))))
+      (is (= (μm #+clj 1/2 #+cljs 0.5) (μm-div 2)))
+      #+clj (is (thrown? ArithmeticException (μm-div 2 0))))))
 
 (deftest test-px
   (testing "px checking"
@@ -35,21 +38,21 @@
     (is (= (px 2) (px* 1 2))))
   (testing "px division"
     (is (= (px 2) (px-div 4 2)))
-    (is (thrown? ArithmeticException (px-div 2 0))))
+    #+clj (is (thrown? ArithmeticException (px-div 2 0))))
   (testing "px conversion"
     (is (= (px 1) (px (px 1))))
     (is (= (px 37.795275591) (px (cm 1))))
     (is (= (px 16) (px (pc 1))))
     (is (= (px 3.7795275591) (px (mm 1))))
     (is (= (px 1.3333333333) (px (pt 1))))
-    (is (thrown? IllegalArgumentException (px (deg 1))))
-    (is (thrown? IllegalArgumentException (px (grad 1))))
-    (is (thrown? IllegalArgumentException (px (rad 1))))
-    (is (thrown? IllegalArgumentException (px (turn 1))))
-    (is (thrown? IllegalArgumentException (px (s 1))))
-    (is (thrown? IllegalArgumentException (px (ms 1))))
-    (is (thrown? IllegalArgumentException (px (Hz 1))))
-    (is (thrown? IllegalArgumentException (px (kHz 1))))))
+    (is (thrown? ExceptionInfo (px (deg 1))))
+    (is (thrown? ExceptionInfo (px (grad 1))))
+    (is (thrown? ExceptionInfo (px (rad 1))))
+    (is (thrown? ExceptionInfo (px (turn 1))))
+    (is (thrown? ExceptionInfo (px (s 1))))
+    (is (thrown? ExceptionInfo (px (ms 1))))
+    (is (thrown? ExceptionInfo (px (Hz 1))))
+    (is (thrown? ExceptionInfo (px (kHz 1))))))
 
 (deftest unit-utils
   (testing "read-unit"
