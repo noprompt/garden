@@ -1,6 +1,5 @@
-(ns ^{:doc "Convert Clojure data structures to CSS."
-      :author "Joel Holdbrooks"}
-  garden.core
+(ns garden.core
+  "Convert Clojure data structures to CSS."
   (:require [garden.compiler :as compiler]))
 
 (defn ^String css
