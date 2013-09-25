@@ -65,7 +65,7 @@
   `(binding [*selector-context* ~selector-context]
      (do ~@body)))
  
- #+clj
+#+clj
 (defmacro with-media-query-context
   [selector-context & body]
   `(binding [*media-query-context* ~selector-context]
@@ -76,11 +76,27 @@
   []
   (seq (:vendors *flags*)))
 
+(defn- top-level-expression? [x]
+  (or (util/rule? x)
+      (util/at-import? x)
+      (util/at-media? x)
+      (util/at-keyframes? x)))
+
+(defn- divide-vec
+  "Return a vector of [(filter pred coll) (remove pred coll)]."
+  [pred coll]
+  ((juxt filter remove) pred coll))
+ 
 #+clj
 (defn- save-stylesheet
   "Save a stylesheet to disk."
   [path stylesheet]
   (spit path stylesheet))
+
+;;;; ## Stylesheet compression
+
+;; Clojure stylesheet compression leverages the YUI Compressor as it
+;; provides a performant and excellent solution to CSS compression.
 
 #+clj
 (defn- compress-stylesheet
@@ -92,22 +108,72 @@
       (.compress writer -1))
     (str writer)))
 
+;; ClojureScript stylesheet compression uses a simple tokenizer and
+;; loop/recur to construct a new string of minified CSS. 
+
 #+cljs
-(def compress-stylesheet
-  "Compress a stylesheet."
-  identity)
+(defn- token-fn
+  "Return a function which when given a string will return a map 
+  containing the chunk of text matched by re, it's size, and tag."
+  [[tag re]]
+  (fn [s]
+    (when-let [chunk (re-find re s)]
+      {:tag tag
+       :chunk chunk
+       :size (count chunk)})))
 
-(defn- divide-vec
-  "Return a vector of [(filter pred coll) (remove pred coll)]."
-  [pred coll]
-  ((juxt filter remove) pred coll))
+#+cljs
+(defn- tokenizer
+  "Given an arbitrary number of [tag regex] pairs, return a function
+  which when given a string s will return the first matching token of s.
+  Token precedence is determined by the order of the pairs. The first 
+  and last pairs have the highest and lowest precedence respectively."
+  [& tags+regexes]
+  (let [fs (map token-fn tags+regexes)]
+    (fn [s]
+      (some #(% s) fs))))
 
-(defn- top-level-expression? [x]
-  (or (util/rule? x)
-      (util/at-import? x)
-      (util/at-media? x)
-      (util/at-keyframes? x)))
- 
+#+cljs
+(def
+  ^{:private true
+    :doc "Tokenizer used during stylesheet compression."}
+  stylesheet-tokenizer
+  (tokenizer
+   ;; String literals
+   [:string #"^\"(?:\\.|[^\"])*\""]
+   ;; Delimiters 
+   [:r-brace #"^\s*\{\s*"]
+   [:l-brace #"^;?\s*}"]
+   [:r-paren #"^\s*\(\s*"]
+   [:l-paren #"^\s*\)"]
+   [:comma #"^,\s*"]
+   [:colon #"^:\s*"]
+   [:semicolon #"^;"]
+   ;; White space
+   [:space+ #"^ +"]
+   [:white-space+ #"^\s+"]
+   ;; Everything else 
+   [:any #"^."]))
+
+#+cljs
+(defn compress-stylesheet [stylesheet]
+  (loop [s1 stylesheet s2 ""]
+    (if-let [{:keys [tag chunk size]} (stylesheet-tokenizer s1)]
+      (recur (subs s1 size)
+             (str s2 (case tag
+                       :string chunk
+                       :r-brace "{"
+                       :l-brace "}"
+                       :r-paren "("
+                       :l-paren ")"
+                       :comma ","
+                       :semi-comma ";"
+                       :colon ":"
+                       :space+ " "
+                       :white-space+ ""
+                       chunk)))
+      s2)))
+
 ;; ## Expansion
 
 ;; The expansion process ensures that before a stylesheet is rendered
@@ -231,7 +297,7 @@
   (let [{:keys [media-queries rules]} value 
         media-queries (expand-media-query-expression media-queries)
         xs (with-media-query-context media-queries
-             (mapcat expand (expand rules)))
+             (doall (mapcat expand (expand rules))))
         ;; Though media-queries may be nested, they may not be nested
         ;; at compile time. Here we make sure this is the case.  
         [subqueries rules] (divide-vec util/at-media? xs)]
