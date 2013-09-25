@@ -1,5 +1,10 @@
 ## Changes between 0.1.0-beta6 and 1.0.0-SNAPSHOT
 
+### ClojureScript support!
+
+Thanks to @jeluard Garden can now be used client-side projects. Expect
+more exciting things in this area.
+
 ### Syntax Changes
 
 `[]` as a declaration value now implies a comma-separated list. Nested
