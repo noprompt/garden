@@ -472,6 +472,7 @@ Listed by first commit:
 
 * [noprompt](https://github.com/noprompt)
 * [malcolmsparks](https://github.com/malcolmsparks)
+* [jeluard](https://github.com/jeluard)
 
 ## Thanks
 
