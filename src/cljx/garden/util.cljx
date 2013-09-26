@@ -33,6 +33,24 @@
   [& args]
   (apply str (map to-str args)))
 
+(defn string->int
+  "Convert a string to an integer with optional base."
+  [s & [radix]]
+  (let [radix (or radix 10)]
+    #+clj
+    (Integer/parseInt ^String s ^Long radix)
+    #+cljs
+    (js/parseInt s radix)))
+
+(defn int->string
+  "Convert an integer to a string with optional base."
+  [i & [radix]]
+  (let [radix (or radix 10)]
+    #+clj
+    (Integer/toString ^Long i ^Long radix)
+    #+cljs
+    (.toString i radix)))
+
 (defn space-join
   "Return a space separated list of values."
   [xs]
@@ -59,7 +77,8 @@
   "True if `(map? x)` and `x` does not satisfy `clojure.lang.IRecord`."
   [x]
   (and (map? x)
-       (not #+clj (instance? clojure.lang.IRecord x) #+cljs (satisfies? IRecord x))))
+       (not #+clj (instance? clojure.lang.IRecord x)
+            #+cljs (satisfies? IRecord x))))
  
 ;; ## Stylesheet
 

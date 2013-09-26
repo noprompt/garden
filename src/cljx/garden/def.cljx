@@ -1,7 +1,8 @@
 (ns garden.def
-  #+cljs (:require-macros [garden.def :refer [defcssfn defrule]])
   (:import garden.types.CSSFunction
-           garden.types.CSSAtRule))
+           garden.types.CSSAtRule)
+  #+cljs
+  (:require-macros [garden.def :refer [defcssfn defrule]]))
 
 (defn rule
   "Create a rule function for the given selector. The `selector`

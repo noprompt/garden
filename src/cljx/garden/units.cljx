@@ -3,10 +3,11 @@
   (:require [garden.types]
             #+cljs [cljs.reader :refer [read-string]]
             #+cljs [garden.util :refer [format]])
-  #+cljs (:require-macros [garden.units :refer [defunit]])
+  #+cljs
+  (:require-macros [garden.units :refer [defunit]])
   (:import garden.types.CSSUnit))
 
-;;;; Unit families
+;;;; ## Unit families
 
 (def length-units #{:in :cm :pc :mm :pt :px (keyword "%")})
 
@@ -18,7 +19,7 @@
 
 (def resolution-units #{:dpi :dpcm :dppx})
 
-;;;; Unit predicates
+;;;; ## Unit predicates
 
 (defn unit?
   "True if x is of type CSSUnit."
@@ -50,7 +51,7 @@
   (and (unit? x)
        (contains? resolution-units (:unit x))))
 
-;;;; Unit conversion
+;;;; ## Unit conversion
 
 (def ^{:private true
        :doc "Map associating CSS unit types to their conversion values."}
@@ -92,7 +93,7 @@
     (let [x (first (drop-while convertable? [left right]))]
       (throw (ex-info (str "Inconvertible unit " (name x)) {})))))
 
-;; # Unit helpers
+;;;; ## Unit helpers
 
 (def ^{:doc "Regular expression for matching a CSS unit. The magnitude
              and unit are captured."

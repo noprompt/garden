@@ -1,9 +1,11 @@
 (ns garden.color
   "Utilities for color creation, conversion, and manipulation."
   (:refer-clojure :exclude [complement])
-  (:require [clojure.string :as s]
-            [garden.util :as u #+cljs :refer #+cljs [format]])
-  #+cljs (:require-macros [garden.color :refer [defcolor-operation]]))
+  (:require [clojure.string :as string]
+            #+clj [garden.util :as util]
+            #+cljs [garden.util :as util :refer [format]])
+  #+cljs
+  (:require-macros [garden.color :refer [defcolor-operation]]))
 
 ;; Many of the functions in this namespace were ported or inspired by
 ;; the implementations included with Sass
@@ -15,7 +17,8 @@
 (declare as-hex)
 
 (defrecord CSSColor [red green blue hue saturation lightness alpha]
-  #+clj clojure.lang.IFn #+cljs IFn
+  #+clj clojure.lang.IFn
+  #+cljs IFn
   (invoke [this] this)
   (invoke [this k]
     (get this k))
@@ -23,19 +26,14 @@
     (get this k missing))
   #+clj
   (applyTo [this args]
-    (clojure.lang.AFn/applyToHelper this args))
-  ;;Introduces an infinite loop when as-hex throws an exception
-  ;;Object
-  ;;(toString [this]
-  ;;  (as-hex this))
-  )
+    (clojure.lang.AFn/applyToHelper this args)))
 
 (def as-color map->CSSColor)
 
 (defn rgb
   "Create an RGB color."
   ([[r g b :as vs]]
-     (if (every? #(u/between? % 0 255) vs)
+     (if (every? #(util/between? % 0 255) vs)
        (as-color {:red r :green g :blue b})
        (throw
         (ex-info "RGB values must be between 0 and 255" {}))))
@@ -45,7 +43,7 @@
 (defn rgba
   "Create an RGBA color."
   ([[r g b a]]
-     (if (u/between? a 0 1)
+     (if (util/between? a 0 1)
        (as-color (assoc (rgb [r g b]) :alpha a))
        (throw
         (ex-info "Alpha value must be between 0 and 1" {}))))
@@ -57,8 +55,8 @@
   ([[h s l]]
      ;; Handle CSSUnits. 
      (let [[h s l] (map #(get % :magnitude %) [h s l])]
-       (if (and (u/between? s 0 100)
-                (u/between? l 0 100))
+       (if (and (util/between? s 0 100)
+                (util/between? l 0 100))
          (as-color {:hue (mod h 360) :saturation s :lightness l})
          (throw
           (ex-info "Saturation and lightness must be between 0(%) and 100(%)" {})))))
@@ -68,7 +66,7 @@
 (defn hsla
   "Create an HSLA color."
   ([[h s l a]]
-     (if (u/between? a 0 1)
+     (if (util/between? a 0 1)
        (as-color (assoc (hsl [h s l]) :alpha a))
        (throw
         (ex-info "Alpha value must be between 0 and 1" {}))))
@@ -95,7 +93,9 @@
 (def ^{:doc "Regular expression for matching a hexadecimal color.
              Matches hexadecimal colors of length three or six possibly
              lead by a \"#\". The color portion is captured."}
-  hex-re #"#?([\da-fA-F]{6}|[\da-fA-F]{3})") ;;Quantifier must be in this order of JavaScript engines will match 3 chars even when 6 are provided (failing re-matches)
+  ;; Quantifier must be in this order or JavaScript engines will match
+  ;; 3 chars even when 6 are provided (failing re-matches).
+  hex-re #"#?([\da-fA-F]{6}|[\da-fA-F]{3})")
 
 (defn hex?
   "Returns true if x is a hexadecimal color."
@@ -109,16 +109,18 @@
     (let [hex (if (= 3 (count hex))
                 (apply str (mapcat #(list % %) hex))
                 hex)]
-      (rgb (map #+clj #(Integer/parseInt % 16) #+cljs #(js/parseInt % 16) (re-seq #"[\da-fA-F]{2}" hex))))))
+      (->> (re-seq #"[\da-fA-F]{2}" hex)
+           (map #(util/string->int % 16))
+           (rgb)))))
 
 (defn rgb->hex
   "Convert an RGB color map to a hexadecimal color."
   [{r :red g :green b :blue}]
   (letfn [(hex-part [v]
-            (s/replace (format "%2s" #+clj (Integer/toString v 16) #+cljs (.toString v 16)) " " "0"))]
+            (-> (format "%2s" (util/int->string v 16))
+                (string/replace " " "0")))]
     (apply str "#" (map hex-part [r g b]))))
     
-
 (defn rgb->hsl
   "Convert an RGB color map to an HSL color map."
   [{:keys [red green blue] :as color}]
@@ -179,14 +181,15 @@
   (-> color hsl->rgb rgb->hex))
 
 (defn hex->hsl
+  "Convert a hexadecimal color to an HSL color."
   [color]
   (-> color hex->rgb rgb->hsl))
 
 (def percent-clip
-  (partial u/clip 0 100))
+  (partial util/clip 0 100))
 
 (def rgb-clip
-  (partial u/clip 0 255))
+  (partial util/clip 0 255))
 
 (defn as-hex
   "Convert a color to a hexadecimal string."
@@ -296,7 +299,7 @@
   ([color-1 color-2]
      (let [c1 (restrict-rgb (as-rgb color-1))
            c2 (restrict-rgb (as-rgb color-2))]
-       (as-color (merge-with u/average c1 c2))))
+       (as-color (merge-with util/average c1 c2))))
   ([color-1 color-2 & more]
      (reduce mix (mix color-1 color-2) more)))
 
@@ -333,7 +336,7 @@
   ([color]
      (split-complement color 130))
   ([color distance-from-complement]
-     (let [d (u/clip 1 179 distance-from-complement)]
+     (let [d (util/clip 1 179 distance-from-complement)]
          (hue-rotations color 0 d (- d)))))
 
 (defn tetrad
@@ -344,9 +347,12 @@
   ([color]
      (tetrad color 90))
   ([color angle]
-     (let [a (u/clip 1 90 (Math/abs (:magnitude angle angle)))
+     (let [a (util/clip 1 90 (Math/abs (:magnitude angle angle)))
            color-2 (rotate-hue color a)]
-       [(rotate-hue color 0) (complement color) color-2 (complement color-2)])))
+       [(rotate-hue color 0)
+        (complement color)
+        color-2
+        (complement color-2)])))
 
 (defn shades
   "Given a color return a list of shades from lightest to darkest by
