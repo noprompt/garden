@@ -146,23 +146,28 @@
 
 (deftest flag-tests
   (testing ":vendors"
-    (let [compiled (compile-css {:vendors test-vendors} [:a ^:prefix {:a 1 :b 1}])]
+    (let [compiled (compile-css
+                    {:vendors test-vendors :pretty-print? false}
+                    [:a ^:prefix {:a 1 :b 1}])]
       (is (re-find #"-moz-a:1;-webkit-a:1;a:1" compiled))
       (is (re-find #"-moz-b:1;-webkit-b:1;b:1" compiled)))
 
-    (let [compiled (compile-css {:vendors test-vendors}
-                                (at-keyframes "fade"
-                                  [:from {:foo "bar"}]
-                                  [:to {:foo "baz"}]))]
+    (let [compiled (compile-css
+                    {:vendors test-vendors :pretty-print? false}
+                    (at-keyframes "fade"
+                      [:from {:foo "bar"}]
+                      [:to {:foo "baz"}]))]
       (is (re-find #"@-moz-keyframes" compiled))
       (is (re-find #"@-webkit-keyframes" compiled))
       (is (re-find #"@keyframes" compiled))))
 
   (testing ":media-expressions :nesting-behavior"
-    (let [compiled (compile-css {:media-expressions {:nesting-behavior :merge}}
-                                (at-media {:screen true}
-                                  [:a {:x 1}]
-                                  (at-media {:print true}
-                                    [:b {:y 1}])))]
+    (let [compiled (compile-css
+                    {:media-expressions {:nesting-behavior :merge}
+                     :pretty-print? false}
+                    (at-media {:screen true}
+                      [:a {:x 1}]
+                      (at-media {:print true}
+                        [:b {:y 1}])))]
       (is (re-find #"@media screen\{a\{x:1\}\}" compiled))
       (is (re-find #"@media (?:screen and print|print and screen)\{b\{y:1\}\}" compiled)))))

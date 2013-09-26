@@ -693,7 +693,7 @@
 
 (defn- compile-stylesheet
   [flags rules]
-  (binding [*flags* (merge *flags* flags)]
+  (binding [*flags* flags]
     (->> (expand-stylesheet rules)
          (filter top-level-expression?) 
          (map render-css)
@@ -715,7 +715,7 @@
   [flags & rules]
   (let [[flags rules] (if (and (util/hash-map? flags)
                                (some (set (keys flags)) (keys *flags*)))
-                        [flags rules]
+                        [(merge *flags* flags) rules]
                         [*flags* (cons flags rules)])
         output-to (:output-to flags)
         stylesheet (let [stylesheet (compile-stylesheet flags rules)]
