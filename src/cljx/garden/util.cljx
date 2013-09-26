@@ -1,5 +1,7 @@
 (ns garden.util
   "Utility functions used by Garden."
+  #+cljs
+  (:refer-clojure :exclude [format])
   (:require [clojure.string :as string]
             [garden.types]
             #+cljs [goog.string :as gstring]
