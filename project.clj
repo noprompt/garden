@@ -26,8 +26,12 @@
                                    :optimizations :whitespace
                                    :pretty-print true}}]
               :test-commands {"unit-tests" ["phantomjs"  "runners/phantomjs.js" "target/cljs/testable.js"]}}
-  :profiles {:dev {:dependencies [[criterium "0.4.1"]]
-                   :plugins [[com.cemerick/austin "0.1.1"]]}}
+  :profiles {:dev {:dependencies [[criterium "0.4.1"]
+                                  [com.cemerick/piggieback "0.1.0"]
+                                  [com.keminglabs/cljx "0.3.0"]]
+                   :plugins [[com.cemerick/austin "0.1.1"]]
+                   :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl
+                                                     cljx.repl-middleware/wrap-cljx]}}}
   :plugins [[codox "0.6.4"]
             [lein-cljsbuild "0.3.2"]
             [com.keminglabs/cljx "0.3.0"]])
