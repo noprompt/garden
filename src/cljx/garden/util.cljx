@@ -12,7 +12,7 @@
   [fmt & args]
   (apply gstring/format fmt args))
 
-;; ## String utilities
+;;;; ## String utilities
 
 (defprotocol ToString
   (^String to-str [this] "Convert a value into a string."))
@@ -71,7 +71,7 @@
   [s]
   (str \" s \"))
 
-;; ## Predicates
+;;;; ## Predicates
 
 (defn hash-map?
   "True if `(map? x)` and `x` does not satisfy `clojure.lang.IRecord`."
@@ -79,8 +79,8 @@
   (and (map? x)
        (not #+clj (instance? clojure.lang.IRecord x)
             #+cljs (satisfies? IRecord x))))
- 
-;; ## Stylesheet
+
+;;;; ## Stylesheet
 
 (def
   ^{:doc "Alias to `vector?`."}
@@ -125,7 +125,7 @@
       (prefix p s) 
       (prefix (str \- p) s))))
 
-;; ## Math
+;;;; ## Math
 
 (defn natural?
   "True if n is a natural number."
@@ -165,7 +165,7 @@
 			  (assoc v-seqs i rst)
 			  (recur (dec i) (assoc v-seqs i (v-original-seqs i)))))))]
 	    (when v-seqs
-	       (cons (map first v-seqs)
-		     (lazy-seq (step (increment v-seqs)))))))]
+              (cons (map first v-seqs)
+                    (lazy-seq (step (increment v-seqs)))))))]
     (when (every? seq seqs)
       (lazy-seq (step v-original-seqs)))))
