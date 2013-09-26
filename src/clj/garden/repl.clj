@@ -4,8 +4,8 @@
             [garden.util :as util])
   (:import (garden.types CSSUnit
                          CSSFunction
-                         CSSColor
-                         CSSAtRule)))
+                         CSSAtRule)
+           (garden.color CSSColor)))
 
 (defmethod print-method CSSUnit [css-unit writer]
   (.write writer (compiler/render-css css-unit)))
