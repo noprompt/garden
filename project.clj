@@ -9,6 +9,16 @@
                  [org.clojure/clojurescript "0.0-1889"]
                  [com.yahoo.platform.yui/yuicompressor "2.4.7"]
                  [com.cemerick/clojurescript.test "0.0.4"]]
+  :plugins [[codox "0.6.4"]
+            [lein-cljsbuild "0.3.2"]
+            [com.keminglabs/cljx "0.3.0"]]
+  :profiles {:dev {:dependencies [[criterium "0.4.1"]
+                                  [com.cemerick/piggieback "0.1.0"]
+                                  [com.keminglabs/cljx "0.3.0"]]
+                   :plugins [[com.cemerick/austin "0.1.1"]]
+                   :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl
+                                                     cljx.repl-middleware/wrap-cljx]}}}
+  :aliases {"test-all" ["do" "cljx" "once," "test," "cljsbuild" "test"]}
   :cljx {:builds [{:source-paths ["src/cljx"]
                    :output-path "target/generated-src/clj"
                    :rules :clj}
@@ -25,13 +35,4 @@
                         :compiler {:output-to "target/cljs/testable.js"
                                    :optimizations :whitespace
                                    :pretty-print true}}]
-              :test-commands {"unit-tests" ["phantomjs"  "runners/phantomjs.js" "target/cljs/testable.js"]}}
-  :profiles {:dev {:dependencies [[criterium "0.4.1"]
-                                  [com.cemerick/piggieback "0.1.0"]
-                                  [com.keminglabs/cljx "0.3.0"]]
-                   :plugins [[com.cemerick/austin "0.1.1"]]
-                   :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl
-                                                     cljx.repl-middleware/wrap-cljx]}}}
-  :plugins [[codox "0.6.4"]
-            [lein-cljsbuild "0.3.2"]
-            [com.keminglabs/cljx "0.3.0"]])
+              :test-commands {"unit-tests" ["phantomjs"  "runners/phantomjs.js" "target/cljs/testable.js"]}})
