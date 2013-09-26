@@ -1,32 +1,9 @@
 (ns garden.def
+  (:require [garden.types]
+            [garden.util :as util])
   (:import garden.types.CSSFunction
-           garden.types.CSSAtRule)
-  #+cljs
-  (:require-macros [garden.def :refer [defcssfn defrule]]))
+           garden.types.CSSAtRule))
 
-(defn rule
-  "Create a rule function for the given selector. The `selector`
-  argument must be valid selector (ie. a keyword, string, or symbol).
-  Additional arguments may consist of extra selectors or
-  declarations.
-
-  The returned function accepts any number of arguments which represent
-  the rule's children.
-
-  Ex.
-      (let [text-field (rule \"[type=\"text\"])]
-       (text-field {:border [\"1px\" :solid \"black\"]}))
-      ;; => [\"[type=\"text\"] {:boder [\"1px\" :solid \"black\"]}]"
-  [selector & more]
-  (if-not (or (keyword? selector)
-              (string? selector)
-              (symbol? selector))
-    (throw (ex-info
-            "Selector must be either a keyword, string, or symbol." {}))
-    (fn [& children]
-      (into (apply vector selector more) children))))
-
-#+clj
 (defmacro defrule
   "Define a function for creating rules. If only the `name` argument is
   provided the rule generating function will default to using it as the
@@ -46,18 +23,19 @@
       (sub-headings {:font-weight \"normal\"})
       ;; => [:h4 :h5 :h6 {:font-weight \"normal\"}]"
   [name & selectors]
-  (let [rfn (if (seq selectors)
-              (apply rule selectors)
-              (rule (keyword name)))
-        name (vary-meta name assoc :arglists '(list '[& children]))]
-    `(def ~name ~rfn)))
+  (let [name (vary-meta name assoc :arglists '(list '[& children]))]
+    `(def ~name
+       (let [;; HACK: The `keyword` function is currently broken in
+             ;; the latest version of ClojureScript. This is a
+             ;; temporary work around until it's fixed.
+             keyword# #(if (keyword? %) % (keyword (name %)))
+             rule# (if (seq '~selectors)
+                     (mapv keyword# '~selectors)
+                     [(keyword# '~name)])]
+         (fn [& children#]
+           (into rule# children#))))))
 
 
-(defn cssfn [fn-name]
-  (fn [& args]
-    (CSSFunction. fn-name args)))
-
-#+clj
 (defmacro ^{:arglists '([name] [name docstring? & fn-tail])}
   defcssfn
   "Define a function for creating custom CSS functions. The generated
@@ -100,8 +78,9 @@
       (css (attr :end-of-quote :string :inherit))
       ;; => \"attr(end-of-quote string, inherit)\""
   ([name]
-     (let [name (vary-meta name assoc :arglists '(list '[& args]))]
-       `(def ~name (cssfn (str '~name)))))
+     `(def ~name
+        (fn [& args#]
+          (CSSFunction. (str '~name) args#))))
   ([name & fn-tail]
      (let [docstring? (when (string? (first fn-tail))
                         (first fn-tail))
@@ -119,7 +98,6 @@
           (fn [& args#]
             (CSSFunction. (str '~name) (apply (fn ~@fn-tail) args#)))))))
 
-#+clj
 (defmacro defkeyframes
   "Define a CSS @keyframes animation.
 

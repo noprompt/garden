@@ -18,7 +18,7 @@
                    :plugins [[com.cemerick/austin "0.1.1"]]
                    :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl
                                                      cljx.repl-middleware/wrap-cljx]}}}
-  :aliases {"test-all" ["do" "cljx" "once," "test," "cljsbuild" "test"]}
+  :aliases {"test-all" ["do" "clean," "cljx" "once," "test," "cljsbuild" "test"]}
   :cljx {:builds [{:source-paths ["src/cljx"]
                    :output-path "target/generated-src/clj"
                    :rules :clj}

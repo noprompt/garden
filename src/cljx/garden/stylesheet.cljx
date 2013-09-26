@@ -3,9 +3,38 @@
   (:require [garden.util :as util]
             [garden.color :as color]
             [garden.types])
-  (:import garden.types.CSSAtRule))
+  (:import garden.types.CSSFunction
+           garden.types.CSSAtRule))
 
-;; ## At-rules
+;;;; ## Stylesheet helpers
+
+(defn rule
+  "Create a rule function for the given selector. The `selector`
+  argument must be valid selector (ie. a keyword, string, or symbol).
+  Additional arguments may consist of extra selectors or
+  declarations.
+
+  The returned function accepts any number of arguments which represent
+  the rule's children.
+
+  Ex.
+      (let [text-field (rule \"[type=\"text\"])]
+       (text-field {:border [\"1px\" :solid \"black\"]}))
+      ;; => [\"[type=\"text\"] {:boder [\"1px\" :solid \"black\"]}]"
+  [selector & more]
+  (if-not (or (keyword? selector)
+              (string? selector)
+              (symbol? selector))
+    (throw (ex-info
+            "Selector must be either a keyword, string, or symbol." {}))
+    (fn [& children]
+      (into (apply vector selector more) children))))
+
+(defn cssfn [fn-name]
+  (fn [& args]
+    (CSSFunction. fn-name args)))
+
+;;;; ## At-rules
 
 (defn- at-rule [identifier value]
   (CSSAtRule. identifier value))
@@ -36,7 +65,7 @@
   (at-rule :keyframes {:identifier identifier
                        :frames frames}))
 
-;;;; Functions
+;;;; ## Functions
 
 (defn rgb
   "Create a color from RGB values."
