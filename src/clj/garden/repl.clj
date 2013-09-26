@@ -1,7 +1,9 @@
 (ns garden.repl
   "Method definitions for `print-method` with Garden types."
   (:require [garden.compiler :as compiler]
-            [garden.util :as util])
+            [garden.util :as util]
+            [garden.types]
+            [garden.color])
   (:import (garden.types CSSUnit
                          CSSFunction
                          CSSAtRule)
