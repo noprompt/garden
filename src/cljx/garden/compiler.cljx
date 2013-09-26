@@ -425,11 +425,17 @@
   ^{:private true
     :doc "Match the start of a line if the characters immediately
   after it are spaces or used in a CSS id (#), class (.), or tag name."}
-  indent-location-re
-  #"(?m)(?=[\sA-z#.}-]+)^")
+  indent-loc-re
+  #+clj
+  #"(?m)(?=[\sA-z#.}-]+)^"
+  #+cljs
+  (js/RegExp. "(?=[ A-Za-z#.}-]+)^" "gm"))
 
 (defn- indent-str [s]
-  (string/replace s indent-location-re indent))
+  #+clj
+  (string/replace s indent-loc-re indent)
+  #+cljs
+  (.replace s indent-loc-re indent))
 
 ;; ### Declaration rendering
 
