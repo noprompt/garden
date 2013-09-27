@@ -540,7 +540,7 @@ will produce
   from {
     opacity: 0;
   }
-  
+
   to {
     opacity: 1;
   }
@@ -552,7 +552,7 @@ will produce
   from {
     opacity: 0;
   }
-  
+
   to {
     opacity: 1;
   }
@@ -560,8 +560,8 @@ will produce
 }
 
 h1 {
-  -webkit-animate: pulse 5s infinite;
-  animate: pulse 5s infinite;
+  -webkit-animation: pulse 2s infinite alternate;
+  animation: pulse 2s infinite alternate;
 }
 ```
 
