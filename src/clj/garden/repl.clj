@@ -17,7 +17,7 @@
 
 ;; Show colors as hexadecimal values (ie. #000000) in the REPL.
 (defmethod print-method CSSColor [color writer]
-  (.write writer (str color)))
+  (.write writer (garden.color/as-hex color)))
 
 (defmethod print-method CSSAtRule [css-at-rule writer]
   (let [f (if (or (util/at-keyframes? css-at-rule)
