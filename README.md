@@ -18,7 +18,6 @@ trade a preprocessor for a programming language.
   * [Color](#color)
   * [Arithmetic](#arithmetic)
   * [Media queries](#media-queries)
-* [TODO](#todo)
 
 ## Installation
 
@@ -512,7 +511,7 @@ Garden will automatically prefix declarations tagged with the
 
 This:
 
-```
+```clojure
 (require '[garden.def :refer [defrule defkeyframes]])
 
 (defkeyframes pulse
@@ -564,7 +563,6 @@ div {
   animate: pulse 5s infinite;
 }
 ```
-
 
 ## Contributors
 
