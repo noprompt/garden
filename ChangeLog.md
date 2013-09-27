@@ -1,4 +1,4 @@
-## Changes between 0.1.0-beta6 and 1.0.0-SNAPSHOT
+## Changes between 0.1.0-beta6 and 1.0.0
 
 ### ClojureScript support!
 
