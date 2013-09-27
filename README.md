@@ -397,10 +397,9 @@ user=> (css [:a {:font-weight "normal"}
              [:&:hover {:color "red"}]
              (at-media {:screen true}
                [:&:hover {:color "pink"}])])
-"a{font-weight:normal}a:hover{color:red}@media screen{a:hover{color:pink}}"
 ```
 
-Will out put the equivalent CSS:
+and will out put the equivalent CSS:
 
 ```css
 a {
@@ -430,11 +429,9 @@ To understand how media expressions are interpreted refer to this table:
  `{:screen :only}`                           | `only screen`                             
  `{:min-width (px 768) :max-width (px 959)}` | `(min-width: 768px) and (max-width: 959)` 
 
-At this time specifying multiple queries is not supported.
-
 ## Compiler flags
 
-The `css` macro optionally takes a map of compiler flags.
+The `css` function optionally takes a map of compiler flags.
 
 ### Output flags
 
