@@ -2,6 +2,7 @@
   "Functions for compiling Clojure data structures to CSS."
   (:require [clojure.string :as string]
             [garden.util :as util :refer (#+cljs format to-str as-str)]
+            [garden.color]
             [garden.types])
   #+cljs
   (:require-macros [garden.compiler :refer [with-media-query-context with-selector-context]])
@@ -9,7 +10,8 @@
            #+clj (com.yahoo.platform.yui.compressor CssCompressor)
            garden.types.CSSUnit
            garden.types.CSSFunction
-           garden.types.CSSAtRule))
+           garden.types.CSSAtRule
+           garden.color.CSSColor))
 
 ;;;; ## Compiler flags
 
@@ -550,6 +552,8 @@
                (util/to-str args))]
     (format "%s(%s)" (util/to-str function) args)))
 
+(def ^:private render-color garden.color/as-hex)
+
 ;; ### At-rule rendering
 
 (defmulti ^:private render-at-rule
@@ -681,6 +685,9 @@
 
   CSSAtRule
   (render-css [this] (render-at-rule this))
+
+  CSSColor
+  (render-css [this] (render-color this))
 
   #+clj Object
   #+cljs default
