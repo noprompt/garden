@@ -26,6 +26,8 @@
    ;; the compiled stylesheet will be compressed with the YUI
    ;; compressor.
    :pretty-print? true
+   ;; Location to save a stylesheet after compiling.
+   :output-to nil
    ;; A list of vendor prefixes to append automatically to things like
    ;; `@keyframes` and declarations containing the `^:prefix` meta data.
    :vendors []
@@ -733,6 +735,7 @@
     (if output-to
       (do
         (save-stylesheet output-to stylesheet)
+        (println "Wrote:" output-to)
         stylesheet)
       stylesheet)
     #+cljs stylesheet))
