@@ -14,7 +14,7 @@ utilities for working with CSS units, media queries, and more.
   * [Declarations](#declarations)
   * [Units](#units)
   * [Color](#color)
-  * [Arithemetic](#arithemetic)
+  * [Arithmetic](#arithmetic)
   * [Media queries](#media-queries)
 * [TODO](#todo)
 
@@ -41,10 +41,11 @@ user=> (css [:body {:font-size "16px"}])
 "body{font-size:16px}"
 ```
 
-First you'll notice the use of the `css` macro. This macro takes an optional
-map of compiler flags, any number of rules, and returns a string of compiled
-CSS. We'll start off by discussing rules then follow up with declarations and
-Garden's unit utilities. Then we'll demonstrate the use of compiler flags.
+First you'll notice the use of the `css` function. This function takes
+an optional map of compiler flags, any number of rules, and returns a
+string of compiled CSS. We'll start off by discussing rules then
+follow up with declarations and Garden's other utilities. Then we'll
+demonstrate the use of compiler flags.
 
 ### Rules
 
@@ -179,14 +180,14 @@ Finally we have vectors and lists which are handled in the same manor when used
 as a declaration value. The semantics of these values increment the level of
 complexity somewhat so be sure you understand their behavior before you use
 them. When you use a vector/list as a value you are asking Garden for a
-*space* separated list.
+*comma* separated list.
 
 ```clojure
 user=> (css [:p {:font ["16px" "sans-serif"]}])
 "p{font:16px sans-serif}"
 ```
 
-When you nest a vector/list you are asking for a *comma* separated list.
+When you nest a vector/list you are asking for a *space* separated list.
 
 ```clojure
 user=> (css [:p {:font ["16px" '(Helvetica Arial sans-serif)]}])
@@ -219,13 +220,16 @@ stylesheet.
 Unit creation is straightforward:
 
 ```clojure
-user=> (css (px 16))
-"16px"
+user=> (px 16)
+#garden.types.CSSUnit{:unit :px, :magnitude 1}
 ```
 
-For easy experimentation in the REPL you can omit the use of `css`.
+To see the value as it would appear in CSS require the `garden.repl`
+namespace.
 
 ```clojure
+user=> (require 'garden.repl)
+nil
 user=> (px 16)
 16px
 ```
@@ -291,13 +295,13 @@ Garden's color functions are available in the `garden.color`
 namespace.
 
 ```clojure
-user=> (require '[garden.color :as c])
+user=> (require '[garden.color :as color :refer [hsl rgb]])
 ```
 
 Let's create a color to work with.
 
 ```clojure
-user> (def red (c/hsl 0 100 50))
+user> (def red (hsl 0 100 50))
 #'user/red
 user> red
 #ff0000
@@ -314,10 +318,10 @@ highlighted.
 
 ```clojure
 ;; Make dark red.
-user> (c/darken red 25)
+user> (color/darken red 25)
 #800000
 ;; Make light red.
-user> (c/lighten red 25)
+user> (color/lighten red 25)
 #ff8080
 ```
 
@@ -325,17 +329,17 @@ But, wait! There's more!
 
 ```clojure
 ;; Make an orange color...
-user> (def orange (c/hsl 30 100 50))
+user> (def orange (color/hsl 30 100 50))
 ;; ...and mix it with red.
-user> (c/mix red orange)
+user> (color/mix red orange)
 #ff4000
 ;; Make a green color...
-user> (def green (c/hsl 120 100 50))
+user> (def green (hsl 120 100 50))
 ;; ...and add it to red to get yellow.
-user> (c/color+ red green)
+user> (color/color+ red green)
 #ffff00
 ;; Get a set of analogous colors.
-user> (c/analogous red)
+user> (color/analogous red)
 (#ff0000 #ff8000 #ffff00)
 ```
 
@@ -344,28 +348,28 @@ multiplied with `color+`, `color-`, `color*`, and `color-div`
 respectively. There are several other nice functions available for
 finding color complements, triads, tetrads, and more.
 
-### Arithemetic
+### Arithmetic
 
 Now that we have a solid understanding of how units and colors
-operate, we can talk about Garden's generic arithemetic operators.
+operate, we can talk about Garden's generic arithmetic operators.
 While working with functions like `px+`, `color+`, etc. have their
 advantages, sometimes they can get in the way. To get around this
-you can use the operators in the `garden.arithemetic` namespace.
+you can use the operators in the `garden.arithmetic` namespace.
 
 ```clojure
 (ns user
   ;; Unless you want to see a bunch of warnings add this line.
   (:refer-clojure :exclude '[+ - * /])
-  (:require '[garden.arithemetic :refer [+ - * /]]))
+  (:require '[garden.arithmetic :refer [+ - * /]]))
 ```
 
 This will allow you to perform operations like this:
 
 ```clojure
-user> (+ 20 (c/hsl 0 0 0) 1 (c/rgb 255 0 0))
+user> (+ 20 (color/hsl 0 0 0) 1 (color/rgb 255 0 0))
 #ff1515
-user> (- 20 (u/px 1) 5 (u/in 5))
--466px
+user> (- 20 (px 1) 5 (pt 5))
+7.333333333500001px
 ```
 
 ### Media queries
@@ -373,8 +377,6 @@ user> (- 20 (u/px 1) 5 (u/in 5))
 Authoring stylesheets these days without media queries is somewhat
 like having prime rib without horseradish. Garden provides the
 `at-media` function available in the `garden.stylesheet` namespace.
-Compiled media queries will appear at the bottom of your
-stylesheet grouped in the order they appear in.
 
 ```clojure
 user=> (require '[garden.stylesheet :refer [at-media]])
@@ -431,10 +433,16 @@ At this time specifying multiple queries is not supported.
 
 ## Compiler flags
 
-The `css` macro optionally takes a map of compiler flags. Currently, the only
-key of this map recognized by the macro is `:output-style`. The `:output-style`
-may be one of `:expanded`, `:compact`, or `:compressed`. By default all CSS is
-rendered using the `:compressed` flag.
+The `css` macro optionally takes a map of compiler flags.
+
+### Output flags
+
+#### Printing
+
+Often you are interested in saving a fully expanded result of
+compilation for development and a compressed version for production.
+This is controlled by the `:pretty-print?` flag which may either be
+`true` or `false`. By default this flag is set to `true`.
 
 Assuming:
 
@@ -444,27 +452,117 @@ Assuming:
     [:a {:text-decoration "none"}]])
 ```
 
-`(css {:output-style :expanded} styles)` results in the following output when
-`print`ed:
+`(css {:pretty-print? true} styles)` results in the following output when
+compiled:
 
 ```css
 h1 {
   font-weight: normal;
 }
 
-h1 a {
+a {
   text-decoration: none;
 }
-
 ```
 
-`(css {:output-style :compact} styles)` results in the following output when
-`print`ed:
+`(css {:pretty-print? false} styles)` results in the following output when
+compiled:
 
 ```css
-h1 { font-weight: normal; }
-h1 a { text-decoration: none; }
+"h1{font-weight:normal}a{text-decoration:none}"
 ```
+
+For Clojure generated stylesheets are compressed using the YUI
+Compressor which yeilds much better results when compared with the
+previous versions.
+
+```clojure
+user=> (css {:pretty-print? false} [:body {:background "#ff0000"}])
+"body{background:#f00}"
+user> (css {:pretty-print? false} [:div {:box-shadow [[(px 0) (px 0.5) (hsl 0 0 0)]]}])
+"div{box-shadow:0 .5px #000}"
+```
+
+For ClojureScript compression mostly consists of whitespace
+elimination wherever possible.
+
+#### Saving 
+
+**Note:** This is currently not available for ClojureScript, but
+support is planned.
+
+To save a stylesheet to disk simply set the `:output-to` flag to the
+desired path.
+
+```clojure
+user=> (css {:output-to "foo.css"} [:h1 {:font-weight "normal"}])
+Wrote: foo.css
+"h1 {\n  font-weight: normal;\n}"
+```
+
+#### Vendors
+
+Vendor prefixing can be a pain but Garden can help with that in some
+cases if you set the `:vendors` flag. The value is expeced to be a
+vector of prefixes (ie `["webkit" "moz" "o"]`). By specifying this
+Garden will automatically prefix declarations tagged with the
+`^:prefix` meta and `@keyfames`.
+
+This:
+
+```
+(require '[garden.def :refer [defrule defkeyframes]])
+
+(defkeyframes pulse
+  [:from
+   {:opacity 0}]
+
+  [:to
+   {:opacity 1}])
+
+(css {:vendors ["webkit"]
+      :output-to "foo.css"}
+  ;; Include our keyframes
+  pulse
+  
+  [:h1
+   ;; Notice we don't need to quote pulse.
+   ^:prefix {:animation [[pulse "2s" :infinite :alternate]]}])
+```
+
+will produce
+
+```css
+@keyframes pulse {
+
+  from {
+    opacity: 0;
+  }
+  
+  to {
+    opacity: 1;
+  }
+
+}
+
+@-webkit-keyframes pulse {
+
+  from {
+    opacity: 0;
+  }
+  
+  to {
+    opacity: 1;
+  }
+
+}
+
+div {
+  -webkit-animate: pulse 5s infinite;
+  animate: pulse 5s infinite;
+}
+```
+
 
 ## Contributors
 
