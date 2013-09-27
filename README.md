@@ -1,9 +1,11 @@
 # Garden
 
-Garden is a library for rendering CSS in Clojure. Conceptually similar to
-[Hiccup](https://github.com/weavejester/hiccup), it uses vectors to represent
-rules and maps to represent declarations. Garden provides tools and
-utilities for working with CSS units, media queries, and more.
+Garden is a library for rendering CSS in Clojure and ClojureScript.
+Conceptually similar to
+[Hiccup](https://github.com/weavejester/hiccup), it uses vectors to
+represent rules and maps to represent declarations. It is designed for
+stylesheet authors who are interested in what's possible when you
+trade a preprocessor for a programming language.
 
 ## Table of contents
 
@@ -23,7 +25,7 @@ utilities for working with CSS units, media queries, and more.
 Add the following dependency to your `project.clj` file:
 
 ```clojure
-[garden "0.1.0-beta6"]
+[garden "1.0.0"]
 ```
 
 ## Syntax
