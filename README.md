@@ -523,6 +523,7 @@ This:
 
 (css {:vendors ["webkit"]
       :output-to "foo.css"}
+
   ;; Include our keyframes
   pulse
   
@@ -558,7 +559,7 @@ will produce
 
 }
 
-div {
+h1 {
   -webkit-animate: pulse 5s infinite;
   animate: pulse 5s infinite;
 }
