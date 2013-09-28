@@ -1,3 +1,7 @@
+## Changes between 1.0.0 and 1.0.2
+
+Fixed incorrect rendering of hsla colors. 
+
 ## Changes between 1.0.0 and 1.0.1
 
 Fixed rendering for colors with alpha channel.
