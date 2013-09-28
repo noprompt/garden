@@ -1,3 +1,7 @@
+## Changes between 1.0.0 and 1.0.1
+
+Fixed rendering for colors with alpha channel.
+
 ## Changes between 0.1.0-beta6 and 1.0.0
 
 ### ClojureScript support!
