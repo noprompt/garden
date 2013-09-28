@@ -5,7 +5,8 @@
             [cemerick.cljs.test :as t]
             [garden.compiler :refer [compile-css expand render-css]]
             [garden.stylesheet :refer (at-import at-media at-keyframes)]
-            [garden.types])
+            [garden.types]
+            [garden.color :as color])
   #+cljs
   (:require-macros [cemerick.cljs.test :refer [deftest is testing]])
   (:import garden.types.CSSFunction))
@@ -55,7 +56,11 @@
                   "a{x:1}a b{y:1}"))
     (is (compile= [:a ^:prefix {:b 1}]
                   "a{-moz-b:1;-webkit-b:1;b:1}"
-                  :vendors test-vendors))))
+                  :vendors test-vendors)))
+
+  (testing "colors"
+    (is (render= (color/hsla 30 40 50 0.5)
+                 "hsla(30%, 40%, 50%, 0.5)"))))
 
 (deftest at-media-test
     (is (compile= (at-media {:screen true} [:h1 {:a :b}])

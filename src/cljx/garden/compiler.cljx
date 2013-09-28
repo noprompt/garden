@@ -2,6 +2,7 @@
   "Functions for compiling Clojure data structures to CSS."
   (:require [clojure.string :as string]
             [garden.util :as util :refer (#+cljs format to-str as-str)]
+            [garden.units :as units]
             [garden.color]
             [garden.types])
   #+cljs
@@ -377,6 +378,9 @@
 
   CSSAtRule
   (expand [this] (expand-at-rule this))
+
+  CSSColor
+  (expand [this] (list this))
  
   #+clj Object
   #+cljs default
@@ -554,7 +558,12 @@
                (util/to-str args))]
     (format "%s(%s)" (util/to-str function) args)))
 
-(def ^:private render-color garden.color/as-hex)
+(defn ^:private render-color [c]
+  (if-let [a (:alpha c)]
+    (let [{:keys [hue saturation lightness]} (garden.color/as-hsl c)
+          [h s l] (map units/percent [hue saturation lightness])]
+      (format "hsla(%s)" (comma-separated-list [h s l a])))
+    (garden.color/as-hex c)))
 
 ;; ### At-rule rendering
 
