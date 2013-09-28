@@ -561,8 +561,8 @@
 (defn ^:private render-color [c]
   (if-let [a (:alpha c)]
     (let [{:keys [hue saturation lightness]} (garden.color/as-hsl c)
-          [h s l] (map units/percent [hue saturation lightness])]
-      (format "hsla(%s)" (comma-separated-list [h s l a])))
+          [s l] (map units/percent [saturation lightness])]
+      (format "hsla(%s)" (comma-separated-list [hue s l a])))
     (garden.color/as-hex c)))
 
 ;; ### At-rule rendering

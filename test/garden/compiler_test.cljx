@@ -60,7 +60,7 @@
 
   (testing "colors"
     (is (render= (color/hsla 30 40 50 0.5)
-                 "hsla(30%, 40%, 50%, 0.5)"))))
+                 "hsla(30, 40%, 50%, 0.5)"))))
 
 (deftest at-media-test
     (is (compile= (at-media {:screen true} [:h1 {:a :b}])

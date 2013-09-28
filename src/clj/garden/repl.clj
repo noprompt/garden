@@ -15,9 +15,8 @@
 (defmethod print-method CSSFunction [css-function writer]
   (.write writer (compiler/render-css css-function)))
 
-;; Show colors as hexadecimal values (ie. #000000) in the REPL.
 (defmethod print-method CSSColor [color writer]
-  (.write writer (garden.color/as-hex color)))
+  (.write writer (compiler/render-css color)))
 
 (defmethod print-method CSSAtRule [css-at-rule writer]
   (let [f (if (or (util/at-keyframes? css-at-rule)
