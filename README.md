@@ -185,18 +185,15 @@ them. When you use a vector/list as a value you are asking Garden for a
 
 ```clojure
 user=> (css [:p {:font ["16px" "sans-serif"]}])
-"p{font:16px sans-serif}"
+"p{font:16px,sans-serif}"
 ```
 
 When you nest a vector/list you are asking for a *space* separated list.
 
 ```clojure
-user=> (css [:p {:font ["16px" '(Helvetica Arial sans-serif)]}])
+user=> (css [:p {:font [["16px" 'Helvetica] 'Arial 'sans-serif]}])
 "p{font:16px Helvetica,Arial,sans-serif}"
 ```
-
-Be warned, this pattern is recursive! Unless you know exactly what you are
-doing, avoid nesting more than one level.
 
 ### Units
 
