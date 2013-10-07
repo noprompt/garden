@@ -1,8 +1,20 @@
 (ns garden.def
   (:require [garden.types]
-            [garden.util :as util])
+            [garden.util :as util]
+            [garden.core])
   (:import garden.types.CSSFunction
            garden.types.CSSAtRule))
+
+(defmacro defstyles
+  "Convenience macro equivalent to `(def name (list styles*))`."
+  [name & styles]
+  `(def ~name (list ~@styles)))
+
+(defmacro defstylesheet
+  "Convenience macro equivalent to `(def name (css opts? styles*))`."
+  [name & styles]
+  `(def ~name
+     (garden.core/css ~@styles)))
 
 (defmacro defrule
   "Define a function for creating rules. If only the `name` argument is
