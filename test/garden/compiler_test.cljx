@@ -9,7 +9,8 @@
             [garden.color :as color])
   #+cljs
   (:require-macros [cemerick.cljs.test :refer [deftest is testing]])
-  (:import garden.types.CSSFunction))
+  (:import garden.types.CSSFunction
+           garden.types.CSSUnit))
 
 ;; Helpers
 
@@ -94,7 +95,11 @@
 
     (is (compile= (at-media {:-vendor-prefix-x "2"}
                     [:h1 {:a "b"}])
-                  "@media(-vendor-prefix-x:2){h1{a:b}}")))
+                  "@media(-vendor-prefix-x:2){h1{a:b}}"))
+
+    (is (compile= (at-media {:min-width (CSSUnit. :em 1)}
+                    [:h1 {:a "b"}])
+                  "@media(min-width:1em){h1{a:b}}")))
 
 (deftest parent-selector-test
   (testing "parent selector references"
