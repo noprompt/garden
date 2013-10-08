@@ -1,3 +1,7 @@
+## Changes between 1.1.0 and 1.1.1
+
+Fix incorrect rendering of values in media expression.
+
 ## Changes between 1.0.2 and 1.1.0
 
 Add two new macros `defstyles` and `defstylesheet`. These macros
