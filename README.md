@@ -24,7 +24,7 @@ trade a preprocessor for a programming language.
 Add the following dependency to your `project.clj` file:
 
 ```clojure
-[garden "1.0.2"]
+[garden "1.1.0"]
 ```
 
 ## Syntax
@@ -418,13 +418,13 @@ a:hover {
 
 To understand how media expressions are interpreted refer to this table:
 
- Map                                         | Interpretation                            
+ Map                                         | Interpretation
 ---------------------------------------------|-------------------------------------------
- `{:screen true}`                            | `screen`                                  
- `{:screen false}`                           | `not screen`                              
- `{:screen true :braille false}`             | `screen and not braille`                  
- `{:screen :only}`                           | `only screen`                             
- `{:min-width (px 768) :max-width (px 959)}` | `(min-width: 768px) and (max-width: 959)` 
+ `{:screen true}`                            | `screen`
+ `{:screen false}`                           | `not screen`
+ `{:screen true :braille false}`             | `screen and not braille`
+ `{:screen :only}`                           | `only screen`
+ `{:min-width (px 768) :max-width (px 959)}` | `(min-width: 768px) and (max-width: 959)`
 
 ## Compiler flags
 
@@ -481,7 +481,7 @@ user> (css {:pretty-print? false} [:div {:box-shadow [[(px 0) (px 0.5) (hsl 0 0 
 For ClojureScript compression mostly consists of whitespace
 elimination wherever possible.
 
-#### Saving 
+#### Saving
 
 **Note:** This is currently not available for ClojureScript, but
 support is planned.
@@ -520,7 +520,7 @@ This:
 
   ;; Include our keyframes
   pulse
-  
+
   [:h1
    ;; Notice we don't need to quote pulse.
    ^:prefix {:animation [[pulse "2s" :infinite :alternate]]}])
