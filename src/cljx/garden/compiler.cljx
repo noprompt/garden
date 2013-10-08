@@ -513,7 +513,7 @@
 (defn- render-media-expr-part
   "Render the individual components of a media expression."
   [[k v]]
-  (let [[sk sv] (map util/to-str [k v])]
+  (let [[sk sv] (map render-value [k v])]
     (cond
      (true? v) sk
      (false? v) (str "not " sk)
