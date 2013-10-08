@@ -69,7 +69,9 @@
    :s {:s 1, :ms 1000}
    :ms {:ms 1}
    :Hz {:Hz 1, :kHz 0.001}
-   :kHz {:kHz 1}})
+   :kHz {:kHz 1}
+   :em {:em 1}
+   (keyword "%") {(keyword "%") 1}})
 
 (defn- convertable?
   "True if unit is a key of convertable-units, false otherwise."
