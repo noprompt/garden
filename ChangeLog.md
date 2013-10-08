@@ -1,6 +1,35 @@
+## Changes between 1.0.2 and 1.1.0
+
+Add two new macros `defstyles` and `defstylesheet`. These macros
+eliminate two common patterns when authoring stylesheets with
+Garden.
+
+```clojure
+(require '[garden.def :refer [defstyles defstylesheet]])
+
+;; This:
+(defstyles h1-styles
+  [:h1 {:font-weight "normal"}])
+
+;; is equivalent to:
+(def h1-styles
+  (list
+    [:h1 {:font-weight "normal"}]))
+
+;; This:
+(defstylesheet screen
+  {:output-to (io/resource "public/css/screen.css")}
+  h1-styles)
+
+;; is equivalent to:
+(def screen
+  (css {:output-to (io/resource "public/css/screen.css")}
+    h1-styles))
+```
+
 ## Changes between 1.0.0 and 1.0.2
 
-Fixed incorrect rendering of hsla colors. 
+Fixed incorrect rendering of hsla colors.
 
 ## Changes between 1.0.0 and 1.0.1
 
@@ -31,7 +60,7 @@ creating a type. If you need to write a media-query use
 
 `garden.core/css` is no longer a macro.
 
-Added `garden.core/style` for use with the HTML `style` attribute. 
+Added `garden.core/style` for use with the HTML `style` attribute.
 
 Added new type `garden.types.CSSAtRule`
 
@@ -216,7 +245,7 @@ expression values with their parents. When unconfigured or set to
 `:default` nested media queries will simply appear after their parent
 when rendered.
 
-### Unit changes 
+### Unit changes
 
 `CSSUnit`s with a `magnitude` value for which `(zero? magnitude)`
 returns `true` are rendered without their unit type.
