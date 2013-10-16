@@ -6,12 +6,12 @@
   :source-paths ["src/clj" "target/generated-src/clj" "target/generated-src/cljs"]
   :test-paths ["test" "target/generated-test"]
   :dependencies [[org.clojure/clojure "1.5.1"]
-                 [org.clojure/clojurescript "0.0-1889"]
-                 [com.yahoo.platform.yui/yuicompressor "2.4.7"]
-                 [com.cemerick/clojurescript.test "0.0.4"]]
+                 [org.clojure/clojurescript "0.0-1934"]
+                 [com.yahoo.platform.yui/yuicompressor "2.4.7"]]
   :plugins [[codox "0.6.4"]
-            [lein-cljsbuild "0.3.2"]
-            [com.keminglabs/cljx "0.3.0"]]
+            [lein-cljsbuild "0.3.4"]
+            [com.keminglabs/cljx "0.3.0"]
+            [com.cemerick/clojurescript.test "0.1.0"]]
   :profiles {:dev {:dependencies [[criterium "0.4.1"]
                                   [com.cemerick/piggieback "0.1.0"]
                                   [com.keminglabs/cljx "0.3.0"]]
@@ -35,4 +35,4 @@
                         :compiler {:output-to "target/cljs/testable.js"
                                    :optimizations :whitespace
                                    :pretty-print true}}]
-              :test-commands {"unit-tests" ["phantomjs"  "runners/phantomjs.js" "target/cljs/testable.js"]}})
+              :test-commands {"unit-tests" ["phantomjs" :runner "target/cljs/testable.js"]}})
