@@ -18,6 +18,7 @@ trade a preprocessor for a programming language.
   * [Color](#color)
   * [Arithmetic](#arithmetic)
   * [Media queries](#media-queries)
+* [Plugin](#plugin)
 
 ## Installation
 
@@ -566,6 +567,13 @@ Listed by first commit:
 * [noprompt](https://github.com/noprompt)
 * [malcolmsparks](https://github.com/malcolmsparks)
 * [jeluard](https://github.com/jeluard)
+
+## Plugin
+
+If you're interested in automatically compiling your stylesheets be
+sure to check out the
+[`lein-garden`](https://github.com/noprompt/lein-garden)
+plugin. 
 
 ## Thanks
 
