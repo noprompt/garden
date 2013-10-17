@@ -546,8 +546,7 @@
             #+clj (if (ratio? magnitude)
                     (float magnitude)
                     magnitude)]
-    (str (if (zero? magnitude) 0 magnitude)
-         (when-not (zero? magnitude) (name unit)))))
+    (str magnitude (name unit))))
 
 (defn- render-function
   "Render a CSS function."
