@@ -1,3 +1,8 @@
+## Changes between 1.1.2 and 1.1.3
+
+Fix incorrect rendering of hsla values by not stripping the unit from
+units with `0` magnitude.
+
 ## Changes between 1.1.0 and 1.1.1
 
 Fix incorrect rendering of values in media expression.
