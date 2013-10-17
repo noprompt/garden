@@ -24,7 +24,7 @@ trade a preprocessor for a programming language.
 Add the following dependency to your `project.clj` file:
 
 ```clojure
-[garden "1.1.2"]
+[garden "1.1.3"]
 ```
 
 ## Syntax
