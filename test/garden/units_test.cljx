@@ -1,7 +1,7 @@
 (ns garden.units-test
   (:require #+clj [clojure.test :refer :all]
             #+cljs [cemerick.cljs.test :as t]
-            [garden.units :refer [make-unit-fn make-unit-adder make-unit-subtractor make-unit-multiplier make-unit-divider read-unit px px+ px- px* px-div px? cm mm in pt pc percent em  ex ch vw vh vmin vmax deg grad rad turn ms s kHz Hz dpi dpcm dppx]])
+            [garden.units :refer [make-unit-fn make-unit-adder make-unit-subtractor make-unit-multiplier make-unit-divider read-unit px px+ px- px* px-div px? cm mm in pt pc percent em rem  ex ch vw vh vmin vmax deg grad rad turn ms s kHz Hz dpi dpcm dppx]])
   #+cljs (:require-macros [cemerick.cljs.test :refer [deftest is testing]])
   (:import garden.types.CSSUnit
            #+clj clojure.lang.ExceptionInfo))
@@ -64,6 +64,7 @@
     (is (= (pc 1) (read-unit "1pc")))
     (is (= (percent 1) (read-unit "1%")))
     (is (= (em 1) (read-unit "1em")))
+    (is (= (rem 1) (read-unit "1rem")))
     (is (= (ex 1) (read-unit "1ex")))
     (is (= (ch 1) (read-unit "1ch")))
     (is (= (CSSUnit. :rem 1) (read-unit "1rem")))

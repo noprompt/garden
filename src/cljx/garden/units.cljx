@@ -5,7 +5,8 @@
             #+cljs [garden.util :refer [format]])
   #+cljs
   (:require-macros [garden.units :refer [defunit]])
-  (:import garden.types.CSSUnit))
+  (:import garden.types.CSSUnit)
+  (:refer-clojure :exclude [rem]))
 
 ;;;; ## Unit families
 
@@ -71,6 +72,7 @@
    :Hz {:Hz 1, :kHz 0.001}
    :kHz {:kHz 1}
    :em {:em 1}
+   :rem {:rem 1}
    (keyword "%") {(keyword "%") 1}})
 
 (defn- convertable?
@@ -232,7 +234,7 @@
 (defunit em)
 (defunit ex)
 (defunit ch)
-;;(defunit rem)
+(defunit rem)
 
 ;; Viewport-percentage lengths
 
