@@ -4,7 +4,8 @@
             [garden.units :refer [make-unit-fn make-unit-adder make-unit-subtractor make-unit-multiplier make-unit-divider read-unit px px+ px- px* px-div px? cm mm in pt pc percent em rem  ex ch vw vh vmin vmax deg grad rad turn ms s kHz Hz dpi dpcm dppx]])
   #+cljs (:require-macros [cemerick.cljs.test :refer [deftest is testing]])
   (:import garden.types.CSSUnit
-           #+clj clojure.lang.ExceptionInfo))
+           #+clj clojure.lang.ExceptionInfo)
+  (:refer-clojure :exclude [rem]))
 
 (deftest test-unit-arthimetic
   (let [μm (make-unit-fn :μm)
