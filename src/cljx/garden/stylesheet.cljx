@@ -2,7 +2,8 @@
   "Utility functions for CSS properties, directives and functions."
   (:require [garden.util :as util]
             [garden.color :as color]
-            [garden.types])
+            [garden.types :as t])
+  #+clj
   (:import garden.types.CSSFunction
            garden.types.CSSAtRule))
 
@@ -32,12 +33,12 @@
 
 (defn cssfn [fn-name]
   (fn [& args]
-    (CSSFunction. fn-name args)))
+    (t/CSSFunction. fn-name args)))
 
 ;;;; ## At-rules
 
 (defn- at-rule [identifier value]
-  (CSSAtRule. identifier value))
+  (t/CSSAtRule. identifier value))
 
 (defn at-font-face
   "Create a CSS @font-face rule."

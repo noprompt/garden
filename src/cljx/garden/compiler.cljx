@@ -3,12 +3,13 @@
   (:require [clojure.string :as string]
             [garden.util :as util :refer (#+cljs format to-str as-str)]
             [garden.units :as units]
-            [garden.color]
-            [garden.types])
+            [garden.color :as c]
+            [garden.types :as t])
   #+cljs
   (:require-macros [garden.compiler :refer [with-media-query-context with-selector-context]])
-  (:import #+clj (java.io StringReader StringWriter)
-           #+clj (com.yahoo.platform.yui.compressor CssCompressor)
+  #+clj
+  (:import (java.io StringReader StringWriter)
+           (com.yahoo.platform.yui.compressor CssCompressor)
            garden.types.CSSUnit
            garden.types.CSSFunction
            garden.types.CSSAtRule
@@ -285,7 +286,7 @@
   (let [{:keys [identifier frames]} value]
     (->> {:identifier (util/to-str identifier)
           :frames (mapcat expand frames)}
-         (CSSAtRule. :keyframes)
+         (t/CSSAtRule. :keyframes)
          (list))))
 
 ;; #### @media expansion
@@ -307,7 +308,7 @@
         ;; at compile time. Here we make sure this is the case.  
         [subqueries rules] (divide-vec util/at-media? xs)]
     (cons
-     (CSSAtRule. :media {:media-queries media-queries
+     (t/CSSAtRule. :media {:media-queries media-queries
                          :rules rules})
      subqueries)))
 
@@ -373,13 +374,16 @@
   #+cljs PersistentTreeMap
   #+cljs (expand [this] (list (expand-declaration this))) 
 
-  CSSFunction
+  #+clj CSSFunction
+  #+cljs t/CSSFunction
   (expand [this] (list this))
 
-  CSSAtRule
+  #+clj CSSAtRule
+  #+cljs t/CSSAtRule
   (expand [this] (expand-at-rule this))
 
-  CSSColor
+  #+clj CSSColor
+  #+cljs c/CSSColor
   (expand [this] (list this))
  
   #+clj Object
@@ -687,16 +691,20 @@
   #+cljs Keyword
   (render-css [this] (name this))
 
-  CSSUnit
+  #+clj CSSUnit
+  #+cljs t/CSSUnit
   (render-css [this] (render-unit this))
 
-  CSSFunction
+  #+clj CSSFunction
+  #+cljs t/CSSFunction
   (render-css [this] (render-function this))
 
-  CSSAtRule
+  #+clj CSSAtRule
+  #+cljs t/CSSAtRule
   (render-css [this] (render-at-rule this))
 
-  CSSColor
+  #+clj CSSColor
+  #+cljs c/CSSColor
   (render-css [this] (render-color this))
 
   #+clj Object

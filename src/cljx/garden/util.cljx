@@ -3,9 +3,10 @@
   #+cljs
   (:refer-clojure :exclude [format])
   (:require [clojure.string :as string]
-            [garden.types]
+            [garden.types :as t]
             #+cljs [goog.string :as gstring]
             #+cljs [goog.string.format])
+  #+clj
   (:import garden.types.CSSAtRule))
 
 #+cljs
@@ -94,7 +95,7 @@
 
 (defn at-rule?
   [x]
-  (instance? CSSAtRule x))
+  (instance? #+clj CSSAtRule #+cljs t/CSSAtRule x))
 
 (defn at-media?
   "True if `x` is a CSS `@media` rule."

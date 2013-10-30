@@ -1,10 +1,11 @@
 (ns garden.units
   "Functions and macros for working with CSS units."
-  (:require [garden.types]
+  (:require [garden.types :as t]
             #+cljs [cljs.reader :refer [read-string]]
             #+cljs [garden.util :refer [format]])
   #+cljs
   (:require-macros [garden.units :refer [defunit]])
+  #+clj
   (:import garden.types.CSSUnit)
   (:refer-clojure :exclude [rem]))
 
@@ -25,7 +26,7 @@
 (defn unit?
   "True if x is of type CSSUnit."
   [x]
-  (instance? CSSUnit x))
+  (instance? #+clj CSSUnit #+cljs t/CSSUnit x))
 
 (defn length?
   [x]
@@ -87,8 +88,8 @@
     (let [v1 (get-in conversions [left right])
           v2 (get-in conversions [right left])]
       (cond
-       v1 (CSSUnit. right (* v1 m))
-       v2 (CSSUnit. right (/ m v2))
+       v1 (t/CSSUnit. right (* v1 m))
+       v2 (t/CSSUnit. right (/ m v2))
        ;; Both units are convertible but no conversion between them exists.
        :else (throw
               (ex-info
@@ -111,7 +112,7 @@
   (when-let [[_ magnitude unit] (re-matches unit-re s)]
     (let [unit (keyword unit)
           magnitude (if magnitude (read-string magnitude) 0)]
-      (CSSUnit. unit magnitude))))
+      (t/CSSUnit. unit magnitude))))
 
 (defn make-unit-predicate
   "Creates a function for verifying the given unit type."
@@ -126,7 +127,7 @@
   [unit]
   (fn [x]
     (cond
-     (number? x) (CSSUnit. unit x)
+     (number? x) (t/CSSUnit. unit x)
      (unit? x) (or (and (= (unit x) unit) x)
                    (convert x unit))
      :else (throw
