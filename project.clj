@@ -6,18 +6,16 @@
   :source-paths ["src/clj" "target/generated-src/clj" "target/generated-src/cljs"]
   :test-paths ["test" "target/generated-test"]
   :dependencies [[org.clojure/clojure "1.5.1"]
-                 [org.clojure/clojurescript "0.0-1934"]
+                 [org.clojure/clojurescript "0.0-2030"]
                  [com.yahoo.platform.yui/yuicompressor "2.4.7"]]
   :plugins [[codox "0.6.4"]
-            [lein-cljsbuild "0.3.4"]
-            [com.keminglabs/cljx "0.3.0"]
-            [com.cemerick/clojurescript.test "0.1.0"]]
+            [lein-cljsbuild "1.0.0"]
+            [com.keminglabs/cljx "0.3.1"]
+            [com.cemerick/clojurescript.test "0.2.1"]]
   :profiles {:dev {:dependencies [[criterium "0.4.1"]
-                                  [com.cemerick/piggieback "0.1.0"]
-                                  [com.keminglabs/cljx "0.3.0"]]
-                   :plugins [[com.cemerick/austin "0.1.1"]]
-                   :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl
-                                                     cljx.repl-middleware/wrap-cljx]}}}
+                                  [com.cemerick/piggieback "0.1.2"]]
+                   :plugins [[com.cemerick/austin "0.1.3"]]
+                   :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}}}
   :aliases {"test-all" ["do" "clean," "cljx" "once," "test," "cljsbuild" "test"]}
   :cljx {:builds [{:source-paths ["src/cljx"]
                    :output-path "target/generated-src/clj"
