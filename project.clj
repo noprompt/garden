@@ -6,7 +6,7 @@
   :source-paths ["src/clj" "target/generated-src/clj" "target/generated-src/cljs"]
   :test-paths ["test" "target/generated-test"]
   :dependencies [[org.clojure/clojure "1.5.1"]
-                 [org.clojure/clojurescript "0.0-2030"]
+                 [org.clojure/clojurescript "0.0-2138"]
                  [com.yahoo.platform.yui/yuicompressor "2.4.7"]]
   :plugins [[codox "0.6.4"]
             [lein-cljsbuild "1.0.0"]
