@@ -1,4 +1,4 @@
-(ns garden.compiler_test
+(ns garden.compiler-test
   (:require #+clj
             [clojure.test :refer :all]
             #+cljs
@@ -8,7 +8,7 @@
             [garden.types]
             [garden.color :as color])
   #+cljs
-  (:require-macros [cemerick.cljs.test :refer [deftest is testing]])
+  (:require-macros [cemerick.cljs.test :refer [deftest is testing are]])
   (:import garden.types.CSSFunction
            garden.types.CSSUnit))
 
@@ -54,10 +54,7 @@
     (is (compile= [:a [{:x 1} [:b {:y 1}]]]
                   "a b{y:1}"))
     (is (compile= [:a {:x 1} [[:b {:y 1}]]]
-                  "a{x:1}a b{y:1}"))
-    (is (compile= [:a ^:prefix {:b 1}]
-                  "a{-moz-b:1;-webkit-b:1;b:1}"
-                  :vendors test-vendors)))
+                  "a{x:1}a b{y:1}")))
 
   (testing "colors"
     (is (render= (color/hsla 30 40 50 0.5)
@@ -159,8 +156,14 @@
     (let [compiled (compile-css
                     {:vendors test-vendors :pretty-print? false}
                     [:a ^:prefix {:a 1 :b 1}])]
-      (is (re-find #"-moz-a:1;-webkit-a:1;a:1" compiled))
-      (is (re-find #"-moz-b:1;-webkit-b:1;b:1" compiled)))
+
+      (are [re] (re-find re compiled)
+        #"-moz-a:1"
+        #"-webkit-a:1"
+        #"a:1"
+        #"-moz-b:1"
+        #"-webkit-b:1"
+        #"b:1"))
 
     (let [compiled (compile-css
                     {:vendors test-vendors :pretty-print? false}

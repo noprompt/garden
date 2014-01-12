@@ -209,18 +209,25 @@
 
 ;; ### Declaration expansion
 
+(defn expand-declaration-1
+  [d]
+  (let [prefix #(util/as-str %1 "-" %2)]
+    (reduce
+     (fn [m [k v]]
+       (if (util/hash-map? v)
+         (reduce
+          (fn [m1 [k1 v1]]
+            (assoc m1 (prefix k k1) v1))
+          m
+          (expand-declaration-1 v))
+         (assoc m (util/to-str k) v)))
+     {}
+     d)))
+
 (defn- expand-declaration
-  [declaration]
-  (when (seq declaration)
-    (let [m (meta declaration)
-          f (fn [m [prop val]]
-              (letfn [(prefix  [[k v]]
-                        (hash-map (util/as-str prop "-" k) v))]
-                (if (util/hash-map? val)
-                  (->> (map prefix val) (into m) expand-declaration)
-                  (assoc m (util/to-str prop) val))))]
-      (-> (reduce f {} declaration)
-          (with-meta m)))))
+  [d]
+  (when (seq d)
+    (with-meta (expand-declaration-1 d) (meta d))))
 
 ;; ### Rule expansion
 
@@ -474,19 +481,23 @@
   "If `(:vendors *flags*)` is bound and `declaration` has the meta 
   `{:prefix true}` automatically create vendor prefixed properties."
   [declaration]
-  (if-not (and (vendors) (:prefix (meta declaration)))
+  (if-not (:prefix (meta declaration))
     declaration
-    (mapcat 
-     (fn [prop val]
-       (-> (mapv
-            (fn [vendor p v]
-              [(util/vendor-prefix vendor p) v])
-            (vendors)
-            (repeat prop)
-            (repeat val))
-           (conj [prop val])))
-     (keys declaration)
-     (vals declaration))))
+    (let [ps (keys declaration)
+          vs (vals declaration)
+          vendors (or (:vendors (meta declaration))
+                      (vendors))]
+     (mapcat 
+      (fn [p v]
+        (cons [p v]
+              (map
+               (fn [vendor p1 v1]
+                 (vector (util/vendor-prefix vendor (name p1)) v1))
+               vendors
+               (repeat p)
+               (repeat v))))
+      ps
+      vs))))
 
 (defn- render-declaration
   [declaration]
