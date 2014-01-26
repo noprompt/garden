@@ -1,3 +1,22 @@
+## Changes between 1.1.4 and 1.1.5
+
+Allow vendor prefix overrides at the declaration level.
+
+```clojure
+(css {:vendors [:foo]}
+  [:a
+   ^{:prefix true :vendors [:bar]}
+   {:x 1}])
+```
+
+```css
+a {
+  x: 1;
+  -bar-x: 1;
+}
+```
+
+
 ## Changes between 1.1.2 and 1.1.3
 
 Fix incorrect rendering of hsla values by not stripping the unit from
