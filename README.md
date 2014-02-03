@@ -37,7 +37,7 @@ syntax is fairly simple.
 From your project's root directory start up a new REPL and try the following:
 
 ```clojure
-user=> (require '[garden.core :refer [css]]))
+user=> (require '[garden.core :refer [css]])
 nil
 user=> (css [:body {:font-size "16px"}])
 "body{font-size:16px}"
