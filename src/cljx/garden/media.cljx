@@ -21,7 +21,7 @@
     :resolution :min-resolution :max-resolution
     :scan
     :screen
-    :speeach
+    :speech
     :tty
     :tv
     :width :min-width :max-width})
