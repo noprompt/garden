@@ -17,14 +17,22 @@
 (defcssfn bar)
 
 (defcssfn foo
+  "LOL"
   ([x] x)
   ([x y] [x y]))
 
 (deftest defcssfn-test
   (is (instance? CSSFunction (bar 1)))
-  (is (= '(1) (:args (bar 1))))
-  (is (= 1 (:args (foo 1))))
-  (is (= [1 2] (:args (foo 1 2)))))
+  (is (= (:args (bar 1))
+         '(1)))
+  (is (= (:args (foo 1))
+         1))
+  (is (= (:args (foo 1 2))
+         [1 2]))
+  (is (= (:doc (meta #'foo))
+         "LOL"))
+  (is (= (:arglists (meta #'foo))
+         '([x] [x y]))))
 
 (defkeyframes fade-out
   [:from {:opacity 1}]

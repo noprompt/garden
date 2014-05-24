@@ -13,8 +13,7 @@
 (defmacro defstylesheet
   "Convenience macro equivalent to `(def name (css opts? styles*))`."
   [name & styles]
-  `(def ~name
-     (garden.core/css ~@styles)))
+  `(def ~name (garden.core/css ~@styles)))
 
 (defmacro defrule
   "Define a function for creating rules. If only the `name` argument is
@@ -34,19 +33,13 @@
 
       (sub-headings {:font-weight \"normal\"})
       ;; => [:h4 :h5 :h6 {:font-weight \"normal\"}]"
-  [name & selectors]
-  (let [name (vary-meta name assoc :arglists '(list '[& children]))]
-    `(def ~name
-       (let [;; HACK: The `keyword` function is currently broken in
-             ;; the latest version of ClojureScript. This is a
-             ;; temporary work around until it's fixed.
-             keyword# #(if (keyword? %) % (keyword (name %)))
-             rule# (if (seq '~selectors)
-                     (mapv keyword# '~selectors)
-                     [(keyword# '~name)])]
-         (fn [& children#]
-           (into rule# children#))))))
-
+  [sym & selectors]
+  (let [rule (if (seq selectors)
+               (mapv keyword selectors)
+               [(keyword sym)])
+        [_ sym spec] (macroexpand `(defn ~sym [~'& ~'children]
+                                     (into ~rule ~'children)))]
+    `(def ~sym ~spec)))
 
 (defmacro ^{:arglists '([name] [name docstring? & fn-tail])}
   defcssfn
@@ -89,26 +82,17 @@
 
       (css (attr :end-of-quote :string :inherit))
       ;; => \"attr(end-of-quote string, inherit)\""
-  ([name]
-     `(def ~name
-        (fn [& args#]
-          (CSSFunction. (str '~name) args#))))
-  ([name & fn-tail]
-     (let [docstring? (when (string? (first fn-tail))
-                        (first fn-tail))
-           fn-tail (if docstring?
-                     (rest fn-tail)
-                     fn-tail)
-           arglists (if (every? list? fn-tail)
-                      (map first fn-tail)
-                      (list (first fn-tail)))
-           name (vary-meta name assoc :arglists `'~arglists)
-           name (if docstring?
-                  (vary-meta name assoc :doc docstring?)
-                  name)]
-       `(def ~name
+  ([sym]
+     (let [[_ sym fn-tail] (macroexpand
+                            `(defn ~sym [& ~'args]
+                               (CSSFunction. ~(str sym) ~'args)))]
+       `(def ~sym ~fn-tail)))
+  ([sym & fn-tail]
+     (let [[_ sym [_ & fn-spec]] (macroexpand `(defn ~sym ~@fn-tail))
+           cssfn-name (str sym)]
+       `(def ~sym
           (fn [& args#]
-            (CSSFunction. (str '~name) (apply (fn ~@fn-tail) args#)))))))
+            (CSSFunction. ~cssfn-name (apply (fn ~@fn-spec) args#)))))))
 
 (defmacro defkeyframes
   "Define a CSS @keyframes animation.
@@ -126,7 +110,10 @@
         [:div
          ^:prefix ;; Use vendor prefixing (optional).
          {:animation [[my-animation \"5s\"]]}])"
-  [name & frames]
-  `(def ~name
-     (CSSAtRule. :keyframes {:identifier (str '~name)
-                             :frames (list ~@frames)})))
+  [sym & frames]
+  (let [value {:identifier `(str '~sym)
+               :frames `(list ~@frames)}
+        obj `(CSSAtRule. :keyframes ~value)]
+    `(def ~sym ~obj)))
+
+
