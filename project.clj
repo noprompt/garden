@@ -31,7 +31,7 @@
          {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}}}
 
   :aliases
-  {"test-all" ["do" "clean," "cljx" "once," "test," "cljsbuild" "test"]}
+  {"test-all" ["do" "clean," "cljx" "once," "test," "cljsbuild" "once"]}
 
   :cljx
   {:builds [{:source-paths ["src/cljx"]
@@ -50,13 +50,11 @@
   :cljsbuild
   {:builds
    [{:source-paths ["target/generated-src/cljs" "target/generated-test"]
+     ;; Running `cljsbuild <once|auto>` will trigger this test.
      :notify-command ["phantomjs" :cljs.test/runner
                       "target/cljs/testable.js"]
      :compiler {:output-to "target/cljs/testable.js"
                 :optimizations :whitespace
-                :pretty-print true}}]
-   
-   :test-commands
-   {"unit-tests" ["phantomjs" :runner "target/cljs/testable.js"]}}
+                :pretty-print true}}]}
 
   :global-vars {*warn-on-reflection* true})

@@ -1,10 +1,12 @@
 (ns garden.units
   "Functions and macros for working with CSS units."
-  (:require [garden.types :as t]
-            #+cljs [cljs.reader :refer [read-string]]
-            #+cljs [garden.util :refer [format]])
+  (:require
+   [garden.types :as t]
+   #+cljs [cljs.reader :refer [read-string]]
+   [garden.util :as util])
   #+cljs
-  (:require-macros [garden.units :refer [defunit]])
+  (:require-macros
+   [garden.units :refer [defunit]])
   #+clj
   (:import garden.types.CSSUnit)
   (:refer-clojure :exclude [rem]))
@@ -93,7 +95,7 @@
        ;; Both units are convertible but no conversion between them exists.
        :else (throw
               (ex-info
-               (format "Can't convert %s to %s" (name left) (name right)) {}))))
+               (util/format "Can't convert %s to %s" (name left) (name right)) {}))))
     ;; Display the inconvertible unit.
     (let [x (first (drop-while convertable? [left right]))]
       (throw (ex-info (str "Inconvertible unit " (name x)) {})))))
@@ -132,7 +134,7 @@
                    (convert x unit))
      :else (throw
             (ex-info
-             (format "Don't know how to convert type %s to %s"
+             (util/format "Don't know how to convert type %s to %s"
                      (.getName (type x))
                      (name unit)) {})))))
 

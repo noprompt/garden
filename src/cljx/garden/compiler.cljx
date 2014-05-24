@@ -7,7 +7,7 @@
    #+cljs
    [garden.types :refer [CSSUnit CSSFunction CSSAtRule]]
    [garden.units :as units]
-   [garden.util :as util :refer [format to-str as-str]])
+   [garden.util :as util])
   #+cljs
   (:require-macros
    [garden.compiler :refer [with-media-query-context with-selector-context]])
@@ -500,13 +500,13 @@
         args (if (sequential? args)
                (comma-separated-list args)
                (util/to-str args))]
-    (format "%s(%s)" (util/to-str function) args)))
+    (util/format "%s(%s)" (util/to-str function) args)))
 
 (defn ^:private render-color [c]
   (if-let [a (:alpha c)]
     (let [{:keys [hue saturation lightness]} (color/as-hsl c)
           [s l] (map units/percent [saturation lightness])]
-      (format "hsla(%s)" (comma-separated-list [hue s l a])))
+      (util/format "hsla(%s)" (comma-separated-list [hue s l a])))
     (color/as-hex c)))
 
 ;; ---------------------------------------------------------------------

@@ -1,5 +1,6 @@
 (ns garden.util
   "Utility functions used by Garden."
+  #+clj
   (:refer-clojure :exclude [format])
   (:require
    [clojure.string :as string]
@@ -20,7 +21,7 @@
 
 ;; To avoid the pain of #+cljs :refer.
 #+clj
-(def format clojure.core/format)
+(def format #'clojure.core/format)
 
 (defprotocol ToString
   (^String to-str [this] "Convert a value into a string."))
@@ -82,17 +83,16 @@
 ;; ---------------------------------------------------------------------
 ;; Predicates
 
+#+cljs
 (defn record?
   "True if x is an instance of or satisfies clojure.lang.IRecord."
   [x]
-  #+clj (instance? clojure.lang.IRecord x)
-  #+cljs (satisfies? IRecord x))
+  (satisfies? IRecord x))
 
 (defn hash-map?
   "True if `(map? x)` and `x` does not satisfy `clojure.lang.IRecord`."
   [x]
-  (and (map? x)
-       (not (record? x))))
+  (and (map? x) (not (record? x))))
 
 (def
   ^{:doc "Alias to `vector?`."}

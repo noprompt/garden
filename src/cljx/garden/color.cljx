@@ -1,11 +1,12 @@
 (ns garden.color
   "Utilities for color creation, conversion, and manipulation."
   (:refer-clojure :exclude [complement])
-  (:require [clojure.string :as string]
-            #+clj [garden.util :as util]
-            #+cljs [garden.util :as util :refer [format]])
+  (:require
+   [clojure.string :as string]
+   [garden.util :as util])
   #+cljs
-  (:require-macros [garden.color :refer [defcolor-operation]]))
+  (:require-macros
+   [garden.color :refer [defcolor-operation]]))
 
 ;; Many of the functions in this namespace were ported or inspired by
 ;; the implementations included with Sass
@@ -117,7 +118,7 @@
   "Convert an RGB color map to a hexadecimal color."
   [{r :red g :green b :blue}]
   (letfn [(hex-part [v]
-            (-> (format "%2s" (util/int->string v 16))
+            (-> (util/format "%2s" (util/int->string v 16))
                 (string/replace " " "0")))]
     (apply str "#" (map hex-part [r g b]))))
     
