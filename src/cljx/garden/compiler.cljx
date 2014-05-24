@@ -1,12 +1,16 @@
 (ns garden.compiler
   "Functions for compiling Clojure data structures to CSS."
-  (:require [clojure.string :as string]
-            [garden.util :as util :refer (#+cljs format to-str as-str)]
-            [garden.units :as units]
-            [garden.color :as c]
+  (:require
+   [clojure.string :as string]
+   #+clj
+   [clojure.java.io :as io]
+   [garden.util :as util :refer (#+cljs format to-str as-str)]
+   [garden.units :as units]
+   [garden.color :as c]
             [garden.types :as t])
   #+cljs
-  (:require-macros [garden.compiler :refer [with-media-query-context with-selector-context]])
+  (:require-macros
+   [garden.compiler :refer [with-media-query-context with-selector-context]])
   #+clj
   (:import (java.io StringReader StringWriter)
            (com.yahoo.platform.yui.compressor CssCompressor)
@@ -15,7 +19,8 @@
            garden.types.CSSAtRule
            garden.color.CSSColor))
 
-;;;; ## Compiler flags
+;; ---------------------------------------------------------------------
+;; Compiler flags
 
 (def
   ^{:dynamic true
@@ -28,6 +33,8 @@
    ;; the compiled stylesheet will be compressed with the YUI
    ;; compressor.
    :pretty-print? true
+   ;; A sequence of files to prepend to the output file.
+   :preamble []
    ;; Location to save a stylesheet after compiling.
    :output-to nil
    ;; A list of vendor prefixes to append automatically to things like
@@ -63,15 +70,14 @@
     :doc "The current media query context."}
   *media-query-context* nil)
 
-;;;; ## Utilities
+;; ---------------------------------------------------------------------
+;; Utilities
 
-#+clj
 (defmacro with-selector-context
   [selector-context & body]
   `(binding [*selector-context* ~selector-context]
      (do ~@body)))
  
-#+clj
 (defmacro with-media-query-context
   [selector-context & body]
   `(binding [*media-query-context* ~selector-context]
@@ -99,7 +105,8 @@
   [path stylesheet]
   (spit path stylesheet))
 
-;;;; ## Stylesheet compression
+;; ---------------------------------------------------------------------
+;; Stylesheet compression
 
 ;; Clojure stylesheet compression leverages the YUI Compressor as it
 ;; provides a performant and excellent solution to CSS compression.
@@ -180,7 +187,8 @@
                        chunk)))
       s2)))
 
-;; ## Expansion
+;; =====================================================================
+;; Expansion
 
 ;; The expansion process ensures that before a stylesheet is rendered
 ;; it is in a format that can be easily digested. That is, it produces
@@ -195,7 +203,8 @@
   (expand [this]
     "Return a list containing the expanded form of `this`."))
 
-;; ### List expansion
+;; ---------------------------------------------------------------------
+;; List expansion
 
 (defn- expand-seqs
   "Like flatten but only affects seqs."
@@ -207,7 +216,8 @@
        (list x)))
    coll))
 
-;; ### Declaration expansion
+;; ---------------------------------------------------------------------
+;; Declaration expansion
 
 (defn expand-declaration-1
   [d]
@@ -229,7 +239,8 @@
   (when (seq d)
     (with-meta (expand-declaration-1 d) (meta d))))
 
-;; ### Rule expansion
+;; ---------------------------------------------------------------------
+;; Rule expansion
 
 (def
   ^{:private true
@@ -278,7 +289,8 @@
          (conj [selector])
          (conj ys))))
 
-;;; ### At-rule expansion
+;; ---------------------------------------------------------------------
+;; At-rule expansion
 
 (defmulti ^:private expand-at-rule :identifier)
 
@@ -286,7 +298,7 @@
   [at-rule]
   (list at-rule))
 
-;; #### @keyframes expansion
+;; @keyframes expansion
 
 (defmethod expand-at-rule :keyframes
   [{:keys [value]}]
@@ -296,7 +308,7 @@
          (t/CSSAtRule. :keyframes)
          (list))))
 
-;; #### @media expansion
+;; @media expansion
 
 (defn- expand-media-query-expression [expression]
   (if-let [f (->> [:media-expressions :nesting-behavior]
@@ -319,7 +331,8 @@
                          :rules rules})
      subqueries)))
 
-;; ### Stylesheet expansion
+;; ---------------------------------------------------------------------
+;; Stylesheet expansion
 
 (defn- expand-stylesheet [xs]
   (->> (expand xs)
@@ -400,13 +413,15 @@
   nil
   (expand [this] nil))
 
-;; ## Rendering
+;; ---------------------------------------------------------------------
+;; Rendering
 
 (defprotocol CSSRenderer
   (render-css [this]
     "Convert a Clojure data type in to a string of CSS."))
 
-;; ### Punctuation
+;; ---------------------------------------------------------------------
+;; Punctuation
 
 (def ^:private comma ", ")
 (def ^:private colon ": ")
@@ -455,8 +470,9 @@
   (string/replace s indent-loc-re indent)
   #+cljs
   (.replace s indent-loc-re indent))
-
-;; ### Declaration rendering
+ 
+;; ---------------------------------------------------------------------
+;; Declaration rendering
 
 (defn- render-value
   "Render the value portion of a declaration."
@@ -505,7 +521,8 @@
        (map render-property-and-value)
        (string/join "\n")))
 
-;; ### Rule rendering
+;; ---------------------------------------------------------------------
+;; Rule rendering
 
 (defn- render-selector
   [selector]
@@ -523,7 +540,8 @@
               (indent-str))
          r-brace)))
 
-;; ### Media query rendering
+;; ---------------------------------------------------------------------
+;; Media query rendering
 
 (defn- render-media-expr-part
   "Render the individual components of a media expression."
@@ -551,7 +569,8 @@
     (->> (map render-media-expr-part expr)
          (string/join " and "))))
 
-;; ### Garden type rendering
+;; ---------------------------------------------------------------------
+;; Garden type rendering
 
 (defn- render-unit
   "Render a CSSUnit."
@@ -579,7 +598,8 @@
       (format "hsla(%s)" (comma-separated-list [hue s l a])))
     (garden.color/as-hex c)))
 
-;; ### At-rule rendering
+;; ---------------------------------------------------------------------
+;; At-rule rendering
 
 (defmulti ^:private render-at-rule
   "Render a CSS at-rule"
@@ -587,7 +607,7 @@
 
 (defmethod render-at-rule :default [_] nil)
 
-;; #### @import rendering
+;; @import
 
 (defmethod render-at-rule :import
   [{:keys [value]}]
@@ -601,7 +621,7 @@
          (if queries (str url " " queries) url)
          semicolon)))
 
-;; #### @keyframes rendering
+;; @keyframes
 
 (defmethod render-at-rule :keyframes
   [{:keys [value]}]
@@ -620,7 +640,7 @@
              (map #(str % body))
              (rule-join))))))
 
-;; #### @media rendering
+;; @media
 
 (defmethod render-at-rule :media
   [{:keys [value]}]
@@ -635,7 +655,8 @@
            r-brace-1))))
 
 
-;; ### CSSRenderer implementation
+;; ---------------------------------------------------------------------
+;; CSSRenderer implementation
 
 (extend-protocol CSSRenderer
   #+clj clojure.lang.ISeq
@@ -725,16 +746,8 @@
   nil
   (render-css [this] ""))
 
-;; ## Compilation
-
-(defn- compile-stylesheet
-  [flags rules]
-  (binding [*flags* flags]
-    (->> (expand-stylesheet rules)
-         (filter top-level-expression?) 
-         (map render-css)
-         (remove nil?)
-         (rule-join))))
+;; ---------------------------------------------------------------------
+;; Compilation
 
 (defn compile-style
   "Convert a sequence of maps into CSS for use with the HTML style
@@ -746,23 +759,50 @@
        (render-css)
        (first)))
 
+(defn- do-compile
+  "Return a string of CSS."
+  [flags rules]
+  (binding [*flags* flags]
+    (->> (expand-stylesheet rules)
+         (filter top-level-expression?) 
+         (map render-css)
+         (remove nil?)
+         (rule-join))))
+
+(defn- do-preamble
+  "Prefix stylesheet with files in preamble. Not available in
+  ClojureScript."
+  [{:keys [preamble]} stylesheet]
+  #+clj
+  (string/join "\n" (conj (mapv slurp preamble) stylesheet))
+  #+cljs
+  stylesheet)
+
+(defn- do-compression
+  "Compress CSS if the pretty-print(?) flag is true."
+  [{:keys [pretty-print? pretty-print]} stylesheet]
+  ;; Also accept pretty-print like CLJS.
+  (if (or pretty-print? pretty-print) 
+    stylesheet
+    (compress-stylesheet stylesheet)))
+
+(defn- do-output-to
+  "Write contents of stylesheet to disk."
+  [{:keys [output-to]} stylesheet]
+  #+clj
+  (when output-to
+    (save-stylesheet output-to stylesheet)
+    (println "Wrote:" output-to))
+  stylesheet)
+
 (defn compile-css
   "Convert any number of Clojure data structures to CSS."
   [flags & rules]
   (let [[flags rules] (if (and (util/hash-map? flags)
                                (some (set (keys flags)) (keys *flags*)))
                         [(merge *flags* flags) rules]
-                        [*flags* (cons flags rules)])
-        output-to (:output-to flags)
-        stylesheet (let [stylesheet (compile-stylesheet flags rules)]
-                     (if (:pretty-print? flags)
-                       stylesheet
-                       (compress-stylesheet stylesheet)))]
-    #+clj
-    (if output-to
-      (do
-        (save-stylesheet output-to stylesheet)
-        (println "Wrote:" output-to)
-        stylesheet)
-      stylesheet)
-    #+cljs stylesheet))
+                        [*flags* (cons flags rules)])]
+    (->> (do-compile flags rules)
+         (do-preamble flags)
+         (do-compression flags)
+         (do-output-to flags))))
