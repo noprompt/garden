@@ -2,19 +2,18 @@
   "Functions for compiling Clojure data structures to CSS."
   (:require
    [clojure.string :as string]
-   [garden.util :as util :refer (#+cljs format to-str as-str)]
+   [garden.color :as color #+cljs :refer #+cljs [CSSColor]]
    [garden.compression :as compression]
+   #+cljs
+   [garden.types :refer [CSSUnit CSSFunction CSSAtRule]]
    [garden.units :as units]
-   [garden.color :as c]
-   [garden.types :as t])
+   [garden.util :as util :refer [format to-str as-str]])
   #+cljs
   (:require-macros
    [garden.compiler :refer [with-media-query-context with-selector-context]])
   #+clj
-  (:import garden.types.CSSUnit
-           garden.types.CSSFunction
-           garden.types.CSSAtRule
-           garden.color.CSSColor))
+  (:import (garden.types CSSUnit CSSFunction CSSAtRule)
+           (garden.color CSSColor)))
 
 ;; ---------------------------------------------------------------------
 ;; Compiler flags
@@ -220,7 +219,7 @@
   (let [{:keys [identifier frames]} value]
     (->> {:identifier (util/to-str identifier)
           :frames (mapcat expand frames)}
-         (t/CSSAtRule. :keyframes)
+         (CSSAtRule. :keyframes)
          (list))))
 
 ;; @media expansion
@@ -242,7 +241,7 @@
         ;; at compile time. Here we make sure this is the case.  
         [subqueries rules] (divide-vec util/at-media? xs)]
     (cons
-     (t/CSSAtRule. :media {:media-queries media-queries
+     (CSSAtRule. :media {:media-queries media-queries
                          :rules rules})
      subqueries)))
 
@@ -309,16 +308,13 @@
   #+cljs PersistentTreeMap
   #+cljs (expand [this] (list (expand-declaration this))) 
 
-  #+clj CSSFunction
-  #+cljs t/CSSFunction
+  CSSFunction
   (expand [this] (list this))
 
-  #+clj CSSAtRule
-  #+cljs t/CSSAtRule
+  CSSAtRule
   (expand [this] (expand-at-rule this))
 
-  #+clj CSSColor
-  #+cljs c/CSSColor
+  CSSColor
   (expand [this] (list this))
  
   #+clj Object
@@ -508,10 +504,10 @@
 
 (defn ^:private render-color [c]
   (if-let [a (:alpha c)]
-    (let [{:keys [hue saturation lightness]} (garden.color/as-hsl c)
+    (let [{:keys [hue saturation lightness]} (color/as-hsl c)
           [s l] (map units/percent [saturation lightness])]
       (format "hsla(%s)" (comma-separated-list [hue s l a])))
-    (garden.color/as-hex c)))
+    (color/as-hex c)))
 
 ;; ---------------------------------------------------------------------
 ;; At-rule rendering
@@ -638,20 +634,17 @@
   #+cljs Keyword
   (render-css [this] (name this))
 
-  #+clj CSSUnit
-  #+cljs t/CSSUnit
+  CSSUnit
   (render-css [this] (render-unit this))
 
-  #+clj CSSFunction
-  #+cljs t/CSSFunction
+  CSSFunction
   (render-css [this] (render-function this))
 
-  #+clj CSSAtRule
-  #+cljs t/CSSAtRule
+  CSSAtRule
   (render-css [this] (render-at-rule this))
 
   #+clj CSSColor
-  #+cljs c/CSSColor
+  #+cljs color/CSSColor
   (render-css [this] (render-color this))
 
   #+clj Object

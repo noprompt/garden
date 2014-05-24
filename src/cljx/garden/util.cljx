@@ -1,21 +1,26 @@
 (ns garden.util
   "Utility functions used by Garden."
-  #+cljs
   (:refer-clojure :exclude [format])
-  (:require [clojure.string :as string]
-            [garden.types :as t]
-            #+cljs [goog.string :as gstring]
-            #+cljs [goog.string.format])
+  (:require
+   [clojure.string :as string]
+   [garden.types :as t]
+   #+cljs [goog.string]
+   #+cljs [goog.string.format])
   #+clj
   (:import garden.types.CSSAtRule))
+
+;; ---------------------------------------------------------------------
+;; String utilities
 
 #+cljs
 (defn format
   "Formats a string using goog.string.format."
   [fmt & args]
-  (apply gstring/format fmt args))
+  (apply goog.string/format fmt args))
 
-;;;; ## String utilities
+;; To avoid the pain of #+cljs :refer.
+#+clj
+(def format clojure.core/format)
 
 (defprotocol ToString
   (^String to-str [this] "Convert a value into a string."))
@@ -74,16 +79,20 @@
   [s]
   (str \" s \"))
 
-;;;; ## Predicates
+;; ---------------------------------------------------------------------
+;; Predicates
+
+(defn record?
+  "True if x is an instance of or satisfies clojure.lang.IRecord."
+  [x]
+  #+clj (instance? clojure.lang.IRecord x)
+  #+cljs (satisfies? IRecord x))
 
 (defn hash-map?
   "True if `(map? x)` and `x` does not satisfy `clojure.lang.IRecord`."
   [x]
   (and (map? x)
-       (not #+clj (instance? clojure.lang.IRecord x)
-            #+cljs (satisfies? IRecord x))))
-
-;;;; ## Stylesheet
+       (not (record? x))))
 
 (def
   ^{:doc "Alias to `vector?`."}
@@ -128,7 +137,8 @@
       (prefix p s) 
       (prefix (str \- p) s))))
 
-;;;; ## Math
+;; ---------------------------------------------------------------------
+;; Math utilities
 
 (defn natural?
   "True if n is a natural number."

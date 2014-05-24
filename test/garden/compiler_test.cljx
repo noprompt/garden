@@ -1,24 +1,32 @@
 (ns garden.compiler-test
-  (:require #+clj
-            [clojure.test :refer :all]
-            #+cljs
-            [cemerick.cljs.test :as t]
-            [garden.compiler :refer [compile-css expand render-css]]
-            [garden.stylesheet :refer (at-import at-media at-keyframes)]
-            [garden.types]
-            [garden.color :as color])
+  (:require
+   #+clj
+   [clojure.test :refer :all]
+   #+cljs
+   [cemerick.cljs.test :as t]
+   [garden.compiler :refer [compile-css expand render-css]]
+   [garden.stylesheet :refer (at-import at-media at-keyframes)]
+   #+clj
+   [garden.types :as types]
+   #+cljs
+   [garden.types :as types :refer [CSSFunction CSSUnit]]
+   [garden.color :as color])
   #+cljs
   (:require-macros [cemerick.cljs.test :refer [deftest is testing are]])
+  #+clj
   (:import garden.types.CSSFunction
            garden.types.CSSUnit))
 
 ;; Helpers
 
 (defn render= [x y]
-  (= (-> x expand render-css first) y))
+  (= (first (render-css (expand x)))
+     y))
 
 (defn compile= [x y & {:as flags}]
-   (= (->> x (compile-css (merge flags {:pretty-print? false}))) y))
+  (-> (merge flags {:pretty-print? false})
+      (compile-css x)
+      (= y)))
 
 (def test-vendors ["moz" "webkit"])
 
@@ -61,42 +69,47 @@
                  "hsla(30, 40%, 50%, 0.5)"))))
 
 (deftest at-media-test
-    (is (compile= (at-media {:screen true} [:h1 {:a :b}])
-                  "@media screen{h1{a:b}}"))
+  (let [flags {:pretty-print? false}]
+    (are [x y] (= (compile-css flags x) y)
+      (at-media {:screen true} [:h1 {:a :b}])
+      "@media screen{h1{a:b}}"
 
-    (is (compile= (list (at-media {:screen true}
-                          [:h1 {:a :b}])
-                        [:h2 {:c :d}])
-                  "@media screen{h1{a:b}}h2{c:d}"))
+      (list (at-media {:screen true}
+              [:h1 {:a :b}])
+            [:h2 {:c :d}])
+      "@media screen{h1{a:b}}h2{c:d}"
 
-    (is (compile= (list [:a {:a "b"}
-                         (at-media {:screen true}
-                           [:&:hover {:c "d"}])])
-                  "a{a:b}@media screen{a:hover{c:d}}"))
+      (list [:a {:a "b"}
+             (at-media {:screen true}
+               [:&:hover {:c "d"}])])
+      "a{a:b}@media screen{a:hover{c:d}}"
 
-    (is (compile= (at-media {:toast true}
-                    [:h1 {:a "b"}])
-                  "@media toast{h1{a:b}}"))
+      (at-media {:toast true}
+        [:h1 {:a "b"}])
+      "@media toast{h1{a:b}}"
 
-    (is (compile= (at-media {:bacon :only}
-                    [:h1 {:a "b"}])
-                  "@media only bacon{h1{a:b}}"))
+      (at-media {:bacon :only}
+        [:h1 {:a "b"}])
+      "@media only bacon{h1{a:b}}"
 
-    (is (compile= (at-media {:sad false}
-                    [:h1 {:a "b"}])
-                  "@media not sad{h1{a:b}}"))
+      (at-media {:sad false}
+        [:h1 {:a "b"}])
+      "@media not sad{h1{a:b}}"
 
-    (is (compile= (at-media {:happy true :sad false}
-                    [:h1 {:a "b"}])
-                  "@media happy and not sad{h1{a:b}}"))
+      (at-media {:-vendor-prefix-x "2"}
+        [:h1 {:a "b"}])
+      "@media(-vendor-prefix-x:2){h1{a:b}}"
 
-    (is (compile= (at-media {:-vendor-prefix-x "2"}
-                    [:h1 {:a "b"}])
-                  "@media(-vendor-prefix-x:2){h1{a:b}}"))
+      (at-media {:min-width (CSSUnit. :em 1)}
+        [:h1 {:a "b"}])
+      "@media(min-width:1em){h1{a:b}}")
 
-    (is (compile= (at-media {:min-width (CSSUnit. :em 1)}
-                    [:h1 {:a "b"}])
-                  "@media(min-width:1em){h1{a:b}}")))
+    (let [re #"@media (?:happy and not sad|not sad and happy)"
+          compiled (compile-css
+                    {:pretty-print? false}
+                    (at-media {:happy true :sad false}
+                      [:h1 {:a "b"}]))]
+      (is (re-find re compiled)))))
 
 (deftest parent-selector-test
   (testing "parent selector references"

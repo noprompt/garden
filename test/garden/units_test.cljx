@@ -1,18 +1,28 @@
 (ns garden.units-test
-  (:require #+clj [clojure.test :refer :all]
-            #+cljs [cemerick.cljs.test :as t]
-            [garden.units :refer [make-unit-fn make-unit-adder make-unit-subtractor make-unit-multiplier make-unit-divider read-unit px px+ px- px* px-div px? cm mm in pt pc percent em rem  ex ch vw vh vmin vmax deg grad rad turn ms s kHz Hz dpi dpcm dppx]])
-  #+cljs (:require-macros [cemerick.cljs.test :refer [deftest is testing]])
+  (:refer-clojure :exclude [rem])
+  (:require
+   #+clj
+   [clojure.test :refer :all]
+   #+cljs
+   [cemerick.cljs.test]
+   #+clj
+   [garden.types :as types]
+   #+cljs
+   [garden.types :as types :refer [CSSUnit]]
+   [garden.units :as units])
+  #+cljs
+  (:require-macros
+   [cemerick.cljs.test :refer [deftest is are testing]])
+  #+clj
   (:import garden.types.CSSUnit
-           #+clj clojure.lang.ExceptionInfo)
-  (:refer-clojure :exclude [rem]))
+           clojure.lang.ExceptionInfo))
 
 (deftest test-unit-arthimetic
-  (let [μm (make-unit-fn :μm)
-        μm+ (make-unit-adder :μm)
-        μm- (make-unit-subtractor :μm)
-        μm* (make-unit-multiplier :μm)
-        μm-div (make-unit-divider :μm)]
+  (let [μm (units/make-unit-fn :μm)
+        μm+ (units/make-unit-adder :μm)
+        μm- (units/make-unit-subtractor :μm)
+        μm* (units/make-unit-multiplier :μm)
+        μm-div (units/make-unit-divider :μm)]
     (testing "addition"
       (is (= (μm 0) (μm+)))
       (is (= (μm 2) (μm+ 1 1))))
@@ -29,58 +39,65 @@
 
 (deftest test-px
   (testing "px checking"
-    (is (px? (px 0)))
-    (is (not (px? 1))))
+    (is (units/px? (units/px 0)))
+    (is (not (units/px? 1))))
   (testing "px addition"
-    (is (= (px 2) (px+ 1 1))))
+    (is (= (units/px 2)
+           (units/px+ 1 1))))
   (testing "px subtraction"
-    (is (= (px 2) (px- 4 2))))
+    (is (= (units/px 2)
+           (units/px- 4 2))))
   (testing "px multiplication"
-    (is (= (px 2) (px* 1 2))))
+    (is (= (units/px 2)
+           (units/px* 1 2))))
   (testing "px division"
-    (is (= (px 2) (px-div 4 2)))
-    #+clj (is (thrown? ArithmeticException (px-div 2 0))))
+    (is (= (units/px 2)
+           (units/px-div 4 2)))
+    #+clj
+    (is (thrown? ArithmeticException (units/px-div 2 0))))
   (testing "px conversion"
-    (is (= (px 1) (px (px 1))))
-    (is (= (px 37.795275591) (px (cm 1))))
-    (is (= (px 16) (px (pc 1))))
-    (is (= (px 3.7795275591) (px (mm 1))))
-    (is (= (px 1.3333333333) (px (pt 1))))
-    (is (thrown? ExceptionInfo (px (deg 1))))
-    (is (thrown? ExceptionInfo (px (grad 1))))
-    (is (thrown? ExceptionInfo (px (rad 1))))
-    (is (thrown? ExceptionInfo (px (turn 1))))
-    (is (thrown? ExceptionInfo (px (s 1))))
-    (is (thrown? ExceptionInfo (px (ms 1))))
-    (is (thrown? ExceptionInfo (px (Hz 1))))
-    (is (thrown? ExceptionInfo (px (kHz 1))))))
+    (are [x y] (= x y)
+      (units/px 1)            (units/px (units/px 1))
+      (units/px 37.795275591) (units/px (units/cm 1))
+      (units/px 16)           (units/px (units/pc 1))
+      (units/px 3.7795275591) (units/px (units/mm 1))
+      (units/px 1.3333333333) (units/px (units/pt 1)))
+    (is (thrown? ExceptionInfo (units/px (units/deg 1))))
+    (is (thrown? ExceptionInfo (units/px (units/grad 1))))
+    (is (thrown? ExceptionInfo (units/px (units/rad 1))))
+    (is (thrown? ExceptionInfo (units/px (units/turn 1))))
+    (is (thrown? ExceptionInfo (units/px (units/s 1))))
+    (is (thrown? ExceptionInfo (units/px (units/ms 1))))
+    (is (thrown? ExceptionInfo (units/px (units/Hz 1))))
+    (is (thrown? ExceptionInfo (units/px (units/kHz 1))))))
 
 (deftest unit-utils
   (testing "read-unit"
-    (is (= (cm 1) (read-unit "1cm")))
-    (is (= (mm 1) (read-unit "1mm")))
-    (is (= (in 1) (read-unit "1in")))
-    (is (= (px 1) (read-unit "1px")))
-    (is (= (pt 1) (read-unit "1pt")))
-    (is (= (pc 1) (read-unit "1pc")))
-    (is (= (percent 1) (read-unit "1%")))
-    (is (= (em 1) (read-unit "1em")))
-    (is (= (rem 1) (read-unit "1rem")))
-    (is (= (ex 1) (read-unit "1ex")))
-    (is (= (ch 1) (read-unit "1ch")))
-    (is (= (CSSUnit. :rem 1) (read-unit "1rem")))
-    (is (= (vw 1) (read-unit "1vw")))
-    (is (= (vh 1) (read-unit "1vh")))
-    (is (= (vmin 1) (read-unit "1vmin")))
-    (is (= (vmax 1) (read-unit "1vmax")))
-    (is (= (deg 1) (read-unit "1deg")))
-    (is (= (grad 1) (read-unit "1grad")))
-    (is (= (rad 1) (read-unit "1rad")))
-    (is (= (turn 1) (read-unit "1turn")))
-    (is (= (ms 1) (read-unit "1ms")))
-    (is (= (s 1) (read-unit "1s")))
-    (is (= (kHz 1) (read-unit "1kHz")))
-    (is (= (Hz 1) (read-unit "1Hz")))
-    (is (= (dpi 1) (read-unit "1dpi")))
-    (is (= (dpcm 1) (read-unit "1dpcm")))
-    (is (= (dppx 1) (read-unit "1dppx")))))
+    (are [x y] (= x y)
+      (units/cm 1) (units/read-unit "1cm")
+      (units/mm 1) (units/read-unit "1mm")
+      (units/in 1) (units/read-unit "1in")
+      (units/px 1) (units/read-unit "1px")
+      (units/pt 1) (units/read-unit "1pt")
+      (units/pc 1) (units/read-unit "1pc")
+      (units/percent 1) (units/read-unit "1%")
+      (units/em 1) (units/read-unit "1em")
+      (units/rem 1) (units/read-unit "1rem")
+      (units/ex 1) (units/read-unit "1ex")
+      (units/ch 1) (units/read-unit "1ch")
+      (CSSUnit. :rem 1) (units/read-unit "1rem")
+      (units/vw 1) (units/read-unit "1vw")
+      (units/vh 1) (units/read-unit "1vh")
+      (units/vmin 1) (units/read-unit "1vmin")
+      (units/vmax 1) (units/read-unit "1vmax")
+      (units/deg 1) (units/read-unit "1deg")
+      (units/grad 1) (units/read-unit "1grad")
+      (units/rad 1) (units/read-unit "1rad")
+      (units/turn 1) (units/read-unit "1turn")
+      (units/ms 1) (units/read-unit "1ms")
+      (units/s 1) (units/read-unit "1s")
+      (units/kHz 1) (units/read-unit "1kHz")
+      (units/Hz 1) (units/read-unit "1Hz")
+      (units/dpi 1) (units/read-unit "1dpi")
+      (units/dpcm 1) (units/read-unit "1dpcm")
+      (units/dppx 1) (units/read-unit "1dppx"))))
