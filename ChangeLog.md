@@ -1,3 +1,14 @@
+## Changes between 1.1.6 and 1.1.7
+
+Allow a preamble to be specified (Clojure only).
+
+Macros in `garden.def` take advantage of `macroexpand` to capture meta
+data.
+
+## Changes between 1.1.5 and 1.1.6
+
+Move plugins and dependencies to `:dev` profile
+
 ## Changes between 1.1.4 and 1.1.5
 
 Allow vendor prefix overrides at the declaration level.
