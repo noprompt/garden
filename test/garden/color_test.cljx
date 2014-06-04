@@ -2,7 +2,6 @@
   (:refer-clojure :exclude [complement])
   (:require
    #+clj [clojure.test :refer :all]
-   #+clj [garden.helpers]
    #+cljs [cemerick.cljs.test :as t]
    [garden.color :as color])
   #+cljs
