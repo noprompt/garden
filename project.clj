@@ -1,4 +1,4 @@
-(defproject garden "1.1.8-SNAPSHOT"
+(defproject garden "1.1.8"
   :description "Generate CSS from Clojure data structures."
   :url "https://github.com/noprompt/garden"
   :license {:name "Eclipse Public License"
@@ -31,7 +31,8 @@
          {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}}}
 
   :aliases
-  {"test-all" ["do" "clean," "cljx" "once," "test," "cljsbuild" "once"]}
+  {"test-all"
+   ["do" "clean," "cljx" "once," "test," "cljsbuild" "once"]}
 
   :cljx
   {:builds [{:source-paths ["src/cljx"]
