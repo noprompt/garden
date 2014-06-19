@@ -567,6 +567,8 @@ Listed by first commit:
 * [noprompt](https://github.com/noprompt)
 * [malcolmsparks](https://github.com/malcolmsparks)
 * [jeluard](https://github.com/jeluard)
+* [ToBeReplaced](https://github.com/ToBeReplaced)
+* [migroh](https://github.com/migroh)
 
 ## Plugin
 
