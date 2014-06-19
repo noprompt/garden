@@ -1,3 +1,8 @@
+## Changes between 1.1.7 and 1.1.8
+
+Added option for configuring line break positions in
+`garden.compression/compress-stylesheet` (Clojure only).
+
 ## Changes between 1.1.6 and 1.1.7
 
 Allow a preamble to be specified (Clojure only).
