@@ -28,6 +28,8 @@ Add the following dependency to your `project.clj` file:
 [garden "1.1.8"]
 ```
 
+Garden requires Clojure `1.6.0`.
+
 ## Syntax
 
 Garden syntax is very similar to Hiccup. If you're familiar with Hiccup you
