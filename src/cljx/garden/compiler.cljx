@@ -6,6 +6,7 @@
    [garden.compression :as compression]
    #+cljs
    [garden.types :refer [CSSUnit CSSFunction CSSAtRule]]
+   [garden.selectors :as selectors]
    [garden.units :as units]
    [garden.util :as util])
   #+cljs
@@ -182,7 +183,8 @@
     selector))
 
 (defn- expand-selector [selector parent]
-  (let [selector (if (seq parent)
+  (let [selector (map selectors/css-selector selector)
+        selector (if (seq parent)
                    (->> (util/cartesian-product parent selector)
                         (map flatten))
                    (map list selector))]
