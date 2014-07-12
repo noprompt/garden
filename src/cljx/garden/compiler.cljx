@@ -192,7 +192,7 @@
 
 (defn- expand-rule
   [rule]
-  (let [[selector children] (split-with (complement coll?) rule)
+  (let [[selector children] (split-with selectors/selector? rule)
         selector (expand-selector selector *selector-context*)
         children (expand children)
         [declarations xs] (divide-vec util/declaration? children)
