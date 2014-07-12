@@ -4,7 +4,7 @@
    #+clj
    [clojure.test :refer :all]
    #+cljs
-   [cemerick.cljs.test]
+   [cemerick.cljs.test :as t]
    #+clj
    [garden.types :as types]
    #+cljs

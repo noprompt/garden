@@ -1,1 +1,0 @@
-(ns garden.core-test)

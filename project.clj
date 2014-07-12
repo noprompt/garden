@@ -17,14 +17,14 @@
   :profiles
   {:dev {:dependencies
          [[criterium "0.4.1"]
-          [org.clojure/clojurescript "0.0-2197"]
+          [org.clojure/clojurescript "0.0-2268"]
           [com.cemerick/piggieback "0.1.2"]]
 
          :plugins
          [[com.cemerick/austin "0.1.3"]
           [codox "0.6.4"]
           [lein-cljsbuild "1.0.3"]
-          [com.keminglabs/cljx "0.3.2"]
+          [com.keminglabs/cljx "0.4.0"]
           [com.cemerick/clojurescript.test "0.3.1"]]
 
          :repl-options
@@ -50,7 +50,9 @@
 
   :cljsbuild
   {:builds
-   [{:source-paths ["target/generated-src/cljs" "target/generated-test"]
+   [{:source-paths ["target/generated-src/clj"
+                    "target/generated-src/cljs"
+                    "target/generated-test"]
      ;; Running `cljsbuild <once|auto>` will trigger this test.
      :notify-command ["phantomjs" :cljs.test/runner
                       "target/cljs/testable.js"]

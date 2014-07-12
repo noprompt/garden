@@ -7,12 +7,18 @@
   #+clj
   (:import clojure.lang.Keyword
            clojure.lang.Symbol
-           clojure.lang.IFn)
+           clojure.lang.IFn
+           clojure.lang.Named)
   #+cljs
   (:refer-clojure :exclude [+ - > empty first map meta not]) 
   #+cljs
   (:require-macros
-   [garden.selectors :refer [gen-type-selector-defs gen-pseudo-class-defs]]))
+   [garden.selectors :refer [defselector
+                             defid
+                             defpseudoclass
+                             defpseudoelement
+                             gen-type-selector-defs
+                             gen-pseudo-class-defs]]))
 
 (defprotocol ICSSSelector
   (css-selector [this]))
@@ -21,8 +27,10 @@
   (satisfies? ICSSSelector x))
 
 (extend-protocol ICSSSelector
-  #+clj String
-  #+cljs string
+  #+clj
+  String
+  #+cljs
+  string
   (css-selector [this] this)
 
   Keyword
@@ -33,49 +41,49 @@
   (css-selector [this]
     (name this)))
 
-(deftype CSSSelector [selector]
+(defrecord CSSSelector [selector]
   ICSSSelector
-  (css-selector [_]
-    (css-selector selector))
+  (css-selector [this]
+    (css-selector (:selector this)))
 
   IFn
-  (invoke [_]
-    (CSSSelector. (str (css-selector selector))))
-  (invoke [_ a]
-    (CSSSelector. (str (css-selector selector)
+  (invoke [this]
+    this)
+  (invoke [this a]
+    (CSSSelector. (str (css-selector this)
                        (css-selector a))))
-  (invoke [_ a b]
-    (CSSSelector. (str (css-selector selector)
+  (invoke [this a b]
+    (CSSSelector. (str (css-selector this)
                        (css-selector a)
                        (css-selector b))))
-  (invoke [_ a b c]
-    (CSSSelector. (str (css-selector selector)
+  (invoke [this a b c]
+    (CSSSelector. (str (css-selector this)
                        (css-selector a)
                        (css-selector b)
                        (css-selector c))))
-  (invoke [_ a b c d]
-    (CSSSelector. (str (css-selector selector)
+  (invoke [this a b c d]
+    (CSSSelector. (str (css-selector this)
                        (css-selector a)
                        (css-selector b)
                        (css-selector c)
                        (css-selector d))))
-  (invoke [_ a b c d e]
-    (CSSSelector. (str (css-selector selector)
+  (invoke [this a b c d e]
+    (CSSSelector. (str (css-selector this)
                        (css-selector a)
                        (css-selector b)
                        (css-selector c)
                        (css-selector d)
                        (css-selector e))))
-  (invoke [_ a b c d e f]
-    (CSSSelector. (str (css-selector selector)
+  (invoke [this a b c d e f]
+    (CSSSelector. (str (css-selector this)
                        (css-selector a)
                        (css-selector b)
                        (css-selector c)
                        (css-selector d)
                        (css-selector e)
                        (css-selector f))))
-  (invoke [_ a b c d e f g]
-    (CSSSelector. (str (css-selector selector)
+  (invoke [this a b c d e f g]
+    (CSSSelector. (str (css-selector this)
                        (css-selector a)
                        (css-selector b)
                        (css-selector c)
@@ -83,8 +91,8 @@
                        (css-selector e)
                        (css-selector f)
                        (css-selector g))))
-  (invoke [_ a b c d e f g h]
-    (CSSSelector. (str (css-selector selector)
+  (invoke [this a b c d e f g h]
+    (CSSSelector. (str (css-selector this)
                        (css-selector a)
                        (css-selector b)
                        (css-selector c)
@@ -93,8 +101,8 @@
                        (css-selector f)
                        (css-selector g)
                        (css-selector h))))
-  (invoke [_ a b c d e f g h i]
-    (CSSSelector. (str (css-selector selector)
+  (invoke [this a b c d e f g h i]
+    (CSSSelector. (str (css-selector this)
                        (css-selector a)
                        (css-selector b)
                        (css-selector c)
@@ -104,8 +112,8 @@
                        (css-selector g)
                        (css-selector h)
                        (css-selector i))))
-  (invoke [_ a b c d e f g h i j]
-    (CSSSelector. (str (css-selector selector)
+  (invoke [this a b c d e f g h i j]
+    (CSSSelector. (str (css-selector this)
                        (css-selector a)
                        (css-selector b)
                        (css-selector c)
@@ -116,8 +124,8 @@
                        (css-selector h)
                        (css-selector i)
                        (css-selector j))))
-  (invoke [_ a b c d e f g h i j k]
-    (CSSSelector. (str (css-selector selector)
+  (invoke [this a b c d e f g h i j k]
+    (CSSSelector. (str (css-selector this)
                        (css-selector a)
                        (css-selector b)
                        (css-selector c)
@@ -129,8 +137,8 @@
                        (css-selector i)
                        (css-selector j)
                        (css-selector k))))
-  (invoke [_ a b c d e f g h i j k l]
-    (CSSSelector. (str (css-selector selector)
+  (invoke [this a b c d e f g h i j k l]
+    (CSSSelector. (str (css-selector this)
                        (css-selector a)
                        (css-selector b)
                        (css-selector c)
@@ -143,8 +151,8 @@
                        (css-selector j)
                        (css-selector k)
                        (css-selector l))))
-  (invoke [_ a b c d e f g h i j k l m]
-    (CSSSelector. (str (css-selector selector)
+  (invoke [this a b c d e f g h i j k l m]
+    (CSSSelector. (str (css-selector this)
                        (css-selector a)
                        (css-selector b)
                        (css-selector c)
@@ -158,8 +166,8 @@
                        (css-selector k)
                        (css-selector l)
                        (css-selector m))))
-  (invoke [_ a b c d e f g h i j k l m n]
-    (CSSSelector. (str (css-selector selector)
+  (invoke [this a b c d e f g h i j k l m n]
+    (CSSSelector. (str (css-selector this)
                        (css-selector a)
                        (css-selector b)
                        (css-selector c)
@@ -174,8 +182,8 @@
                        (css-selector l)
                        (css-selector m)
                        (css-selector n))))
-  (invoke [_ a b c d e f g h i j k l m n o]
-    (CSSSelector. (str (css-selector selector)
+  (invoke [this a b c d e f g h i j k l m n o]
+    (CSSSelector. (str (css-selector this)
                        (css-selector a)
                        (css-selector b)
                        (css-selector c)
@@ -191,8 +199,8 @@
                        (css-selector m)
                        (css-selector n)
                        (css-selector o))))
-  (invoke [_ a b c d e f g h i j k l m n o p]
-    (CSSSelector. (str (css-selector selector)
+  (invoke [this a b c d e f g h i j k l m n o p]
+    (CSSSelector. (str (css-selector this)
                        (css-selector a)
                        (css-selector b)
                        (css-selector c)
@@ -209,8 +217,8 @@
                        (css-selector n)
                        (css-selector o)
                        (css-selector p))))
-  (invoke [_ a b c d e f g h i j k l m n o p q]
-    (CSSSelector. (str (css-selector selector)
+  (invoke [this a b c d e f g h i j k l m n o p q]
+    (CSSSelector. (str (css-selector this)
                        (css-selector a)
                        (css-selector b)
                        (css-selector c)
@@ -228,8 +236,8 @@
                        (css-selector o)
                        (css-selector p)
                        (css-selector q))))
-  (invoke [_ a b c d e f g h i j k l m n o p q r]
-    (CSSSelector. (str (css-selector selector)
+  (invoke [this a b c d e f g h i j k l m n o p q r]
+    (CSSSelector. (str (css-selector this)
                        (css-selector a)
                        (css-selector b)
                        (css-selector c)
@@ -248,8 +256,8 @@
                        (css-selector p)
                        (css-selector q)
                        (css-selector r))))
-  (invoke [_ a b c d e f g h i j k l m n o p q r s]
-    (CSSSelector. (str (css-selector selector)
+  (invoke [this a b c d e f g h i j k l m n o p q r s]
+    (CSSSelector. (str (css-selector this)
                        (css-selector a)
                        (css-selector b)
                        (css-selector c)
@@ -269,8 +277,8 @@
                        (css-selector q)
                        (css-selector r)
                        (css-selector s))))
-  (invoke [_ a b c d e f g h i j k l m n o p q r s t]
-    (CSSSelector. (str (css-selector selector)
+  (invoke [this a b c d e f g h i j k l m n o p q r s t]
+    (CSSSelector. (str (css-selector this)
                        (css-selector a)
                        (css-selector b)
                        (css-selector c)
@@ -323,7 +331,7 @@
      `(defselector ~sym ~(name sym)))
   ([sym strval]
      {:pre [(string? strval)]}
-     (let [[_ sym v] (macroexpand `(def ~sym ~(selector strval)))
+     (let [[_ sym v] (macroexpand `(def ~sym (selector ~strval)))
            sym (vary-meta sym assoc :arglists `'([~'& ~'selectors]))]
        `(def ~sym ~v))))
 
@@ -518,15 +526,12 @@
     video
     wbr])
 
-#+clj
-(defn- gen-type-selector-def [tag]
-  (let [tag (vary-meta tag assoc :doc (str "CSS " tag " type selector."))]
-    `(defselector ~tag)))
-
 (defmacro ^:private gen-type-selector-defs []
   `(do
-     ~@(for [t html-tags]
-         (gen-type-selector-def t))))
+     ~@(for [tag html-tags
+             :let [doc (str "CSS " tag " type selector.")
+                   tag (vary-meta tag assoc :doc doc)]]
+         `(defselector ~tag))))
 
 (gen-type-selector-defs)
 
@@ -696,30 +701,34 @@
 (defn descendent
   "Descendent combinator."
   ([a b]
-     (str (css-selector a) " " (css-selector b)))
+     (selector (str (css-selector a) " " (css-selector b))))
   ([a b & more]
-     (->> (map css-selector more)
-          (cons (descendent a b))
-          (string/join " "))))
+     (->> (cons (descendent a b) more)
+          (clojure.core/map css-selector)
+          (string/join " ")
+          (selector))))
 
 (defn +
   "Adjacent sibling combinator."
   [a b]
-  (str (css-selector a) " + " (css-selector b)))
+  (selector (str (css-selector a) " + " (css-selector b))))
 
 (defn -
   "General sibling combinator."
   [a b]
-  (str (css-selector a) " ~ " (css-selector b)))
+  (selector (str (css-selector a) " ~ " (css-selector b))))
 
 (defn >
   "Child combinator."
   ([a]
-     (css-selector a))
+     (selector a))
   ([a b]
-     (str (css-selector a) " > " (css-selector b)))
+     (selector (str (css-selector a) " > " (css-selector b))))
   ([a b & more]
-     (reduce > (> a b) more)))
+     (->> (cons (> a b) more)
+          (clojure.core/map css-selector)
+          (string/join " > ")
+          (selector))))
 
 ;; ---------------------------------------------------------------------
 ;; Special selectors

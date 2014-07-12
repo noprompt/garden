@@ -1,11 +1,16 @@
 (ns garden.arithmetic-test
   (:refer-clojure :exclude [+ - * /])
-  (:require #+clj [clojure.test :refer :all]
-            #+cljs [cemerick.cljs.test :as t]
-            [garden.arithmetic :refer [+ - * /]]
-            [garden.units :as u]
-            [garden.color :as c])
-  #+cljs (:require-macros [cemerick.cljs.test :refer [deftest is testing]]))
+  (:require
+   #+clj
+   [clojure.test :refer :all]
+   #+cljs
+   [cemerick.cljs.test :as t]
+   [garden.arithmetic :refer [+ - * /]]
+   [garden.units :as u]
+   [garden.color :as c])
+  #+cljs
+  (:require-macros
+   [cemerick.cljs.test :refer [deftest is testing]]))
 
 (deftest sum-test
   (testing "numbers"
