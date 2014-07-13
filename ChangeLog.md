@@ -1,3 +1,37 @@
+## Changes between 1.1.8 and 1.2.0
+
+Added new namespace `garden.selectors` containing functions and macros
+for working with CSS selectors. This namespace defines the most common
+type, pseudoclass, and pseudoelement selectors which are actually
+instances of a new type `CSSSelector`.
+
+Instances of `CSSSelector` can be treated both as a value and as a
+function. When `garden.selectors/css-selector` is applied to a
+`CSSSelector` the return value is the string representation of the
+selector. When treated as a function the return result is a new
+instance of `CSSSelector` which is merely a concatenation of the
+original selector value and the selector value of each argument.
+
+```clj
+user> (ns foo
+        (:use [garden.selectors :as s
+               :exclude [+ - > empty first map meta not time var]])
+        (:require
+         [garden.repl]
+         [garden.core :refer [css]]))
+
+foo> a
+a
+foo> (a)
+a
+foo> (a hover)
+a:hover
+foo> (css [(a hover) {:font-weight :bold}])
+"a:hover {\n  font-weight: bold;\n}"
+```
+
+This namespace should be considered alpha and is subject to change.
+
 ## Changes between 1.1.7 and 1.1.8
 
 Added option for configuring line break positions in
