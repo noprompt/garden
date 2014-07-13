@@ -1,3 +1,7 @@
+## Changes between 1.2.0 and 1.2.1
+
+Fix a spelling mistake in `garden.selectors`.
+
 ## Changes between 1.1.8 and 1.2.0
 
 Added new namespace `garden.selectors` containing functions and macros
