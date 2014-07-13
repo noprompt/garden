@@ -698,12 +698,12 @@
 
 ;; SEE: http://www.w3.org/TR/selectors/#combinators
 
-(defn descendent
-  "Descendent combinator."
+(defn descendant
+  "Descendant combinator."
   ([a b]
      (selector (str (css-selector a) " " (css-selector b))))
   ([a b & more]
-     (->> (cons (descendent a b) more)
+     (->> (cons (descendant a b) more)
           (clojure.core/map css-selector)
           (string/join " ")
           (selector))))

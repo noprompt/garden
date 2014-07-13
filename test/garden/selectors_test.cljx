@@ -35,8 +35,8 @@
       (s/attr :foo := :bar) "[foo=\"bar\"]"
       (s/attr :foo := "\"bar\"") "[foo=\"bar\"]"
       (s/attr :foo := "'bar'") "[foo='bar']"
-      (s/descendent s/ul s/li) "ul li"
-      (s/descendent s/ul (s/+ s/ol s/li)) "ul ol + li")))
+      (s/descendant s/ul s/li) "ul li"
+      (s/descendant s/ul (s/+ s/ol s/li)) "ul ol + li")))
 
 (deftest specificity-test
   (testing "specificity"
@@ -45,9 +45,9 @@
       "li" 1
       s/li 1
       "ul li" 2
-      (s/descendent s/ul s/li) 2
+      (s/descendant s/ul s/li) 2
       "ul ol+li" 3
-      (s/descendent s/ul (s/+ s/ol s/li)) 3
+      (s/descendant s/ul (s/+ s/ol s/li)) 3
       "h1 + *[REL=up]" 11
       "ul ol li.red" 13
       "li.red.level" 21
