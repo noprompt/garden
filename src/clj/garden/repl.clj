@@ -3,11 +3,13 @@
   (:require [garden.compiler :as compiler]
             [garden.util :as util]
             [garden.types]
-            [garden.color])
+            [garden.color]
+            [garden.selectors :as selectors])
   (:import (garden.types CSSUnit
                          CSSFunction
                          CSSAtRule)
-           (garden.color CSSColor)))
+           (garden.color CSSColor)
+           (garden.selectors CSSSelector)))
 
 (defmethod print-method CSSUnit [css-unit writer]
   (.write writer (compiler/render-css css-unit)))
@@ -24,3 +26,6 @@
             compiler/compile-css
             compiler/render-css)]
     (.write writer (f css-at-rule))))
+
+(defmethod print-method CSSSelector [css-selector writer]
+  (.write writer (selectors/css-selector css-selector)))
