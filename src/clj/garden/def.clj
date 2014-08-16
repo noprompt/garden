@@ -35,7 +35,7 @@
       ;; => [:h4 :h5 :h6 {:font-weight \"normal\"}]"
   [sym & selectors]
   (let [rule (if (seq selectors)
-               (mapv keyword selectors)
+               `(vec '~selectors)
                [(keyword sym)])
         [_ sym spec] (macroexpand `(defn ~sym [~'& ~'children]
                                      (into ~rule ~'children)))]
