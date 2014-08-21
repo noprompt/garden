@@ -19,6 +19,7 @@ trade a preprocessor for a programming language.
   * [Arithmetic](#arithmetic)
   * [Media queries](#media-queries)
 * [Plugin](#plugin)
+* [Community](#community)
 
 ## Installation
 
@@ -584,6 +585,10 @@ If you're interested in automatically compiling your stylesheets be
 sure to check out the
 [`lein-garden`](https://github.com/noprompt/lein-garden)
 plugin. 
+
+## Community
+
+* [Mailing list](https://groups.google.com/forum/#!forum/garden-clojure)
 
 ## Thanks
 
