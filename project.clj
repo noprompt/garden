@@ -17,7 +17,7 @@
   :profiles
   {:dev {:dependencies
          [[criterium "0.4.1"]
-          [org.clojure/clojurescript "0.0-2268"]
+          [org.clojure/clojurescript "0.0-2342"]
           [com.cemerick/piggieback "0.1.2"]]
 
          :plugins
