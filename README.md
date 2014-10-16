@@ -19,6 +19,7 @@ trade a preprocessor for a programming language.
   * [Arithmetic](#arithmetic)
   * [Media queries](#media-queries)
 * [Plugin](#plugin)
+* [Community](#community)
 
 ## Installation
 
@@ -34,7 +35,7 @@ For the current development version use:
 [garden "1.2.3-SNAPSHOT"]
 ```
 
-Garden requires Clojure `1.6.0`.
+Garden requires Clojure `1.6.0` and is known to work with ClojureScript `0.0-2342`.
 
 ## Syntax
 
@@ -584,6 +585,10 @@ If you're interested in automatically compiling your stylesheets be
 sure to check out the
 [`lein-garden`](https://github.com/noprompt/lein-garden)
 plugin. 
+
+## Community
+
+* [Mailing list](https://groups.google.com/forum/#!forum/garden-clojure)
 
 ## Thanks
 
