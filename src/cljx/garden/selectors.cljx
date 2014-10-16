@@ -47,26 +47,32 @@
     (css-selector (:selector this)))
 
   IFn
+  #+clj
   (invoke [this]
     this)
+  #+clj
   (invoke [this a]
     (CSSSelector. (str (css-selector this)
                        (css-selector a))))
+  #+clj
   (invoke [this a b]
     (CSSSelector. (str (css-selector this)
                        (css-selector a)
                        (css-selector b))))
+  #+clj
   (invoke [this a b c]
     (CSSSelector. (str (css-selector this)
                        (css-selector a)
                        (css-selector b)
                        (css-selector c))))
+  #+clj
   (invoke [this a b c d]
     (CSSSelector. (str (css-selector this)
                        (css-selector a)
                        (css-selector b)
                        (css-selector c)
                        (css-selector d))))
+  #+clj
   (invoke [this a b c d e]
     (CSSSelector. (str (css-selector this)
                        (css-selector a)
@@ -74,6 +80,7 @@
                        (css-selector c)
                        (css-selector d)
                        (css-selector e))))
+  #+clj
   (invoke [this a b c d e f]
     (CSSSelector. (str (css-selector this)
                        (css-selector a)
@@ -82,6 +89,7 @@
                        (css-selector d)
                        (css-selector e)
                        (css-selector f))))
+  #+clj
   (invoke [this a b c d e f g]
     (CSSSelector. (str (css-selector this)
                        (css-selector a)
@@ -91,6 +99,7 @@
                        (css-selector e)
                        (css-selector f)
                        (css-selector g))))
+  #+clj
   (invoke [this a b c d e f g h]
     (CSSSelector. (str (css-selector this)
                        (css-selector a)
@@ -101,6 +110,7 @@
                        (css-selector f)
                        (css-selector g)
                        (css-selector h))))
+  #+clj
   (invoke [this a b c d e f g h i]
     (CSSSelector. (str (css-selector this)
                        (css-selector a)
@@ -112,6 +122,7 @@
                        (css-selector g)
                        (css-selector h)
                        (css-selector i))))
+  #+clj
   (invoke [this a b c d e f g h i j]
     (CSSSelector. (str (css-selector this)
                        (css-selector a)
@@ -124,6 +135,7 @@
                        (css-selector h)
                        (css-selector i)
                        (css-selector j))))
+  #+clj
   (invoke [this a b c d e f g h i j k]
     (CSSSelector. (str (css-selector this)
                        (css-selector a)
@@ -137,6 +149,7 @@
                        (css-selector i)
                        (css-selector j)
                        (css-selector k))))
+  #+clj
   (invoke [this a b c d e f g h i j k l]
     (CSSSelector. (str (css-selector this)
                        (css-selector a)
@@ -151,6 +164,7 @@
                        (css-selector j)
                        (css-selector k)
                        (css-selector l))))
+  #+clj
   (invoke [this a b c d e f g h i j k l m]
     (CSSSelector. (str (css-selector this)
                        (css-selector a)
@@ -166,6 +180,7 @@
                        (css-selector k)
                        (css-selector l)
                        (css-selector m))))
+  #+clj
   (invoke [this a b c d e f g h i j k l m n]
     (CSSSelector. (str (css-selector this)
                        (css-selector a)
@@ -182,6 +197,7 @@
                        (css-selector l)
                        (css-selector m)
                        (css-selector n))))
+  #+clj
   (invoke [this a b c d e f g h i j k l m n o]
     (CSSSelector. (str (css-selector this)
                        (css-selector a)
@@ -199,6 +215,7 @@
                        (css-selector m)
                        (css-selector n)
                        (css-selector o))))
+  #+clj
   (invoke [this a b c d e f g h i j k l m n o p]
     (CSSSelector. (str (css-selector this)
                        (css-selector a)
@@ -217,6 +234,7 @@
                        (css-selector n)
                        (css-selector o)
                        (css-selector p))))
+  #+clj
   (invoke [this a b c d e f g h i j k l m n o p q]
     (CSSSelector. (str (css-selector this)
                        (css-selector a)
@@ -236,6 +254,7 @@
                        (css-selector o)
                        (css-selector p)
                        (css-selector q))))
+  #+clj
   (invoke [this a b c d e f g h i j k l m n o p q r]
     (CSSSelector. (str (css-selector this)
                        (css-selector a)
@@ -256,6 +275,7 @@
                        (css-selector p)
                        (css-selector q)
                        (css-selector r))))
+  #+clj
   (invoke [this a b c d e f g h i j k l m n o p q r s]
     (CSSSelector. (str (css-selector this)
                        (css-selector a)
@@ -277,7 +297,281 @@
                        (css-selector q)
                        (css-selector r)
                        (css-selector s))))
+  #+clj
   (invoke [this a b c d e f g h i j k l m n o p q r s t]
+    (CSSSelector. (str (css-selector this)
+                       (css-selector a)
+                       (css-selector b)
+                       (css-selector c)
+                       (css-selector d)
+                       (css-selector e)
+                       (css-selector f)
+                       (css-selector g)
+                       (css-selector h)
+                       (css-selector i)
+                       (css-selector j)
+                       (css-selector k)
+                       (css-selector l)
+                       (css-selector m)
+                       (css-selector n)
+                       (css-selector o)
+                       (css-selector p)
+                       (css-selector q)
+                       (css-selector r)
+                       (css-selector s)
+                       (css-selector t))))
+  #+cljs
+  (-invoke [this]
+    this)
+  #+cljs
+  (-invoke [this a]
+    (CSSSelector. (str (css-selector this)
+                       (css-selector a))))
+  #+cljs
+  (-invoke [this a b]
+    (CSSSelector. (str (css-selector this)
+                       (css-selector a)
+                       (css-selector b))))
+  #+cljs
+  (-invoke [this a b c]
+    (CSSSelector. (str (css-selector this)
+                       (css-selector a)
+                       (css-selector b)
+                       (css-selector c))))
+  #+cljs
+  (-invoke [this a b c d]
+    (CSSSelector. (str (css-selector this)
+                       (css-selector a)
+                       (css-selector b)
+                       (css-selector c)
+                       (css-selector d))))
+  #+cljs
+  (-invoke [this a b c d e]
+    (CSSSelector. (str (css-selector this)
+                       (css-selector a)
+                       (css-selector b)
+                       (css-selector c)
+                       (css-selector d)
+                       (css-selector e))))
+  #+cljs
+  (-invoke [this a b c d e f]
+    (CSSSelector. (str (css-selector this)
+                       (css-selector a)
+                       (css-selector b)
+                       (css-selector c)
+                       (css-selector d)
+                       (css-selector e)
+                       (css-selector f))))
+  #+cljs
+  (-invoke [this a b c d e f g]
+    (CSSSelector. (str (css-selector this)
+                       (css-selector a)
+                       (css-selector b)
+                       (css-selector c)
+                       (css-selector d)
+                       (css-selector e)
+                       (css-selector f)
+                       (css-selector g))))
+  #+cljs
+  (-invoke [this a b c d e f g h]
+    (CSSSelector. (str (css-selector this)
+                       (css-selector a)
+                       (css-selector b)
+                       (css-selector c)
+                       (css-selector d)
+                       (css-selector e)
+                       (css-selector f)
+                       (css-selector g)
+                       (css-selector h))))
+  #+cljs
+  (-invoke [this a b c d e f g h i]
+    (CSSSelector. (str (css-selector this)
+                       (css-selector a)
+                       (css-selector b)
+                       (css-selector c)
+                       (css-selector d)
+                       (css-selector e)
+                       (css-selector f)
+                       (css-selector g)
+                       (css-selector h)
+                       (css-selector i))))
+  #+cljs
+  (-invoke [this a b c d e f g h i j]
+    (CSSSelector. (str (css-selector this)
+                       (css-selector a)
+                       (css-selector b)
+                       (css-selector c)
+                       (css-selector d)
+                       (css-selector e)
+                       (css-selector f)
+                       (css-selector g)
+                       (css-selector h)
+                       (css-selector i)
+                       (css-selector j))))
+  #+cljs
+  (-invoke [this a b c d e f g h i j k]
+    (CSSSelector. (str (css-selector this)
+                       (css-selector a)
+                       (css-selector b)
+                       (css-selector c)
+                       (css-selector d)
+                       (css-selector e)
+                       (css-selector f)
+                       (css-selector g)
+                       (css-selector h)
+                       (css-selector i)
+                       (css-selector j)
+                       (css-selector k))))
+  #+cljs
+  (-invoke [this a b c d e f g h i j k l]
+    (CSSSelector. (str (css-selector this)
+                       (css-selector a)
+                       (css-selector b)
+                       (css-selector c)
+                       (css-selector d)
+                       (css-selector e)
+                       (css-selector f)
+                       (css-selector g)
+                       (css-selector h)
+                       (css-selector i)
+                       (css-selector j)
+                       (css-selector k)
+                       (css-selector l))))
+  #+cljs
+  (-invoke [this a b c d e f g h i j k l m]
+    (CSSSelector. (str (css-selector this)
+                       (css-selector a)
+                       (css-selector b)
+                       (css-selector c)
+                       (css-selector d)
+                       (css-selector e)
+                       (css-selector f)
+                       (css-selector g)
+                       (css-selector h)
+                       (css-selector i)
+                       (css-selector j)
+                       (css-selector k)
+                       (css-selector l)
+                       (css-selector m))))
+  #+cljs
+  (-invoke [this a b c d e f g h i j k l m n]
+    (CSSSelector. (str (css-selector this)
+                       (css-selector a)
+                       (css-selector b)
+                       (css-selector c)
+                       (css-selector d)
+                       (css-selector e)
+                       (css-selector f)
+                       (css-selector g)
+                       (css-selector h)
+                       (css-selector i)
+                       (css-selector j)
+                       (css-selector k)
+                       (css-selector l)
+                       (css-selector m)
+                       (css-selector n))))
+  #+cljs
+  (-invoke [this a b c d e f g h i j k l m n o]
+    (CSSSelector. (str (css-selector this)
+                       (css-selector a)
+                       (css-selector b)
+                       (css-selector c)
+                       (css-selector d)
+                       (css-selector e)
+                       (css-selector f)
+                       (css-selector g)
+                       (css-selector h)
+                       (css-selector i)
+                       (css-selector j)
+                       (css-selector k)
+                       (css-selector l)
+                       (css-selector m)
+                       (css-selector n)
+                       (css-selector o))))
+  #+cljs
+  (-invoke [this a b c d e f g h i j k l m n o p]
+    (CSSSelector. (str (css-selector this)
+                       (css-selector a)
+                       (css-selector b)
+                       (css-selector c)
+                       (css-selector d)
+                       (css-selector e)
+                       (css-selector f)
+                       (css-selector g)
+                       (css-selector h)
+                       (css-selector i)
+                       (css-selector j)
+                       (css-selector k)
+                       (css-selector l)
+                       (css-selector m)
+                       (css-selector n)
+                       (css-selector o)
+                       (css-selector p))))
+  #+cljs
+  (-invoke [this a b c d e f g h i j k l m n o p q]
+    (CSSSelector. (str (css-selector this)
+                       (css-selector a)
+                       (css-selector b)
+                       (css-selector c)
+                       (css-selector d)
+                       (css-selector e)
+                       (css-selector f)
+                       (css-selector g)
+                       (css-selector h)
+                       (css-selector i)
+                       (css-selector j)
+                       (css-selector k)
+                       (css-selector l)
+                       (css-selector m)
+                       (css-selector n)
+                       (css-selector o)
+                       (css-selector p)
+                       (css-selector q))))
+  #+cljs
+  (-invoke [this a b c d e f g h i j k l m n o p q r]
+    (CSSSelector. (str (css-selector this)
+                       (css-selector a)
+                       (css-selector b)
+                       (css-selector c)
+                       (css-selector d)
+                       (css-selector e)
+                       (css-selector f)
+                       (css-selector g)
+                       (css-selector h)
+                       (css-selector i)
+                       (css-selector j)
+                       (css-selector k)
+                       (css-selector l)
+                       (css-selector m)
+                       (css-selector n)
+                       (css-selector o)
+                       (css-selector p)
+                       (css-selector q)
+                       (css-selector r))))
+  #+cljs
+  (-invoke [this a b c d e f g h i j k l m n o p q r s]
+    (CSSSelector. (str (css-selector this)
+                       (css-selector a)
+                       (css-selector b)
+                       (css-selector c)
+                       (css-selector d)
+                       (css-selector e)
+                       (css-selector f)
+                       (css-selector g)
+                       (css-selector h)
+                       (css-selector i)
+                       (css-selector j)
+                       (css-selector k)
+                       (css-selector l)
+                       (css-selector m)
+                       (css-selector n)
+                       (css-selector o)
+                       (css-selector p)
+                       (css-selector q)
+                       (css-selector r)
+                       (css-selector s))))
+  #+cljs
+  (-invoke [this a b c d e f g h i j k l m n o p q r s t]
     (CSSSelector. (str (css-selector this)
                        (css-selector a)
                        (css-selector b)

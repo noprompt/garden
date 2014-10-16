@@ -6,7 +6,9 @@
    [garden.util :as util])
   #+cljs
   (:require-macros
-   [garden.color :refer [defcolor-operation]]))
+   [garden.color :refer [defcolor-operation]])
+  #+clj
+  (:import clojure.lang.IFn))
 
 ;; Many of the functions in this namespace were ported or inspired by
 ;; the implementations included with Sass
@@ -18,12 +20,22 @@
 (declare as-hex)
 
 (defrecord CSSColor [red green blue hue saturation lightness alpha]
-  #+clj clojure.lang.IFn
-  #+cljs IFn
+  IFn
+  #+clj
   (invoke [this] this)
+  #+clj
   (invoke [this k]
     (get this k))
+  #+clj
   (invoke [this k missing]
+    (get this k missing))
+  #+cljs
+  (-invoke [this] this)
+  #+cljs
+  (-invoke [this k]
+    (get this k))
+  #+cljs
+  (-invoke [this k missing]
     (get this k missing))
   #+clj
   (applyTo [this args]
