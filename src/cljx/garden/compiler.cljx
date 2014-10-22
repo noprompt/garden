@@ -34,9 +34,12 @@
    :preamble []
    ;; Location to save a stylesheet after compiling.
    :output-to nil
-   ;; A list of vendor prefixes to append automatically to things like
-   ;; `@keyframes` and declarations containing the `^:prefix` meta data.
+   ;; A list of vendor prefixes to prepend to things like
+   ;; `@keyframes`, properties within declarations containing the
+   ;; `^:prefix` meta data, and properties defined in `:auto-prefix`.
    :vendors []
+   ;; A set of properties to automatically prefix with `:vendors`.
+   :auto-prefix #{}
    ;; `@media-query` specific configuration.
    :media-expressions {;; May either be `:merge` or `:default`. When
                        ;; set to `:merge` nested media queries will
@@ -84,6 +87,15 @@
   "Return the current list of browser vendors specified in `*flags*`."
   []
   (seq (:vendors *flags*)))
+
+(defn- auto-prefixed-properties
+  "Return the current list of auto-prefixed properties specified in `*flags*`."
+  []
+  (set (map name (:auto-prefix *flags*))))
+
+(defn- auto-prefix?
+  [property]
+  (contains? (auto-prefixed-properties) property))
 
 (defn- top-level-expression? [x]
   (or (util/rule? x)
@@ -406,27 +418,45 @@
                 (render-value val))]
       (util/as-str prop colon val semicolon))))
 
+(defn- add-blocks
+  "For each block in `declaration`, add sequence of blocks
+   returned from calling `f` on the block."
+  [f declaration]
+  (mapcat #(cons % (f %)) declaration))
+
+(defn- prefixed-blocks
+  "Sequence of blocks with their properties prefixed by
+   each vendor in `vendors`."
+  [vendors [p v]]
+  (for [vendor vendors]
+    [(util/vendor-prefix vendor (name p)) v]))
+
+(defn- prefix-all-properties
+  "Add prefixes to all blocks in `declaration` using
+   vendor prefixes in `vendors`."
+  [vendors declaration]
+  (add-blocks (partial prefixed-blocks vendors) declaration))
+
+(defn- prefix-auto-properties
+  "Add prefixes to all blocks in `declaration` when property
+   is in the `:auto-prefix` set."
+  [vendors declaration]
+  (add-blocks
+   (fn [block]
+     (let [[p _] block]
+       (when (auto-prefix? (name p))
+         (prefixed-blocks vendors block))))
+   declaration))
+
 (defn- prefix-declaration
-  "If `(:vendors *flags*)` is bound and `declaration` has the meta 
-  `{:prefix true}` automatically create vendor prefixed properties."
+  "Prefix properties within a `declaration` if `{:prefix true}` is
+   set in its meta, or if a property is in the `:auto-prefix` set."
   [declaration]
-  (if-not (:prefix (meta declaration))
-    declaration
-    (let [ps (keys declaration)
-          vs (vals declaration)
-          vendors (or (:vendors (meta declaration))
-                      (vendors))]
-     (mapcat 
-      (fn [p v]
-        (cons [p v]
-              (map
-               (fn [vendor p1 v1]
-                 (vector (util/vendor-prefix vendor (name p1)) v1))
-               vendors
-               (repeat p)
-               (repeat v))))
-      ps
-      vs))))
+  (let [vendors (or (:vendors (meta declaration)) (vendors))
+        prefix-fn (if (:prefix (meta declaration))
+                    prefix-all-properties
+                    prefix-auto-properties)]
+    (prefix-fn vendors declaration)))
 
 (defn- render-declaration
   [declaration]
