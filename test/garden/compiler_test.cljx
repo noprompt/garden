@@ -187,6 +187,25 @@
       (is (re-find #"@-webkit-keyframes" compiled))
       (is (re-find #"@keyframes" compiled))))
 
+  (testing ":auto-prefix"
+    (let [compiled (compile-css
+                    {:auto-prefix #{:a "b"}
+                     :vendors test-vendors
+                     :pretty-print? false}
+                    [:a {:a 1 :b 1 :c 1}])]
+
+      (are [re] (re-find re compiled)
+        #"-moz-a:1"
+        #"-webkit-a:1"
+        #"a:1"
+        #"-moz-b:1"
+        #"-webkit-b:1"
+        #"b:1"
+        #"c:1")
+
+      (is (not (re-find #"-moz-c:1" compiled)))
+      (is (not (re-find #"-webkit-c:1" compiled)))))
+
   (testing ":media-expressions :nesting-behavior"
     (let [compiled (compile-css
                     {:media-expressions {:nesting-behavior :merge}

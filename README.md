@@ -509,7 +509,7 @@ Wrote: foo.css
 
 Vendor prefixing can be a pain but Garden can help with that in some
 cases if you set the `:vendors` flag. The value is expeced to be a
-vector of prefixes (ie `["webkit" "moz" "o"]`). By specifying this
+vector of prefixes (ie `["webkit" "moz" "o"]`). By specifying this,
 Garden will automatically prefix declarations tagged with the
 `^:prefix` meta and `@keyfames`.
 
@@ -567,6 +567,19 @@ h1 {
   -webkit-animation: pulse 2s infinite alternate;
   animation: pulse 2s infinite alternate;
 }
+```
+
+#### Auto-prefixing
+
+If you want Garden to automatically vendor prefix
+specific properties, add them to the `:auto-prefix` set.
+
+```clj
+user=> (css
+        {:vendors ["webkit"]
+         :auto-prefix #{:border-radius}}
+        [:.foo {:border-radius (px 3)}])
+".foo{border-radius:3px;-webkit-border-radius:3px;}"
 ```
 
 ## Contributors
