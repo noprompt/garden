@@ -182,3 +182,14 @@
                     (lazy-seq (step (increment v-seqs)))))))]
     (when (every? seq seqs)
       (lazy-seq (step v-original-seqs)))))
+
+(defn font-family*
+  "Helper function for `font-family`. Returns the name string of given
+  font. Wraps inside quotes if `font` is already a string."
+  [font]
+  (cond
+   (string? font)
+   (wrap-quotes font)
+
+   (or (keyword? font) (symbol? font))
+   (name font)))
