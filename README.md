@@ -1,5 +1,7 @@
 # Garden
 
+[![Continuous Integration status](https://secure.travis-ci.org/noprompt/garden.png)](http://travis-ci.org/noprompt/garden)
+
 Garden is a library for rendering CSS in Clojure and ClojureScript.
 Conceptually similar to
 [Hiccup](https://github.com/weavejester/hiccup), it uses vectors to
