@@ -193,3 +193,15 @@
 
    (or (keyword? font) (symbol? font))
    (name font)))
+
+(defn font-family
+  "Receives one or more font names, each of which can be a symbol,
+  keyword or string. Returns a comma-separated string that is a valid
+  value for `:font-family` property.
+
+  Example:
+
+  (font-family \"Liberation Mono\" 'Consolas :monospace)
+  => \"\\\"Liberation Mono\\\", Consolas, monospace\""
+  [& fonts]
+  (comma-join (map font-family* fonts)))
