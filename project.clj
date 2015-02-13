@@ -17,12 +17,11 @@
   :profiles
   {:dev {:dependencies
          [[criterium "0.4.1"]
-          [org.clojure/clojurescript "0.0-2342"]
+          [org.clojure/clojurescript "0.0-2755"]
           [com.cemerick/piggieback "0.1.2"]]
 
          :plugins
-         [[com.cemerick/austin "0.1.3"]
-          [codox "0.6.4"]
+         [[codox "0.6.4"]
           [lein-cljsbuild "1.0.3"]
           [com.keminglabs/cljx "0.4.0"]
           [com.cemerick/clojurescript.test "0.3.1"]]
