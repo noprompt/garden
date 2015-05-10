@@ -1,6 +1,7 @@
 (ns garden.compiler
   "Functions for compiling Clojure data structures to CSS."
   (:require
+   [clojure.set :as set]
    [clojure.string :as string]
    [garden.color :as color #+cljs :refer #+cljs [CSSColor]]
    [garden.compression :as compression]
@@ -406,15 +407,23 @@
     (util/to-str (get-in x [:value :identifier]))
     (render-css x)))
 
+(defn- prefixed-values
+  "Sequence of values prefixed by each vendor in `vendors`."
+  [val]
+  (if-not (:prefix (meta val))
+    val
+    (let [vendors (or (:vendors (meta val)) (vendors))]
+      (reduce (fn [val v] (set/union val (map #(util/vendor-prefix % v) vendors))) val val))))
+
 (defn- render-property-and-value
   [[prop val]]
   (if (set? val)
-    (->> (interleave (repeat prop) val)
+    (->> (interleave (repeat prop) (prefixed-values val))
          (partition 2)
          (map render-property-and-value)
          (string/join "\n"))
     (let [val (if (sequential? val)
-                (comma-separated-list render-value val)
+                (comma-separated-list render-value (prefixed-values val))
                 (render-value val))]
       (util/as-str prop colon val semicolon))))
 
