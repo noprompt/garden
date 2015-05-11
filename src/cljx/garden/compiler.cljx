@@ -409,25 +409,39 @@
 
 (defn- prefixed-values
   "Sequence of values prefixed by each vendor in `vendors`."
+  [vendors vals val]
+  (set/union vals (map #(util/vendor-prefix % val) vendors)))
+
+(defn- prefix-all-values
+  "Prefix a sequence of values if `{:prefix true}` is in it's meta."
+  [vendors val]
+      (reduce #(prefixed-values vendors %1 %2) val val))
+
+(defn- prefix-auto-values
+  "Add prefixes to all values when it is in the `:auto-prefix` set."
+  [vendors val]
+  ; TODO: Implement
+  val)
+
+(defn- prefix-value
+  "Prefix a sequence of values if `{:prefix true}` is
+   set in its meta, or if a value is in the `:auto-prefix` set."
   [val]
-  (if-not (:prefix (meta val))
-    val
-    (let [vendors (or (:vendors (meta val)) (vendors))]
-      (reduce
-        (fn [val v]
-          (set/union val (map #(util/vendor-prefix % v) vendors)))
-        val
-        val))))
+  (let [vendors (or (:vendors (meta val)) (vendors))
+        prefix-fn (if (:prefix (meta val))
+                    prefix-all-values
+                    prefix-auto-values)]
+    (prefix-fn vendors val)))
 
 (defn- render-property-and-value
   [[prop val]]
   (if (set? val)
-    (->> (interleave (repeat prop) (prefixed-values val))
+    (->> (interleave (repeat prop) (prefix-value val))
          (partition 2)
          (map render-property-and-value)
          (string/join "\n"))
     (let [val (if (sequential? val)
-                (comma-separated-list render-value (prefixed-values val))
+                (comma-separated-list render-value (prefix-value val))
                 (render-value val))]
       (util/as-str prop colon val semicolon))))
 
