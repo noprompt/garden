@@ -413,7 +413,11 @@
   (if-not (:prefix (meta val))
     val
     (let [vendors (or (:vendors (meta val)) (vendors))]
-      (reduce (fn [val v] (set/union val (map #(util/vendor-prefix % v) vendors))) val val))))
+      (reduce
+        (fn [val v]
+          (set/union val (map #(util/vendor-prefix % v) vendors)))
+        val
+        val))))
 
 (defn- render-property-and-value
   [[prop val]]
