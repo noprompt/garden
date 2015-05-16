@@ -415,7 +415,7 @@
 (defn- prefix-all-values
   "Prefix a sequence of values if `{:prefix true}` is in it's meta."
   [vendors val]
-      (reduce #(prefixed-values vendors %1 %2) val val))
+  (reduce #(prefixed-values vendors %1 %2) val val))
 
 (defn- prefix-auto-values
   "Add prefixes to all values when it is in the `:auto-prefix` set."
