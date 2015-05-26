@@ -26,7 +26,7 @@ trade a preprocessor for a programming language.
 Add the following dependency to your `project.clj` file:
 
 ```clojure
-[garden "1.2.5"]
+[garden "1.2.6"]
 ```
 
 Garden requires Clojure `1.6.0` and is known to work with ClojureScript `0.0-2342`.
