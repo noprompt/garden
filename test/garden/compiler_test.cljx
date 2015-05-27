@@ -180,6 +180,18 @@
 
     (let [compiled (compile-css
                     {:vendors test-vendors :pretty-print? false}
+                    [:ul {:display ^:prefix #{"flex" "inline-flex"}}])]
+
+      (are [re] (re-find re compiled)
+        #"display:-moz-flex"
+        #"display:-webkit-flex"
+        #"display:flex"
+        #"display:-moz-inline-flex"
+        #"display:-webkit-inline-flex"
+        #"display:inline-flex"))
+
+    (let [compiled (compile-css
+                    {:vendors test-vendors :pretty-print? false}
                     (at-keyframes "fade"
                       [:from {:foo "bar"}]
                       [:to {:foo "baz"}]))]
