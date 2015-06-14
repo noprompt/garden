@@ -1,5 +1,7 @@
 # Garden
 
+[![Continuous Integration status](https://secure.travis-ci.org/noprompt/garden.png)](http://travis-ci.org/noprompt/garden)
+
 Garden is a library for rendering CSS in Clojure and ClojureScript.
 Conceptually similar to
 [Hiccup](https://github.com/weavejester/hiccup), it uses vectors to
@@ -145,7 +147,11 @@ Be warned, you must escape literal string values yourself:
 user=> (css [:pre {:font-family "\"Liberation Mono\", Consolas, monospace"}])
 "pre{font-family:\"Liberation Mono\", Consolas, monospace}"
 ```
+...or better off with the help of an util function:
 
+```clojure
+{:font-family (garden.util/font-family "Liberation Mono" 'Consolas :monospace)}
+```
 ##### Maps
 
 In some cases it would be useful target several properties in a "group" of

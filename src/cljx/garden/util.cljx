@@ -182,3 +182,26 @@
                     (lazy-seq (step (increment v-seqs)))))))]
     (when (every? seq seqs)
       (lazy-seq (step v-original-seqs)))))
+
+(defn font-family*
+  "Helper function for `font-family`. Returns the name string of given
+  font. Wraps inside quotes if `font` is already a string."
+  [font]
+  (cond
+   (string? font)
+   (wrap-quotes font)
+
+   (or (keyword? font) (symbol? font))
+   (name font)))
+
+(defn font-family
+  "Receives one or more font names, each of which can be a symbol,
+  keyword or string. Returns a comma-separated string that is a valid
+  value for `:font-family` property.
+
+  Example:
+
+  (font-family \"Liberation Mono\" 'Consolas :monospace)
+  => \"\\\"Liberation Mono\\\", Consolas, monospace\""
+  [& fonts]
+  (comma-join (map font-family* fonts)))
