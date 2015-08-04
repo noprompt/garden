@@ -11,20 +11,20 @@
   ["test" "target/generated-test"]
 
   :dependencies
-  [[org.clojure/clojure "1.6.0"]
+  [[org.clojure/clojure "1.7.0"]
    [com.yahoo.platform.yui/yuicompressor "2.4.7"]]
 
   :profiles
   {:dev {:dependencies
          [[criterium "0.4.1"]
-          [org.clojure/clojurescript "0.0-2755"]
-          [com.cemerick/piggieback "0.1.2"]]
+          [org.clojure/clojurescript "1.7.28"]
+          [com.cemerick/piggieback "0.2.1"]]
 
          :plugins
          [[codox "0.6.4"]
-          [lein-cljsbuild "1.0.3"]
+          [lein-cljsbuild "1.0.6"]
           [com.keminglabs/cljx "0.4.0"]
-          [com.cemerick/clojurescript.test "0.3.1"]]
+          [com.cemerick/clojurescript.test "0.3.3"]]
 
          :repl-options
          {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}}}
