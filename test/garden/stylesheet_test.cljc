@@ -1,20 +1,17 @@
 (ns garden.stylesheet-test
-  #+clj
-  (:require [clojure.test :refer :all]
-            [garden.stylesheet :refer :all])
-  #+clj
-  (:import clojure.lang.ExceptionInfo)
-  #+cljs
-  (:require [cemerick.cljs.test :as t]
-            [garden.stylesheet :refer [rule]])
-  #+cljs
-  (:require-macros [cemerick.cljs.test :refer [deftest is testing]]))
+  (:require
+   #?(:cljs [cljs.test :as t :refer-macros [is are deftest testing]]
+      :clj  [clojure.test :as t :refer [is are deftest testing]])
+   [garden.color :as color]
+   [garden.stylesheet :refer [rule]])
+  #?(:clj
+     (:import clojure.lang.ExceptionInfo)))
 
 (deftest rule-test
-  (testing "rule"
-    (is (= ((rule "a") {:text-decoration "none"})
-           ["a" {:text-decoration "none"}]))
-    (is (= ((rule :a {:text-decoration "none"}))
-           [:a {:text-decoration "none"}]))
-    (is (thrown? ExceptionInfo (rule 1)))))
+    (testing "rule"
+      (is (= ((rule "a") {:text-decoration "none"})
+             ["a" {:text-decoration "none"}]))
+      (is (= ((rule :a {:text-decoration "none"}))
+             [:a {:text-decoration "none"}]))
+      (is (thrown? ExceptionInfo (rule 1)))))
 
