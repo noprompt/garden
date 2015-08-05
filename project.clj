@@ -1,62 +1,25 @@
 (defproject garden "1.2.7-SNAPSHOT"
-  :description "Generate CSS from Clojure data structures."
+  :description "Generate CSS from Clojure/Cljs data structures."
   :url "https://github.com/noprompt/garden"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
+  :min-lein-version "2.5.0"
+  :global-vars {*warn-on-reflection* true}
 
-  :source-paths
-  ["src/clj" "target/generated-src/clj" "target/generated-src/cljs"]
+  :dependencies                  [[org.clojure/clojure "1.7.0" :scope "provided"]
+                                  [org.clojure/clojurescript "1.7.28" :scope "provided"]]
 
-  :test-paths
-  ["test" "target/generated-test"]
+  :plugins                       [[cider/cider-nrepl "0.9.1"] ;;required for cider-0.9.1
+                                  [codox "0.8.13"]]
 
-  :dependencies
-  [[org.clojure/clojure "1.7.0"]
-   [com.yahoo.platform.yui/yuicompressor "2.4.7"]]
+  :clean-targets
+  ^{:protect false}              ["target"]
 
   :profiles
-  {:dev {:dependencies
-         [[criterium "0.4.1"]
-          [org.clojure/clojurescript "1.7.28"]
-          [com.cemerick/piggieback "0.2.1"]]
-
-         :plugins
-         [[codox "0.6.4"]
-          [lein-cljsbuild "1.0.6"]
-          [com.keminglabs/cljx "0.4.0"]
-          [com.cemerick/clojurescript.test "0.3.3"]]
-
-         :repl-options
-         {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}}}
+  {:dev {:source-paths           ["src" "test" "dev"]
+         :dependencies           [[com.yahoo.platform.yui/yuicompressor "2.4.7"]
+                                  [criterium "0.4.1"]]}}
 
   :aliases
-  {"test-all"
-   ["do" "clean," "cljx" "once," "test," "cljsbuild" "once"]}
-
-  :cljx
-  {:builds [{:source-paths ["src/cljx"]
-             :output-path "target/generated-src/clj"
-             :rules :clj}
-            {:source-paths ["src/cljx"]
-             :output-path "target/generated-src/cljs"
-             :rules :cljs}
-            {:source-paths ["test"]
-             :output-path "target/generated-test"
-             :rules :clj}
-            {:source-paths ["test"]
-             :output-path "target/generated-test"
-             :rules :cljs}]}
-
-  :cljsbuild
-  {:builds
-   [{:source-paths ["target/generated-src/clj"
-                    "target/generated-src/cljs"
-                    "target/generated-test"]
-     ;; Running `cljsbuild <once|auto>` will trigger this test.
-     :notify-command ["phantomjs" :cljs.test/runner
-                      "target/cljs/testable.js"]
-     :compiler {:output-to "target/cljs/testable.js"
-                :optimizations :whitespace
-                :pretty-print true}}]}
-
-  :global-vars {*warn-on-reflection* true})
+  {"node-repl"                   ["run" "-m" "user/node-repl"]
+   "test-all"                    ["run" "-m" "garden.tests/test-all"]})
