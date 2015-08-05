@@ -1,14 +1,11 @@
 (ns garden.color-test
   (:refer-clojure :exclude [complement])
   (:require
-   #+clj [clojure.test :refer :all]
-   #+cljs [cemerick.cljs.test :as t]
+   #?(:cljs [cljs.test :as t :refer-macros [is are deftest testing]]
+      :clj  [clojure.test :as t :refer [is are deftest testing]])
    [garden.color :as color])
-  #+cljs
-  (:require-macros
-   [cemerick.cljs.test :refer [deftest is testing are]])
-  #+clj
-  (:import clojure.lang.ExceptionInfo))
+  #?(:clj
+     (:import clojure.lang.ExceptionInfo)))
 
 (def hex-black "#000000")
 (def hex-red "#ff0000")
@@ -120,9 +117,9 @@
       (color/color-div 5 (color/rgb 1 1 1))
       (color/rgb 5 5 5))
 
-    #+clj
-    (is (thrown? ArithmeticException
-                 (color/color-div (color/rgb 1 1 1) 0)))))
+    #?(:clj
+       (is (thrown? ArithmeticException
+                    (color/color-div (color/rgb 1 1 1) 0))))))
 
 (deftest color-functions-test
   (testing "rotate-hue"
