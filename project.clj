@@ -7,7 +7,8 @@
   :global-vars {*warn-on-reflection* true}
 
   :dependencies                  [[org.clojure/clojure "1.7.0" :scope "provided"]
-                                  [org.clojure/clojurescript "1.7.28" :scope "provided"]]
+                                  [org.clojure/clojurescript "1.7.28" :scope "provided"]
+                                  [com.yahoo.platform.yui/yuicompressor "2.4.7"]]
 
   :npm {:dependencies            [[source-map-support "0.3.1"]]}
 
@@ -16,8 +17,7 @@
 
   :profiles
   {:dev {:source-paths           ["src" "test" "dev"]
-         :dependencies           [[com.yahoo.platform.yui/yuicompressor "2.4.7"]
-                                  [criterium "0.4.1"]]
+         :dependencies           [[criterium "0.4.1"]]
          :plugins                 [[cider/cider-nrepl "0.9.1"] ;; for cider-0.9.1
                                    [codox "0.8.13"]
                                    [lein-npm "0.6.1"]
