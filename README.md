@@ -576,6 +576,27 @@ user=> (css
 ".foo{border-radius:3px;-webkit-border-radius:3px;}"
 ```
 
+## REPL & Tests
+
+The following tasks (lein aliases) are available for contributors to develop
+and test Clj/Cljs locally:
+
+Build Cljs
+
+	lein build cljs
+
+Start a node repl
+
+	lein node-repl
+
+Run Clj tests, along with a test runner
+
+	lein test-clj
+
+Run Cljs tests (on Node)
+
+	lein test-cljs
+
 ## Contributors
 
 Listed by first commit:
