@@ -5,6 +5,7 @@
     garden.arithmetic-test
     garden.color-test
     garden.units-test
+    garden.selectors-test
     garden.stylesheet-test
     garden.units-test
     garden.util-test))

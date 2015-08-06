@@ -1,15 +1,8 @@
 (ns garden.selectors-test
-  #+clj
   (:require
-   [clojure.test :refer :all]
-   [garden.selectors :as s])
-  #+cljs
-  (:require
-   [cemerick.cljs.test :as t]
-   [garden.selectors :as s])
-  #+cljs
-  (:require-macros
-   [cemerick.cljs.test :refer [deftest is testing are]]))
+   #?(:cljs [cljs.test :as t :refer-macros [is are deftest testing]]
+      :clj  [clojure.test :as t :refer [is are deftest testing]])
+   [garden.selectors :as s]))
 
 (deftest selector-test
   (testing "selector?"
