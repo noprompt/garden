@@ -4,6 +4,7 @@
        :clj  [clojure.test :as t :refer [is are deftest testing]])
     garden.arithmetic-test
     garden.color-test
+    garden.compiler-test
     garden.units-test
     garden.selectors-test
     garden.stylesheet-test

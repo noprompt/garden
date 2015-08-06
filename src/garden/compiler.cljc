@@ -2,19 +2,20 @@
   "Functions for compiling Clojure data structures to CSS."
   (:require
    [clojure.string :as string]
-   [garden.color :as color #+cljs :refer #+cljs [CSSColor]]
+   #?(:clj  [garden.color :as color]
+      :cljs [garden.color :as color :refer [CSSColor]])
    [garden.compression :as compression]
-   #+cljs
-   [garden.types :refer [CSSUnit CSSFunction CSSAtRule]]
    [garden.selectors :as selectors]
    [garden.units :as units]
-   [garden.util :as util])
-  #+cljs
-  (:require-macros
-   [garden.compiler :refer [with-media-query-context with-selector-context]])
-  #+clj
-  (:import (garden.types CSSUnit CSSFunction CSSAtRule)
-           (garden.color CSSColor)))
+   [garden.util :as util]
+   #?(:cljs
+      [garden.types :refer [CSSUnit CSSFunction CSSAtRule]]))
+  #?(:cljs
+     (:require-macros
+      [garden.compiler :refer [with-media-query-context with-selector-context]]))
+  #?(:clj
+     (:import (garden.types CSSUnit CSSFunction CSSAtRule)
+              (garden.color CSSColor))))
 
 ;; ---------------------------------------------------------------------
 ;; Compiler flags
@@ -63,7 +64,7 @@
     :private true
     :doc "The current parent selector context."}
   *selector-context* nil)
- 
+
 (def
   ^{:dynamic true
     :private true
@@ -77,7 +78,7 @@
   [selector-context & body]
   `(binding [*selector-context* ~selector-context]
      (do ~@body)))
- 
+
 (defmacro with-media-query-context
   [selector-context & body]
   `(binding [*media-query-context* ~selector-context]
@@ -107,12 +108,12 @@
   "Return a vector of [(filter pred coll) (remove pred coll)]."
   [pred coll]
   ((juxt filter remove) pred coll))
- 
-#+clj
-(defn- save-stylesheet
-  "Save a stylesheet to disk."
-  [path stylesheet]
-  (spit path stylesheet))
+
+#?(:clj
+   (defn- save-stylesheet
+     "Save a stylesheet to disk."
+     [path stylesheet]
+     (spit path stylesheet)))
 
 ;; =====================================================================
 ;; Expansion
@@ -249,8 +250,7 @@
   [{:keys [value]}]
   (let [{:keys [media-queries rules]} value 
         media-queries (expand-media-query-expression media-queries)
-        xs (with-media-query-context media-queries
-             (doall (mapcat expand (expand rules))))
+        xs (with-media-query-context media-queries             (doall (mapcat expand (expand rules))))
         ;; Though media-queries may be nested, they may not be nested
         ;; at compile time. Here we make sure this is the case.  
         [subqueries rules] (divide-vec util/at-media? xs)]
@@ -266,61 +266,67 @@
   (->> (expand xs)
        (map expand)
        (apply concat)))
- 
+
 (extend-protocol IExpandable
-  #+clj clojure.lang.ISeq
-  #+cljs IndexedSeq
+
+  #?(:clj clojure.lang.ISeq
+     :cljs IndexedSeq)
   (expand [this] (expand-seqs this))
 
-  #+cljs LazySeq
-  #+cljs (expand [this] (expand-seqs this))
+  #?(:cljs LazySeq)
+  #?(:cljs (expand [this] (expand-seqs this)))
 
-  #+cljs RSeq
-  #+cljs (expand [this] (expand-seqs this))
+  #?(:cljs RSeq)
+  #?(:cljs(expand [this] (expand-seqs this)))
 
-  #+cljs NodeSeq
-  #+cljs (expand [this] (expand-seqs this))
+  #?(:cljs NodeSeq)
+  #?(:cljs (expand [this] (expand-seqs this)))
 
-  #+cljs ArrayNodeSeq
-  #+cljs (expand [this] (expand-seqs this))
+  #?(:cljs ArrayNodeSeq)
+  #?(:cljs (expand [this] (expand-seqs this)))
 
-  #+cljs Cons
-  #+cljs (expand [this] (expand-seqs this))
+  #?(:cljs Cons)
+  #?(:cljs (
+            expand [this] (expand-seqs this)))
 
-  #+cljs ChunkedCons
-  #+cljs (expand [this] (expand-seqs this))
+  #?(:cljs ChunkedCons)
+  #?(:cljs (expand [this] (expand-seqs this)))
 
-  #+cljs ChunkedSeq
-  #+cljs (expand [this] (expand-seqs this))
+  #?(:cljs ChunkedSeq)
+  (expand [this] (expand-seqs this))
 
-  #+cljs PersistentArrayMapSeq
-  #+cljs (expand [this] (expand-seqs this))
+  #?(:cljs PersistentArrayMapSeq)
+  #?(:cljs (expand [this] (expand-seqs this)))
 
-  #+cljs List
-  #+cljs (expand [this] (expand-seqs this))
- 
-  #+clj clojure.lang.IPersistentVector
-  #+cljs PersistentVector
+  #?(:cljs List)
+  #?(:cljs (expand [this] (expand-seqs this)))
+
+  #?(:clj  clojure.lang.IPersistentVector
+     :cljs PersistentVector)
   (expand [this] (expand-rule this))
- 
-  #+cljs Subvec
-  #+cljs(expand [this] (expand-rule this))
 
-  #+cljs BlackNode
-  #+cljs(expand [this] (expand-rule this))
+  #?(:cljs Subvec)
+  #?(:cljs (expand [this] (expand-rule this)))
 
-  #+cljs RedNode
-  #+cljs(expand [this] (expand-rule this))
- 
-  #+clj clojure.lang.IPersistentMap
-  #+cljs PersistentArrayMap
+  #?(:cljs BlackNode)
+  #?(:cljs (expand [this] (expand-rule this)))
+
+  #?(:cljs RedNode)
+  #?(:cljs (expand [this] (expand-rule this)))
+
+  #?(:clj clojure.lang.IPersistentMap
+     :cljs PersistentArrayMap)
   (expand [this] (list (expand-declaration this)))
 
-  #+cljs PersistentHashMap
-  #+cljs (expand [this] (list (expand-declaration this)))
+  #?(:cljs PersistentHashMap)
+  #?(:cljs (expand [this] (list (expand-declaration this))))
 
-  #+cljs PersistentTreeMap
-  #+cljs (expand [this] (list (expand-declaration this))) 
+  #?(:cljs PersistentTreeMap)
+  #?(:cljs (expand [this] (list (expand-declaration this))))
+
+  #?(:clj Object
+     :cljs default)
+  (expand [this] (list this))
 
   CSSFunction
   (expand [this] (list this))
@@ -330,11 +336,7 @@
 
   CSSColor
   (expand [this] (list this))
- 
-  #+clj Object
-  #+cljs default
-  (expand [this] (list this))
- 
+
   nil
   (expand [this] nil))
 
@@ -361,21 +363,21 @@
 (defn- space-separated-list
   "Return a space separated list of values."
   ([xs]
-     (space-separated-list render-css xs))
+   (space-separated-list render-css xs))
   ([f xs]
-     (string/join " " (map f xs))))
+   (string/join " " (map f xs))))
 
 (defn- comma-separated-list
   "Return a comma separated list of values. Subsequences are joined with
    spaces."
   ([xs]
-     (comma-separated-list render-css xs))
+   (comma-separated-list render-css xs))
   ([f xs]
-     (let [ys (for [x xs]
-                (if (sequential? x)
-                  (space-separated-list f x)
-                  (f x)))]
-       (string/join comma ys))))
+   (let [ys (for [x xs]
+              (if (sequential? x)
+                (space-separated-list f x)
+                (f x)))]
+     (string/join comma ys))))
 
 (defn- rule-join [xs]
   (string/join rule-sep xs))
@@ -385,17 +387,17 @@
     :doc "Match the start of a line if the characters immediately
   after it are spaces or used in a CSS id (#), class (.), or tag name."}
   indent-loc-re
-  #+clj
-  #"(?m)(?=[\sA-z#.}-]+)^"
-  #+cljs
-  (js/RegExp. "(?=[ A-Za-z#.}-]+)^" "gm"))
+  #?(:clj
+     #"(?m)(?=[\sA-z#.}-]+)^")
+  #?(:cljs
+     (js/RegExp. "(?=[ A-Za-z#.}-]+)^" "gm")))
 
 (defn- indent-str [s]
-  #+clj
-  (string/replace s indent-loc-re indent)
-  #+cljs
-  (.replace s indent-loc-re indent))
- 
+  #?(:clj
+     (string/replace s indent-loc-re indent))
+  #?(:cljs
+     (.replace s indent-loc-re indent)))
+
 ;; ---------------------------------------------------------------------
 ;; Declaration rendering
 
@@ -491,12 +493,12 @@
   [[k v]]
   (let [[sk sv] (map render-value [k v])]
     (cond
-     (true? v) sk
-     (false? v) (str "not " sk)
-     (= "only" sv) (str "only " sk)
-     :else (if (and v (seq sv))
-             (str "(" sk colon sv ")")
-             (str "(" sk ")")))))
+      (true? v) sk
+      (false? v) (str "not " sk)
+      (= "only" sv) (str "only " sk)
+      :else (if (and v (seq sv))
+              (str "(" sk colon sv ")")
+              (str "(" sk ")")))))
 
 (defn- render-media-expr
   "Make a media query expession from one or more maps. Keys are not
@@ -519,10 +521,10 @@
   "Render a CSSUnit."
   [css-unit]
   (let [{:keys [magnitude unit]} css-unit
-        magnitude #+cljs magnitude
-            #+clj (if (ratio? magnitude)
-                    (float magnitude)
-                    magnitude)]
+        magnitude #?(:cljs magnitude)
+        #?(:clj (if (ratio? magnitude)
+                  (float magnitude)
+                  magnitude))]
     (str magnitude (name unit))))
 
 (defn- render-function
@@ -602,68 +604,68 @@
 ;; CSSRenderer implementation
 
 (extend-protocol CSSRenderer
-  #+clj clojure.lang.ISeq
-  #+cljs IndexedSeq
+  #?(:clj clojure.lang.ISeq
+     :cljs IndexedSeq)
   (render-css [this] (map render-css this))
 
-  #+cljs LazySeq
-  #+cljs (render-css [this] (map render-css this))
+  #?(:cljs LazySeq)
+  #?(:cljs (render-css [this] (map render-css this)))
 
-  #+cljs RSeq
-  #+cljs (render-css [this] (map render-css this))
+  #?(:cljs RSeq)
+  #?(:cljs (render-css [this] (map render-css this)))
 
-  #+cljs NodeSeq
-  #+cljs (render-css [this] (map render-css this))
+  #?(:cljs NodeSeq)
+  #?(:cljs (render-css [this] (map render-css this)))
 
-  #+cljs ArrayNodeSeq
-  #+cljs (render-css [this] (map render-css this))
+  #?(:cljs ArrayNodeSeq)
+  #?(:cljs (render-css [this] (map render-css this)))
 
-  #+cljs Cons
-  #+cljs (render-css [this] (map render-css this))
+  #?(:cljs Cons)
+  #?(:cljs (render-css [this] (map render-css this)))
 
-  #+cljs ChunkedCons
-  #+cljs (render-css [this] (map render-css this))
+  #?(:cljs ChunkedCons)
+  #?(:cljs (render-css [this] (map render-css this)))
 
-  #+cljs ChunkedSeq
-  #+cljs (render-css [this] (map render-css this))
+  #?(:cljs ChunkedSeq)
+  #?(:cljs (render-css [this] (map render-css this)))
 
-  #+cljs PersistentArrayMapSeq
-  #+cljs (render-css [this] (map render-css this))
+  #?(:cljs PersistentArrayMapSeq)
+  #?(:cljs (render-css [this] (map render-css this)))
 
-  #+cljs List
-  #+cljs (render-css [this] (map render-css this))
+  #?(:cljs List)
+  #?(:cljs (render-css [this] (map render-css this)))
 
-  #+clj clojure.lang.IPersistentVector
-  #+cljs PersistentVector
+  #?(:clj clojure.lang.IPersistentVector
+     :cljs PersistentVector)
   (render-css [this] (render-rule this))
 
-  #+cljs Subvec
-  #+cljs (render-css [this] (render-rule this))
+  #?(:cljs Subvec)
+  #?(:cljs (render-css [this] (render-rule this)))
 
-  #+cljs BlackNode
-  #+cljs (render-css [this] (render-rule this))
+  #?(:cljs BlackNode)
+  #?(:cljs (render-css [this] (render-rule this)))
 
-  #+cljs RedNode
-  #+cljs (render-css [this] (render-rule this))
+  #?(:cljs RedNode)
+  #?(:cljs (render-css [this] (render-rule this)))
 
-  #+clj clojure.lang.IPersistentMap
-  #+cljs PersistentArrayMap
+  #?(:clj clojure.lang.IPersistentMap
+     :cljs PersistentArrayMap)
   (render-css [this] (render-declaration this))
 
-  #+cljs PersistentHashMap
-  #+cljs (render-css [this] (render-declaration this))
+  #?(:cljs PersistentHashMap)
+  #?(:cljs (render-css [this] (render-declaration this)))
 
-  #+cljs PersistentTreeMap
-  #+cljs (render-css [this] (render-declaration this))
+  #?(:cljs PersistentTreeMap)
+  #?(:cljs (render-css [this] (render-declaration this)))
 
-  #+clj clojure.lang.Ratio
-  #+clj (render-css [this] (str (float this)))
+  #?(:clj clojure.lang.Ratio)
+  #?(:clj (render-css [this] (str (float this))))
 
-  #+cljs number
-  #+cljs (render-css [this] (str this))
+  #?(:cljs number)
+  #?(:cljs (render-css [this] (str this)))
 
-  #+clj clojure.lang.Keyword
-  #+cljs Keyword
+  #?(:clj clojure.lang.Keyword
+     :cljs Keyword)
   (render-css [this] (name this))
 
   CSSUnit
@@ -675,16 +677,17 @@
   CSSAtRule
   (render-css [this] (render-at-rule this))
 
-  #+clj CSSColor
-  #+cljs color/CSSColor
+  #?(:clj CSSColor
+     :cljs color/CSSColor)
   (render-css [this] (render-color this))
 
-  #+clj Object
-  #+cljs default
+  #?(:clj Object
+     :cljs default)
   (render-css [this] (str this))
 
   nil
   (render-css [this] ""))
+
 
 ;; ---------------------------------------------------------------------
 ;; Compilation
@@ -713,10 +716,10 @@
   "Prefix stylesheet with files in preamble. Not available in
   ClojureScript."
   [{:keys [preamble]} stylesheet]
-  #+clj
-  (string/join "\n" (conj (mapv slurp preamble) stylesheet))
-  #+cljs
-  stylesheet)
+  #?(:clj
+     (string/join "\n" (conj (mapv slurp preamble) stylesheet)))
+  #?(:cljs
+     stylesheet))
 
 (defn- do-compression
   "Compress CSS if the pretty-print(?) flag is true."
@@ -729,10 +732,10 @@
 (defn- do-output-to
   "Write contents of stylesheet to disk."
   [{:keys [output-to]} stylesheet]
-  #+clj
-  (when output-to
-    (save-stylesheet output-to stylesheet)
-    (println "Wrote:" output-to))
+  #?(:clj
+     (when output-to
+       (save-stylesheet output-to stylesheet)
+       (println "Wrote:" output-to)))
   stylesheet)
 
 (defn compile-css
