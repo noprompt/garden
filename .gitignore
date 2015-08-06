@@ -2,6 +2,7 @@
 /lib
 /classes
 /checkouts
+node_modules
 pom.xml
 pom.xml.asc
 *.jar

@@ -18,6 +18,21 @@
              root    (cljs.compiler/compile-root src-dir out-dir opts)]
           (cljs.closure/compiled-file root))))))
 
+(defn build
+  ([& options]
+   "Build Cljs src with options"
+   (println "Building Cljs and watching for changes ...")
+   (let [start (System/nanoTime)]
+     (println "setting main as: " 'garden)
+     (cljs.build.api/build "src"
+              {:main 'garden
+               :output-to "target/build/garden.js"
+               :output-dir "target/build"
+               :optimizations :none
+               :source-map true
+               :verbose true})
+     (println "... done. Elapsed" (/ (- (System/nanoTime) start) 1e9) "seconds"))))
+
 (defn repl [main env & dirs]
   (cljs.build.api/build (Dirs. (concat ["src" "test"] dirs))
     {:main       main
