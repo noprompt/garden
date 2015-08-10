@@ -86,12 +86,6 @@
 ;; ---------------------------------------------------------------------
 ;; Predicates
 
-#?(:cljs
-   (defn record?
-     "True if x is an instance of or satisfies clojure.lang.IRecord."
-     [x]
-     (satisfies? IRecord x)))
-
 (defn hash-map?
   "True if `(map? x)` and `x` does not satisfy `clojure.lang.IRecord`."
   [x]

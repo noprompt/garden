@@ -583,7 +583,7 @@ and test Clj/Cljs locally:
 
 Build Cljs
 
-	lein build cljs
+	lein build-cljs
 
 Start a node repl
 
