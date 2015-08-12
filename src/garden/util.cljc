@@ -1,17 +1,15 @@
 (ns garden.util
   "Utility functions used by Garden."
+  (:require
+   [clojure.string :as str]
+   [garden.types :as t]
+   #?@(:cljs
+       [[goog.string]
+        [goog.string.format]]))
   #?(:clj
      (:refer-clojure :exclude [format]))
   #?(:clj
-     (:require
-      [clojure.string :as str]
-      [garden.types :as t]))
-  #?(:clj
-     (:import garden.types.CSSAtRule))
-  #?(:cljs
-     (:require
-      [goog.string]
-      [goog.string.format])))
+     (:import garden.types.CSSAtRule)))
 
 ;; ---------------------------------------------------------------------
 ;; String utilities
