@@ -499,6 +499,17 @@ Wrote: foo.css
 "h1 {\n  font-weight: normal;\n}"
 ```
 
+#### Load styles dynamically in browser
+
+You can use `goog.style` like so
+
+```clojure
+(ns you.ns 
+  (:require [goog.style]))
+(goog.style/installStyles (css [:body {:background "#ff0000"}]))
+```
+to load your styles in the browser.
+
 #### Vendors
 
 Vendor prefixing can be a pain but Garden can help with that in some
