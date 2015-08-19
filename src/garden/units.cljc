@@ -1,15 +1,17 @@
 (ns garden.units
   "Functions and macros for working with CSS units."
+  #?(:clj
+     (:refer-clojure :exclude [rem]))
+  #?(:cljs
+     (:require-macros
+      [garden.units :refer [defunit]]))
   (:require
    [garden.types :as t]
-   #+cljs [cljs.reader :refer [read-string]]
-   [garden.util :as util])
-  #+cljs
-  (:require-macros
-   [garden.units :refer [defunit]])
-  #+clj
-  (:import garden.types.CSSUnit)
-  (:refer-clojure :exclude [rem]))
+   [garden.util :as util]
+   #?(:cljs
+      [cljs.reader :refer [read-string]]))
+  #?(:clj
+     (:import garden.types.CSSUnit)))
 
 ;;;; ## Unit families
 
@@ -28,7 +30,7 @@
 (defn unit?
   "True if x is of type CSSUnit."
   [x]
-  (instance? #+clj CSSUnit #+cljs t/CSSUnit x))
+  (instance? #?(:clj CSSUnit) #?(:cljs t/CSSUnit) x))
 
 (defn length?
   [x]
@@ -192,22 +194,22 @@
       ([x y & more]
          (reduce ud (ud x y) more)))))
 
-#+clj
-(defmacro defunit
-  "Create a suite of functions for unit creation, conversion,
+#?(:clj
+   (defmacro defunit
+     "Create a suite of functions for unit creation, conversion,
   validation, and arithmetic."
-  ([name]
-     `(defunit ~name ~name))
-  ([name unit]
-     (let [k (keyword unit)
-           append #(symbol (str name %))]
-       `(do
-          (def ~name (make-unit-fn ~k))
-          (def ~(append \?) (make-unit-predicate ~k))
-          (def ~(append \+) (make-unit-adder ~k))
-          (def ~(append \-) (make-unit-subtractor ~k))
-          (def ~(append \*) (make-unit-multiplier ~k))
-          (def ~(append "-div") (make-unit-divider ~k))))))
+     ([name]
+      `(defunit ~name ~name))
+     ([name unit]
+      (let [k (keyword unit)
+            append #(symbol (str name %))]
+        `(do
+           (def ~name (make-unit-fn ~k))
+           (def ~(append \?) (make-unit-predicate ~k))
+           (def ~(append \+) (make-unit-adder ~k))
+           (def ~(append \-) (make-unit-subtractor ~k))
+           (def ~(append \*) (make-unit-multiplier ~k))
+           (def ~(append "-div") (make-unit-divider ~k)))))))
 
 (comment
   ;; This:

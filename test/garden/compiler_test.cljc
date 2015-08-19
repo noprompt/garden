@@ -1,21 +1,15 @@
 (ns garden.compiler-test
   (:require
-   #+clj
-   [clojure.test :refer :all]
-   #+cljs
-   [cemerick.cljs.test :as t]
+   #?(:cljs [cljs.test :as t :refer-macros [is are deftest testing]]
+      :clj  [clojure.test :as t :refer [is are deftest testing]])
+   #?(:clj  [garden.types :as types]
+      :cljs [garden.types :as types :refer [CSSFunction CSSUnit]])
+   [garden.color :as color]
    [garden.compiler :refer [compile-css expand render-css]]
-   [garden.stylesheet :refer (at-import at-media at-keyframes)]
-   #+clj
-   [garden.types :as types]
-   #+cljs
-   [garden.types :as types :refer [CSSFunction CSSUnit]]
-   [garden.color :as color])
-  #+cljs
-  (:require-macros [cemerick.cljs.test :refer [deftest is testing are]])
-  #+clj
-  (:import garden.types.CSSFunction
-           garden.types.CSSUnit))
+   [garden.stylesheet :refer (at-import at-media at-keyframes)])
+  #?(:clj
+     (:import garden.types.CSSFunction
+              garden.types.CSSUnit)))
 
 ;; Helpers
 
@@ -75,40 +69,40 @@
       "@media screen{h1{a:b}}"
 
       (list (at-media {:screen true}
-              [:h1 {:a :b}])
+                      [:h1 {:a :b}])
             [:h2 {:c :d}])
       "@media screen{h1{a:b}}h2{c:d}"
 
       (list [:a {:a "b"}
              (at-media {:screen true}
-               [:&:hover {:c "d"}])])
+                       [:&:hover {:c "d"}])])
       "a{a:b}@media screen{a:hover{c:d}}"
 
       (at-media {:toast true}
-        [:h1 {:a "b"}])
+                [:h1 {:a "b"}])
       "@media toast{h1{a:b}}"
 
       (at-media {:bacon :only}
-        [:h1 {:a "b"}])
+                [:h1 {:a "b"}])
       "@media only bacon{h1{a:b}}"
 
       (at-media {:sad false}
-        [:h1 {:a "b"}])
+                [:h1 {:a "b"}])
       "@media not sad{h1{a:b}}"
 
       (at-media {:-vendor-prefix-x "2"}
-        [:h1 {:a "b"}])
+                [:h1 {:a "b"}])
       "@media(-vendor-prefix-x:2){h1{a:b}}"
 
       (at-media {:min-width (CSSUnit. :em 1)}
-        [:h1 {:a "b"}])
+                [:h1 {:a "b"}])
       "@media(min-width:1em){h1{a:b}}")
 
     (let [re #"@media (?:happy and not sad|not sad and happy)"
           compiled (compile-css
                     {:pretty-print? false}
                     (at-media {:happy true :sad false}
-                      [:h1 {:a "b"}]))]
+                              [:h1 {:a "b"}]))]
       (is (re-find re compiled)))))
 
 (deftest parent-selector-test
@@ -127,13 +121,13 @@
 
     (is (compile= [:a
                    (at-media {:max-width "1em"}
-                     [:&:hover {:x :y}])]
+                             [:&:hover {:x :y}])]
                   "@media(max-width:1em){a:hover{x:y}}"))
 
     (is (compile= (at-media {:screen true}
-                    [:a {:f "bar"}
-                     (at-media {:print true}
-                       [:& {:g "foo"}])])
+                            [:a {:f "bar"}
+                             (at-media {:print true}
+                                       [:& {:g "foo"}])])
                   "@media screen{a{f:bar}}@media print{a{g:foo}}"))))
 
 (deftest css-function-test
@@ -157,8 +151,8 @@
 
   (testing "@keyframes"
     (let [kfs (at-keyframes :id
-                 [:from {:x 0}]
-                 [:to {:x 1}])]
+                            [:from {:x 0}]
+                            [:to {:x 1}])]
       (is (compile= kfs 
                     "@keyframes id{from{x:0}to{x:1}}"))
       (is (compile= [:a {:d kfs}]
@@ -181,8 +175,8 @@
     (let [compiled (compile-css
                     {:vendors test-vendors :pretty-print? false}
                     (at-keyframes "fade"
-                      [:from {:foo "bar"}]
-                      [:to {:foo "baz"}]))]
+                                  [:from {:foo "bar"}]
+                                  [:to {:foo "baz"}]))]
       (is (re-find #"@-moz-keyframes" compiled))
       (is (re-find #"@-webkit-keyframes" compiled))
       (is (re-find #"@keyframes" compiled))))
@@ -211,8 +205,8 @@
                     {:media-expressions {:nesting-behavior :merge}
                      :pretty-print? false}
                     (at-media {:screen true}
-                      [:a {:x 1}]
-                      (at-media {:print true}
-                        [:b {:y 1}])))]
+                              [:a {:x 1}]
+                              (at-media {:print true}
+                                        [:b {:y 1}])))]
       (is (re-find #"@media screen\{a\{x:1\}\}" compiled))
       (is (re-find #"@media (?:screen and print|print and screen)\{b\{y:1\}\}" compiled)))))

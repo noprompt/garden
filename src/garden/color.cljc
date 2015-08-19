@@ -1,14 +1,14 @@
 (ns garden.color
   "Utilities for color creation, conversion, and manipulation."
   (:refer-clojure :exclude [complement])
+  #?(:cljs
+     (:require-macros
+      [garden.color :refer [defcolor-operation]]))
   (:require
    [clojure.string :as string]
    [garden.util :as util])
-  #+cljs
-  (:require-macros
-   [garden.color :refer [defcolor-operation]])
-  #+clj
-  (:import clojure.lang.IFn))
+  #?(:clj
+     (:import clojure.lang.IFn)))
 
 ;; Many of the functions in this namespace were ported or inspired by
 ;; the implementations included with Sass
@@ -21,25 +21,25 @@
 
 (defrecord CSSColor [red green blue hue saturation lightness alpha]
   IFn
-  #+clj
-  (invoke [this] this)
-  #+clj
-  (invoke [this k]
-    (get this k))
-  #+clj
-  (invoke [this k missing]
-    (get this k missing))
-  #+cljs
-  (-invoke [this] this)
-  #+cljs
-  (-invoke [this k]
-    (get this k))
-  #+cljs
-  (-invoke [this k missing]
-    (get this k missing))
-  #+clj
-  (applyTo [this args]
-    (clojure.lang.AFn/applyToHelper this args)))
+  #?(:clj
+      (invoke [this] this))
+  #?(:clj
+      (invoke [this k]
+              (get this k)))
+  #?(:clj
+      (invoke [this k missing]
+              (get this k missing)))
+  #?(:cljs
+      (-invoke [this] this))
+  #?(:cljs
+      (-invoke [this k]
+               (get this k)))
+  #?(:cljs
+      (-invoke [this k missing]
+               (get this k missing)))
+  #?(:clj
+      (applyTo [this args]
+               (clojure.lang.AFn/applyToHelper this args))))
 
 (def as-color map->CSSColor)
 
@@ -249,9 +249,9 @@
     ([a b & more]
        (reduce color-op (color-op a b) more))))
 
-#+clj
-(defmacro ^:private defcolor-operation [name operator]
-  `(def ~name (make-color-operation ~operator)))
+#?(:clj
+   (defmacro ^:private defcolor-operation [name operator]
+     `(def ~name (make-color-operation ~operator))))
 
 (defcolor-operation
   ^{:doc "Add the RGB components of two or more colors."

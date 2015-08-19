@@ -1,38 +1,39 @@
 (ns garden.util
   "Utility functions used by Garden."
-  #+clj
-  (:refer-clojure :exclude [format])
   (:require
-   [clojure.string :as string]
+   [clojure.string :as str]
    [garden.types :as t]
-   #+cljs [goog.string]
-   #+cljs [goog.string.format])
-  #+clj
-  (:import garden.types.CSSAtRule))
+   #?@(:cljs
+       [[goog.string]
+        [goog.string.format]]))
+  #?(:clj
+     (:refer-clojure :exclude [format]))
+  #?(:clj
+     (:import garden.types.CSSAtRule)))
 
 ;; ---------------------------------------------------------------------
 ;; String utilities
 
-#+cljs
-(defn format
-  "Formats a string using goog.string.format."
-  [fmt & args]
-  (apply goog.string/format fmt args))
+#?(:cljs
+   (defn format
+     "Formats a string using goog.string.format."
+     [fmt & args]
+     (apply goog.string/format fmt args)))
 
-;; To avoid the pain of #+cljs :refer.
-#+clj
-(def format #'clojure.core/format)
+;; To avoid the pain of #?cljs :refer.
+#?(:clj
+   (def format #'clojure.core/format))
 
 (defprotocol ToString
   (^String to-str [this] "Convert a value into a string."))
 
 (extend-protocol ToString
-  #+clj clojure.lang.Keyword
-  #+cljs Keyword
+  #?(:clj clojure.lang.Keyword)
+  #?(:cljs Keyword)
   (to-str [this] (name this))
 
-  #+clj Object
-  #+cljs default
+  #?(:clj Object)
+  #?(:cljs default)
   (to-str [this] (str this))
 
   nil (to-str [this] ""))
@@ -46,24 +47,24 @@
   "Convert a string to an integer with optional base."
   [s & [radix]]
   (let [radix (or radix 10)]
-    #+clj
-    (Integer/parseInt ^String s ^Long radix)
-    #+cljs
-    (js/parseInt s radix)))
+    #?(:clj
+       (Integer/parseInt ^String s ^Long radix))
+    #?(:cljs
+       (js/parseInt s radix))))
 
 (defn int->string
   "Convert an integer to a string with optional base."
   [i & [radix]]
   (let [radix (or radix 10)]
-    #+clj
-    (Integer/toString ^Long i ^Long radix)
-    #+cljs
-    (.toString i radix)))
+    #?(:clj
+       (Integer/toString ^Long i ^Long radix))
+    #?(:cljs
+       (.toString i radix))))
 
 (defn space-join
   "Return a space separated list of values."
   [xs]
-  (string/join " " (map to-str xs)))
+  (str/join " " (map to-str xs)))
 
 (defn comma-join
   "Return a comma separated list of values. Subsequences are joined with
@@ -73,7 +74,7 @@
              (if (sequential? x)
                (space-join x)
                (to-str x)))]
-    (string/join ", " ys)))
+    (str/join ", " ys)))
 
 (defn wrap-quotes
   "Wrap a string with double quotes."
@@ -82,12 +83,6 @@
 
 ;; ---------------------------------------------------------------------
 ;; Predicates
-
-#+cljs
-(defn record?
-  "True if x is an instance of or satisfies clojure.lang.IRecord."
-  [x]
-  (satisfies? IRecord x))
 
 (defn hash-map?
   "True if `(map? x)` and `x` does not satisfy `clojure.lang.IRecord`."
@@ -104,7 +99,7 @@
 
 (defn at-rule?
   [x]
-  (instance? #+clj CSSAtRule #+cljs t/CSSAtRule x))
+  (instance? #?(:clj CSSAtRule) #?(:cljs t/CSSAtRule) x))
 
 (defn at-media?
   "True if `x` is a CSS `@media` rule."

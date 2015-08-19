@@ -1,21 +1,14 @@
 (ns garden.units-test
   (:refer-clojure :exclude [rem])
   (:require
-   #+clj
-   [clojure.test :refer :all]
-   #+cljs
-   [cemerick.cljs.test :as t]
-   #+clj
-   [garden.types :as types]
-   #+cljs
-   [garden.types :as types :refer [CSSUnit]]
+   #?(:clj  [clojure.test :as t :refer [is are deftest testing]]
+      :cljs [cljs.test :as t :refer-macros [is are deftest testing]])
+   #?(:clj  [garden.types :as types]
+      :cljs [garden.types :as types :refer [CSSUnit]])
    [garden.units :as units])
-  #+cljs
-  (:require-macros
-   [cemerick.cljs.test :refer [deftest is are testing]])
-  #+clj
-  (:import garden.types.CSSUnit
-           clojure.lang.ExceptionInfo))
+  #?(:clj
+     (:import garden.types.CSSUnit
+              clojure.lang.ExceptionInfo)))
 
 (deftest test-unit-arthimetic
   (let [μm (units/make-unit-fn :μm)
@@ -34,8 +27,9 @@
       (is (= (μm 2) (μm* 1 2))))
     (testing "division"
       (is (= (μm 1) (μm-div 1)))
-      (is (= (μm #+clj 1/2 #+cljs 0.5) (μm-div 2)))
-      #+clj (is (thrown? ArithmeticException (μm-div 2 0))))))
+      (is (= (μm #? (:clj 1/2) #?(:cljs 0.5)) (μm-div 2)))
+      #?(:clj
+         (is (thrown? ArithmeticException (μm-div 2 0)))))))
 
 (deftest test-px
   (testing "px checking"
@@ -53,8 +47,8 @@
   (testing "px division"
     (is (= (units/px 2)
            (units/px-div 4 2)))
-    #+clj
-    (is (thrown? ArithmeticException (units/px-div 2 0))))
+    #?(:clj
+       (is (thrown? ArithmeticException (units/px-div 2 0)))))
   (testing "px conversion"
     (are [x y] (= x y)
       (units/px 1)            (units/px (units/px 1))

@@ -3,9 +3,9 @@
   (:require [garden.util :as util]
             [garden.color :as color]
             [garden.types :as t])
-  #+clj
-  (:import garden.types.CSSFunction
-           garden.types.CSSAtRule))
+  #?(:clj
+      (:import garden.types.CSSFunction
+               garden.types.CSSAtRule)))
 
 ;;;; ## Stylesheet helpers
 

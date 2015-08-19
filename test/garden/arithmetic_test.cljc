@@ -1,16 +1,11 @@
 (ns garden.arithmetic-test
   (:refer-clojure :exclude [+ - * /])
   (:require
-   #+clj
-   [clojure.test :refer :all]
-   #+cljs
-   [cemerick.cljs.test :as t]
+   #?(:cljs [cljs.test :as t :refer-macros [is are deftest testing]]
+      :clj  [clojure.test :as t :refer [is are deftest testing]])
    [garden.arithmetic :refer [+ - * /]]
    [garden.units :as u]
-   [garden.color :as c])
-  #+cljs
-  (:require-macros
-   [cemerick.cljs.test :refer [deftest is testing]]))
+   [garden.color :as c]))
 
 (deftest sum-test
   (testing "numbers"
@@ -83,20 +78,22 @@
 (deftest difference-test
   (testing "numbers"
     (is (= (/ 1) 1))
-    (is (= (/ 1 2) #+clj 1/2 #+cljs 0.5))
-    (is (= (/ 1 2 4) #+clj 1/8 #+cljs 0.125))
-    #+clj (is (thrown? ArithmeticException
-                (/ 1 0))))
+    (is (= (/ 1 2) #?(:clj 1/2) #?(:cljs 0.5)))
+    (is (= (/ 1 2 4) #?(:clj 1/8) #?(:cljs 0.125)))
+    #?(:clj
+       (is (thrown? ArithmeticException
+                    (/ 1 0)))))
 
   (testing "units"
    (is (= (/ (u/px 2))
-          (u/px #+clj 1/2 #+cljs 0.5)))
+          (u/px #?(:clj 1/2) #?(:cljs 0.5))))
    (is (= (/ 1 (u/px 2))
-          (u/px #+clj 1/2 #+cljs 0.5)))
+          (u/px #? (:clj 1/2) #?(:cljs 0.5))))
    (is (= (/ 1 (u/px 2) 4)
-          (u/px #+clj 1/8 #+cljs 0.125)))
-   #+clj (is (thrown? ArithmeticException
-                (/ (u/px 1) 0))))
+          (u/px #?(:clj 1/8) #?(:cljs 0.125))))
+   #?(:clj
+      (is (thrown? ArithmeticException
+                   (/ (u/px 1) 0)))))
 
   (testing "colors"
     (is (= (/ (c/rgb 0 0 0) (c/rgb 1 1 1))
@@ -104,6 +101,7 @@
     (is (= (/ (c/rgb 4 8 16) 2)
            (c/rgb 2 4 8)))
     (is (= (/ 1 (c/rgb 2 2 2))
-           (c/rgb #+clj 1/2 #+cljs 0.5 #+clj 1/2 #+cljs 0.5 #+clj 1/2 #+cljs 0.5)))
-    #+clj (is (thrown? ArithmeticException
-                 (/ (c/rgb 1 1 1) 0)))))
+           #?(:clj (c/rgb 1/2 1/2 1/2))
+           #?(:cljs (c/rgb 0.5 0.5 0.5))))
+    #?(:clj (is (thrown? ArithmeticException
+                         (/ (c/rgb 1 1 1) 0))))))
