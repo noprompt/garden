@@ -10,7 +10,8 @@
                                   [org.clojure/clojurescript "1.7.28" :scope "provided"]
                                   [com.yahoo.platform.yui/yuicompressor "2.4.7"]]
 
-  :npm {:dependencies            [[source-map-support "0.3.1"]]}
+  :npm
+  {:dependencies                 [[source-map-support "0.3.1"]]}
 
   :clean-targets
   ^{:protect false}              ["target"]
@@ -18,8 +19,7 @@
   :profiles
   {:dev {:source-paths           ["src" "test" "dev"]
          :dependencies           [[criterium "0.4.1"]]
-         :plugins                 [[cider/cider-nrepl "0.9.1"] ;; for cider-0.9.1
-                                   [codox "0.8.13"]
+         :plugins                 [[codox "0.8.13"]
                                    [lein-npm "0.6.1"]
                                    [com.jakemccrary/lein-test-refresh "0.10.0"]]}}
 
