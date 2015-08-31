@@ -1,24 +1,24 @@
 # Garden
 
 Garden is a library for rendering CSS in Clojure and ClojureScript.
-Conceptually similar to
-[Hiccup](https://github.com/weavejester/hiccup), it uses vectors to
-represent rules and maps to represent declarations. It is designed for
-stylesheet authors who are interested in what's possible when you
-trade a preprocessor for a programming language.
+Conceptually similar to [Hiccup](https://github.com/weavejester/hiccup), it uses
+vectors to represent rules and maps to represent declarations. It is designed
+for stylesheet authors who are interested in what's possible when you trade a
+preprocessor for a programming language.
 
 ## Table of contents
 
 * [Installation](#installation)
 * [Syntax](#syntax)
   * [Rules](#rules)
-    * [Parent selector references](#parent-selector-references)
   * [Declarations](#declarations)
   * [Units](#units)
   * [Color](#color)
   * [Arithmetic](#arithmetic)
   * [Media queries](#media-queries)
+* [REPL](#repl)
 * [Plugin](#plugin)
+* [Libraries](#libraries)
 * [Community](#community)
 
 ## Installation
@@ -26,10 +26,14 @@ trade a preprocessor for a programming language.
 Add the following dependency to your `project.clj` file:
 
 ```clojure
-[garden "1.2.5"]
+[garden "1.3.0-SNAPSHOT"]
 ```
 
-Garden requires Clojure `1.6.0` and is known to work with ClojureScript `0.0-2342`.
+Garden 1.2.5 and below requires Clojure 1.6.0 and is known to work with 
+ClojureScript 0.0-2342.
+
+However, starting with Garden 1.3.0 Garden recommends Clojure 1.7 and ClojureScript 
+1.7.x to leverage a unified syntax with [reader conditionals](http://dev.clojure.org/display/design/Reader+Conditionals), and other major changes in the compiler and repl in Clojurescript.
 
 ## Syntax
 
@@ -64,7 +68,7 @@ user=> (css [:h1 :h2 {:font-weight "none"}])
 "h1,h2{font-weight:none}"
 ```
 
-To target child selectors nested vectors may be employed:
+To target **child selectors** nested vectors may be employed:
 
 ```clojure
 user=> (css [:h1 [:a {:text-decoration "none"}]])
@@ -73,19 +77,8 @@ user=> (css [:h1 :h2 [:a {:text-decoration "none"]])
 "h1 a, h2 a{text-decoration:none}"
 ```
 
-A slightly more complex example demonstrating nested vectors with multiple
-selectors:
-
-```clojure
-user=> (css [:h1 :h2 {:font-weight "normal"}
-             [:strong :b {:font-weight "bold"}]])
-"h1,h2{font-weight:normal}h1 strong,h1 b,h2 strong,h2 b{font-weight:bold}"
-```
-
-#### Parent selector references
-
-As in Sass, Garden also supports selectors prefixed with the `&`
-character allowing you to reference a parent selector.
+As in Less/Sass, Garden also supports selectors prefixed with the `&`
+character allowing you to reference a **parent selector**.
 
 ```clojure
 user=> (css [:a
@@ -95,6 +88,15 @@ user=> (css [:a
               {:font-weight 'bold
                :text-decoration 'underline}]])
 "a{text-decoration:none;font-weight:normal}a:hover{text-decoration:underline;font-weight:bold}"
+```
+
+A slightly more complex example demonstrating nested vectors with multiple
+selectors:
+
+```clojure
+user=> (css [:h1 :h2 {:font-weight "normal"}
+             [:strong :b {:font-weight "bold"}]])
+"h1,h2{font-weight:normal}h1 strong,h1 b,h2 strong,h2 b{font-weight:bold}"
 ```
 
 ### Declarations
@@ -224,16 +226,6 @@ Unit creation is straightforward:
 ```clojure
 user=> (px 16)
 #garden.types.CSSUnit{:unit :px, :magnitude 1}
-```
-
-To see the value as it would appear in CSS require the `garden.repl`
-namespace.
-
-```clojure
-user=> (require 'garden.repl)
-nil
-user=> (px 16)
-16px
 ```
 
 Unit functions take a number _n_ and construct a new `garden.types.CSSUnit` record
@@ -430,7 +422,7 @@ To understand how media expressions are interpreted refer to this table:
  `{:screen :only}`                           | `only screen`
  `{:min-width (px 768) :max-width (px 959)}` | `(min-width: 768px) and (max-width: 959)`
 
-## Compiler flags
+## Compiler
 
 The `css` function optionally takes a map of compiler flags.
 
@@ -576,10 +568,23 @@ user=> (css
 ".foo{border-radius:3px;-webkit-border-radius:3px;}"
 ```
 
-## REPL & Tests
+### REPL
 
-The following tasks (lein aliases) are available for contributors to develop
-and test Clj/Cljs locally:
+The `garden.repl` namespace provides useful functions for printing the output
+of units, colors, rules, and functions. 
+
+For example:
+
+```clojure
+user=> (require 'garden.repl)
+nil
+user=> (px 16)
+16px
+```
+
+## Dev & Tests
+
+The following tasks are available to develop and test Garden locally in Clojure/Cljs:
 
 Build Cljs
 
@@ -606,13 +611,23 @@ Listed by first commit:
 * [jeluard](https://github.com/jeluard)
 * [ToBeReplaced](https://github.com/ToBeReplaced)
 * [migroh](https://github.com/migroh)
+* [priyatam](https://github.com/priyatam)
 
 ## Plugin
 
 If you're interested in automatically compiling your stylesheets be
-sure to check out the
-[`lein-garden`](https://github.com/noprompt/lein-garden)
-plugin. 
+sure to check out [`lein-garden`](https://github.com/noprompt/lein-garden)
+plugin or [boot-garden](https://github.com/martinklepsch/boot-garden).
+
+## Libraries
+
+Libraries and utlities built on Garden:
+
+- [gardener](https://github.com/facjure/gardener)
+- [mesh](https://github.com/facjure/mesh)
+
+If you've built something on Garden, create a github issue to add your lib to this 
+list.
 
 ## Community
 
@@ -638,6 +653,6 @@ further.
 
 ## License
 
-Copyright © 2013 Joel Holdbrooks
+Copyright © 2013-2015 Joel Holdbrooks.
 
 Distributed under the Eclipse Public License, the same as Clojure.
