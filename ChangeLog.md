@@ -1,3 +1,8 @@
+## Changes from 1.3.0
+
+Migrate cljx to cljc and maintain parity with Clojure/Cljs with 1.7. For
+more info see this [PR](https://github.com/noprompt/garden/pull/81)
+
 ## Changes between 1.2.0 and 1.2.1
 
 Fix a spelling mistake in `garden.selectors`.
