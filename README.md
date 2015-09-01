@@ -16,7 +16,11 @@ preprocessor for a programming language.
   * [Color](#color)
   * [Arithmetic](#arithmetic)
   * [Media queries](#media-queries)
-* [REPL](#repl)
+* [Compiler](#compiler)
+   * [Flags](#flags)
+   * [REPL](#repl)
+   * [Dynamic Styles](#dynamic-styles)
+* [Dev & Tests](#dev-tests)
 * [Plugin](#plugin)
 * [Libraries](#libraries)
 * [Community](#community)
@@ -424,9 +428,9 @@ To understand how media expressions are interpreted refer to this table:
 
 ## Compiler
 
-The `css` function optionally takes a map of compiler flags.
+The `css` function optionally takes a map of compiler output flags.
 
-### Output flags
+### Flags
 
 #### Printing
 
@@ -582,7 +586,16 @@ user=> (px 16)
 16px
 ```
 
-## Dev & Tests
+### Dynamic Styles
+
+To load styles dynamically in browser, you can use
+
+```clojure
+(require '[goog.style] '[garden.core :refer [css]]))
+(goog.style/installStyles (css [:body {:background "#ff0000"}]))
+```
+
+## Dev-Tests
 
 The following tasks are available to develop and test Garden locally in Clojure/Cljs:
 
@@ -616,7 +629,7 @@ Listed by first commit:
 ## Plugin
 
 If you're interested in automatically compiling your stylesheets be
-sure to check out [`lein-garden`](https://github.com/noprompt/lein-garden)
+sure to check out [lein-garden](https://github.com/noprompt/lein-garden)
 plugin or [boot-garden](https://github.com/martinklepsch/boot-garden).
 
 ## Libraries
