@@ -823,7 +823,7 @@
     last-child
     last-of-type
     left
-    link
+    links
     only-child
     only-of-type
     optional
