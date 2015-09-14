@@ -10,7 +10,7 @@
               clojure.lang.IFn
               clojure.lang.Named))
   #?(:cljs
-     (:refer-clojure :exclude [+ - > empty first map meta not]))
+     (:refer-clojure :exclude [+ - > empty first map meta not time]))
   #?(:cljs
      (:require-macros
       [garden.selectors :refer [defselector
