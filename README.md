@@ -77,7 +77,7 @@ To target **child selectors** nested vectors may be employed:
 ```clojure
 user=> (css [:h1 [:a {:text-decoration "none"}]])
 "h1 a{text-decoration:none}"
-user=> (css [:h1 :h2 [:a {:text-decoration "none"]])
+user=> (css [:h1 :h2 [:a {:text-decoration "none"}]])
 "h1 a, h2 a{text-decoration:none}"
 ```
 
@@ -229,7 +229,7 @@ Unit creation is straightforward:
 
 ```clojure
 user=> (px 16)
-#garden.types.CSSUnit{:unit :px, :magnitude 1}
+#garden.types.CSSUnit{:unit :px, :magnitude 16}
 ```
 
 Unit functions take a number _n_ and construct a new `garden.types.CSSUnit` record
@@ -383,7 +383,7 @@ user=> (css (at-media {:screen true} [:h1 {:font-weight "bold"}]))
 "@media screen{h1{font-weight:bold}}"
 user=> (css
          (at-media {:min-width (px 768) :max-width (px 979)}
-           [:container {:width (px 960)}])
+           [:container {:width (px 960)}]))
 "@media (max-width:979px) and (min-width:768px){container{width:960px}}"
 ```
 
@@ -591,7 +591,7 @@ user=> (px 16)
 To load styles dynamically in browser, you can use
 
 ```clojure
-(require '[goog.style] '[garden.core :refer [css]]))
+(require '[goog.style] '[garden.core :refer [css]])
 (goog.style/installStyles (css [:body {:background "#ff0000"}]))
 ```
 
