@@ -11,9 +11,9 @@
   `(def ~name (list ~@styles)))
 
 (defmacro defstylesfn
-  "Convenience macro equivalent to `(defn name [] (list styles*))`."
-  [name & styles]
-  `(defn ~name [] (list ~@styles)))
+  "Convenience macro equivalent to `(defn name binding] (list styles*))`."
+  [name binding & styles]
+  `(defn ~name ~binding (list ~@styles)))
 
 (defmacro defstylesheet
   "Convenience macro equivalent to `(def name (css opts? styles*))`."
@@ -21,9 +21,9 @@
   `(def ~name (garden.core/css ~@styles)))
 
 (defmacro defstylesheetfn
-  "Convenience macro equivalent to `(defn name [opts?] (css opts? styles*))`."
-  [name & styles]
-  `(defn ~name [& [opts#]] (garden.core/css opts# ~@styles)))
+  "Convenience macro equivalent to `(defn name [opts? & binding] (css opts? styles*))`."
+  [name binding & styles]
+  `(defn ~name [opts# ~@binding] (garden.core/css opts# ~@styles)))
 
 (defmacro defrule
   "Define a function for creating rules. If only the `name` argument is
