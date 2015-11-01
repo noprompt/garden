@@ -67,7 +67,7 @@ demonstrate the use of compiler flags.
 As mentioned, vectors represent rules in CSS. The first _n_ **non-collection**
 elements of a vector depict the rule's selector where _n_ > 0. When _n_ = 0 the
 rule is not rendered. To produce a rule which selects the `<h1>` and `<h2>` HTML
-elements for example, we simply begin a vector with `[:h1 :h2]`.
+elements for example, we simply begin a vector with `[:h1 :h2]`:
 
 ```clojure
 user=> (css [:h1 :h2 {:font-weight "none"}])
@@ -84,7 +84,7 @@ user=> (css [:h1 :h2 [:a {:text-decoration "none"}]])
 ```
 
 As in Less/Sass, Garden also supports selectors prefixed with the `&`
-character allowing you to reference a **parent selector**.
+character allowing you to reference a **parent selector**:
 
 ```clojure
 user=> (css [:a
