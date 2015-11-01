@@ -38,7 +38,7 @@ Add the following dependency to your `project.clj` file:
 Garden 1.2.5 and below requires Clojure 1.6.0 and is known to work with 
 ClojureScript 0.0-2342.
 
-However, starting with Garden 1.3.0 Garden recommends Clojure 1.7 and ClojureScript 
+However, starting with Garden 1.3.0 Garden requires Clojure 1.7 and ClojureScript
 1.7.x to leverage a unified syntax with [reader conditionals](http://dev.clojure.org/display/design/Reader+Conditionals), and other major changes in the compiler and repl in Clojurescript.
 
 ## Syntax
