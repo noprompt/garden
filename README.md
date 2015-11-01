@@ -24,6 +24,8 @@ preprocessor for a programming language.
 * [Plugin](#plugin)
 * [Libraries](#libraries)
 * [Community](#community)
+* [Thanks](#thanks)
+* [License](#license)
 
 ## Installation
 
