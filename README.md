@@ -105,6 +105,51 @@ user=> (css [:h1 :h2 {:font-weight "normal"}
 "h1,h2{font-weight:normal}h1 strong,h1 b,h2 strong,h2 b{font-weight:bold}"
 ```
 
+#### Selectors namespace
+
+`garden.selectors` namespace defines a CSSSelector record. It doubles as both a
+function and a literal (when passed to the css-selector). When the function is
+called it will return a new instance that possesses the same properties. All
+arguments to the function must satisfy ICSSSelector.
+
+`garden.selectors` namespace also defines these macros that create a selector
+record: `defselector`, `defclass`, `defid`, `defpseudoclass` and
+`defpseudoelement`.
+
+`garden.selectors` namespace also defines many CSSSelector instances such as:
+
+* Type selectors `a`, `abbr`, `address` and [more](src/garden/selectors.cljc)
+* Pseudo-classes `active`, `checked`, `disabled` and
+  [more](src/garden/selectors.cljc)
+* Language and negation pseudo-classes `lang` and `not`
+* Structural pseudo-classes `nth-child`, `nth-last-child`, `nth-of-type` and
+  `nth-last-of-type`
+* Pseudo-elements `after`, `before`, `first-letter` and `first-line`
+* Attribute selectors `attr=`, `attr-contains`, `attr-starts-with`,
+  `attr-starts-with*`, `attr-ends-with` and `attr-matches`
+* Combinators `descendant`, `+`, `-` and `>`
+* Special selector `&`
+
+and allows to compose complex selectors such as this:
+
+```clojure
+(defselector *)
+(defpseudoclass host [x] x)
+(defpseudoelement content)
+(> (host (attr :flipped)) content (* last-child))
+;; => :host([flipped]) > ::content > *:last-child
+```
+
+`garden.selectors` namespace also defines a CSS3 selectors's `specificity`
+function:
+
+```clojure
+(specificity "#s12:not(FOO)")
+;; => 101
+(specificity (a hover))
+;; => 10
+```
+
 ### Declarations
 
 Clojure maps represent CSS declarations where map keys and values represent
