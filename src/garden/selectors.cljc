@@ -878,8 +878,8 @@
       m
       (throw
        #?(:clj (IllegalArgumentException.)
-          :cljs (js/Error.))
-       (str "Invalid value " (pr-str s))))))
+          :cljs (js/Error.)
+          (str "Invalid value " (pr-str s)))))))
 
 (defpseudoclass
   ^{:doc "CSS :nth-child pseudo class selector."} 
