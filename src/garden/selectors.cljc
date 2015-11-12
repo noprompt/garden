@@ -571,10 +571,10 @@
 
 #?(:clj
    (defmacro defselector
-     "Define an instance of CSSSelector named sym for creating a
+     "Define an instance of a CSSSelector named sym for creating a
   CSS selector. This instance doubles as both a function and a
-  literal (when passed to css-selector). When the function is called
-  it will return a new instance that pocesses the same property. All
+  literal (when passed to the css-selector). When the function is called
+  it will return a new instance that possesses the same properties. All
   arguments to the function must satisfy ICSSSelector.
 
   Example:
@@ -606,10 +606,10 @@
 
 #?(:clj
    (defmacro defpseudoclass
-     "Define an instance of CSSSelector named sym for creating a CSS
+     "Define an instance of a CSSSelector named sym for creating a CSS
   pseudo class. This instance doubles as both a function and a
-  literal (when passed to css-selector). When the function is called
-  it will return a new instance that pocesses the same property. All
+  literal (when passed to the css-selector). When the function is called
+  it will return a new instance that possesses the same properties. All
   arguments to the function must satisfy ICSSSelector.
 
   Optionally fn-tail may be passed to create a structual pseudo class.
@@ -654,10 +654,10 @@
 
 #?(:clj
    (defmacro defpseudoelement
-     "Define an instance of CSSSelector named sym for creating a CSS
+     "Define an instance of a CSSSelector named sym for creating a CSS
   pseudo element. This instance doubles as both a function and a
-  literal (when passed to css-selector). When the function is called
-  it will return a new instance that pocesses the same property. All
+  literal (when passed to the css-selector). When the function is called
+  it will return a new instance that possesses the same properties. All
   arguments to the function must satisfy ICSSSelector.
 
   Example:
