@@ -151,11 +151,12 @@
               r (* 60 (/ (- g b) d))
               g (+ (* 60 (/ (- b r) d)) 120)
               b (+ (* 60 (/ (- r g) d)) 240))
-          l (trim-one (/ (+ mx mn) 2))
-          s (trim-one (cond
-             (= mx mn) 0
-             (< l 0.5) (/ d (* 2 l))
-             :else (/ d (- 2 (* 2 l)))))]
+          l (/ (+ mx mn) 2)
+          s (trim-one
+              (cond
+                (= mx mn) 0
+                (< l 0.5) (/ d (* 2 l))
+                :else (/ d (- 2 (* 2 l)))))]
       (hsl (mod h 360) (* 100 s) (* 100 l)))))
 
 (declare hue->rgb)

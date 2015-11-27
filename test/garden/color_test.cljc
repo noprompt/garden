@@ -18,14 +18,16 @@
 (def rgb-green (color/rgb 0 255 0))
 (def rgb-blue (color/rgb 0 0 255))
 (def rgb-white (color/rgb 255 255 255))
+(def rgb-orange (color/rgb 255 133 27))
 
 (def hsl-black (color/hsl 0 0 0))
 (def hsl-red (color/hsl 0 100 50))
 (def hsl-green (color/hsl 120 100 50))
 (def hsl-blue (color/hsl 240 100 50))
 (def hsl-white (color/hsl 0 0 100))
+(def hsl-orange (color/hsl 530/19 100 940/17))
 
-(deftest color-conversion-test 
+(deftest color-conversion-test
   (testing "hex->rgb"
     (are [x y] (= x y)
       (color/hex->rgb hex-black) rgb-black
@@ -55,7 +57,8 @@
       (color/rgb->hsl rgb-red) hsl-red
       (color/rgb->hsl rgb-green) hsl-green
       (color/rgb->hsl rgb-blue) hsl-blue
-      (color/rgb->hsl rgb-white) hsl-white))) 
+      (color/rgb->hsl rgb-white) hsl-white
+      (color/rgb->hsl rgb-orange) hsl-orange)))
 
 (deftest color-math-test
   (testing "color+"
