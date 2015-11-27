@@ -43,6 +43,12 @@
 
 (def as-color map->CSSColor)
 
+(def percent-clip
+  (partial util/clip 0 100))
+
+(def rgb-clip
+  (partial util/clip 0 255))
+
 (defn rgb
   "Create an RGB color."
   ([[r g b :as vs]]
@@ -153,7 +159,9 @@
              (= mx mn) 0
              (< l 0.5) (/ d (* 2 l))
              :else (/ d (- 2 (* 2 l))))]
-      (hsl (mod h 360) (* 100 s) (* 100 l)))))
+      (hsl (percent-clip (mod h 360))
+           (percent-clip (* 100 s))
+           (percent-clip (* 100 l))))))
 
 (declare hue->rgb)
 
@@ -197,12 +205,6 @@
   "Convert a hexadecimal color to an HSL color."
   [color]
   (-> color hex->rgb rgb->hsl))
-
-(def percent-clip
-  (partial util/clip 0 100))
-
-(def rgb-clip
-  (partial util/clip 0 255))
 
 (defn as-hex
   "Convert a color to a hexadecimal string."
