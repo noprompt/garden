@@ -153,7 +153,9 @@
              (= mx mn) 0
              (< l 0.5) (/ d (* 2 l))
              :else (/ d (- 2 (* 2 l))))]
-      (hsl (mod h 360) (* 100 s) (* 100 l)))))
+      (hsl (percent-clip (mod h 360))
+           (percent-clip (* 100 s))
+           (percent-clip (* 100 l))))))
 
 (declare hue->rgb)
 
