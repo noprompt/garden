@@ -31,9 +31,7 @@ preprocessor for a programming language.
 
 Add the following dependency to your `project.clj` file:
 
-```clojure
-[garden "1.3.0-SNAPSHOT"]
-```
+[![Clojars Project](http://clojars.org/garden/latest-version.svg)](http://clojars.org/garden)
 
 Garden 1.2.5 and below requires Clojure 1.6.0 and is known to work with 
 ClojureScript 0.0-2342.
