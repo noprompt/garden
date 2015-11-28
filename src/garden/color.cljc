@@ -133,7 +133,10 @@
             (-> (util/format "%2s" (util/int->string v 16))
                 (string/replace " " "0")))]
     (apply str "#" (map hex-part [r g b]))))
-    
+
+(defn trim-one [x]
+  (if (< 1 x) 1 x))
+
 (defn rgb->hsl
   "Convert an RGB color map to an HSL color map."
   [{:keys [red green blue] :as color}]
@@ -149,10 +152,11 @@
               g (+ (* 60 (/ (- b r) d)) 120)
               b (+ (* 60 (/ (- r g) d)) 240))
           l (/ (+ mx mn) 2)
-          s (cond
-             (= mx mn) 0
-             (< l 0.5) (/ d (* 2 l))
-             :else (/ d (- 2 (* 2 l))))]
+          s (trim-one
+              (cond
+                (= mx mn) 0
+                (< l 0.5) (/ d (* 2 l))
+                :else (/ d (- 2 (* 2 l)))))]
       (hsl (mod h 360) (* 100 s) (* 100 l)))))
 
 (declare hue->rgb)
