@@ -151,7 +151,7 @@
               r (* 60 (/ (- g b) d))
               g (+ (* 60 (/ (- b r) d)) 120)
               b (+ (* 60 (/ (- r g) d)) 240))
-          l (/ (+ mx mn) 2)
+          l (trim-one (/ (+ mx mn) 2))
           s (trim-one
               (cond
                 (= mx mn) 0
