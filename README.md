@@ -36,7 +36,7 @@ Run Cljs tests (on Node)
 
 ## Developer Guide
 
-A Guide for Syntax, Rules, Declarations, Plugins, and community-contributed wiki is under [https://github.com/noprompt/garden/wiki].
+Further documentation and a guide for Syntax, Rules, Declarations, Plugins is under the community-contributed [wiki](https://github.com/noprompt/garden/wiki).
 
 Please contribute!
 
@@ -54,6 +54,16 @@ Listed by first commit:
 * [ToBeReplaced](https://github.com/ToBeReplaced)
 * [migroh](https://github.com/migroh)
 * [priyatam](https://github.com/priyatam)
+
+## Community
+
+### Mailing List
+
+* [Google Groups](https://groups.google.com/forum/#!forum/garden-clojure)
+
+### Slack
+
+* #clojurescript or #css channel on [Clojurians](https://clojurians.slack.com)
 
 ## Thanks
 
