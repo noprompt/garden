@@ -876,10 +876,8 @@
   (let [s (name x)]
     (if-let [m (re-matches nth-child-re s)]
       m
-      (throw
-       #?(:clj (IllegalArgumentException.)
-          :cljs (js/Error.)
-          (str "Invalid value " (pr-str s)))))))
+      (throw (ex-info
+              "Selector must be either a keyword, string, or symbol." (str "Invalid value " (pr-str s)))))))
 
 (defpseudoclass
   ^{:doc "CSS :nth-child pseudo class selector."} 
