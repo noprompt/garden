@@ -1,5 +1,10 @@
 # Garden
 
+WARNING: Use of undeclared Var cljs.core/time at line 802 out/garden/selectors.cljc
+WARNING: time already refers to: cljs.core/time being replaced by: garden.selectors/time at line 802 out/garden/selectors.cljc
+WARNING: link at line 802 is being replaced at line 852 out/garden/selectors.cljc
+WARNING: rem already refers to: cljs.core/rem being replaced by: garden.units/rem at line 242 out/garden/units.cljc
+
 Garden is a library for rendering CSS in Clojure and ClojureScript.
 Conceptually similar to [Hiccup](https://github.com/weavejester/hiccup), it uses
 vectors to represent rules and maps to represent declarations. It is designed

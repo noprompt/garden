@@ -10,6 +10,8 @@
    [garden.util :as util]
    #?(:cljs
       [cljs.reader :refer [read-string]]))
+  #?(:cljs
+     (:refer-clojure :exclude [rem]))
   #?(:clj
      (:import garden.types.CSSUnit)))
 

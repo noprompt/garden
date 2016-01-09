@@ -3,14 +3,14 @@
   (:require
    [clojure.string :as string])
   #?(:clj
-     (:refer-clojure :exclude [+ - > empty first map meta not time var]))
+     (:refer-clojure :exclude [+ - > empty first map meta not time link var]))
   #?(:clj
      (:import clojure.lang.Keyword
               clojure.lang.Symbol
               clojure.lang.IFn
               clojure.lang.Named))
   #?(:cljs
-     (:refer-clojure :exclude [+ - > empty first map meta not]))
+     (:refer-clojure :exclude [+ - > empty first map meta not time link]))
   #?(:cljs
      (:require-macros
       [garden.selectors :refer [defselector
@@ -738,7 +738,7 @@
     label
     legend
     li
-    link
+    ;link
     map
     mark
     math
