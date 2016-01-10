@@ -738,7 +738,7 @@
     label
     legend
     li
-    ;link
+    link
     map
     mark
     math

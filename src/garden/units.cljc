@@ -1,7 +1,6 @@
 (ns garden.units
   "Functions and macros for working with CSS units."
-  #?(:clj
-     (:refer-clojure :exclude [rem]))
+  (:refer-clojure :exclude [rem])
   #?(:cljs
      (:require-macros
       [garden.units :refer [defunit]]))
@@ -10,8 +9,6 @@
    [garden.util :as util]
    #?(:cljs
       [cljs.reader :refer [read-string]]))
-  #?(:cljs
-     (:refer-clojure :exclude [rem]))
   #?(:clj
      (:import garden.types.CSSUnit)))
 
