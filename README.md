@@ -181,6 +181,12 @@ user=> (css [:pre {:font-family "\"Liberation Mono\", Consolas, monospace"}])
 "pre{font-family:\"Liberation Mono\", Consolas, monospace}"
 ```
 
+##### At-rules
+
+Where CSS notation uses constructs such as @media, @keywords et al.,
+you can use the `at-rules` functions from `garden.stylesheet`.
+See `at-font-face`, `at-import`, `at-media` and `at-keyframes`.
+
 ## Further Reading & Wiki
 
 Detailed documentation and a developer guide for Syntax, Rules, Declarations,
