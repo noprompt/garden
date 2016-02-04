@@ -554,3 +554,19 @@
   (if-let [h (color-name->color (keyword n))]
     h
     (throw (ex-info-color-name n))))
+
+(defn- scale-color-value
+  [value amount]
+  (+ value (if (pos? amount)
+             (* (- 100 value) (/ amount 100))
+             (/ (* value amount) 100))))
+
+(defn scale-lightness
+  "Scale the lightness of a color by amount"
+  [color amount]
+  (update-color color :lightness scale-color-value amount))
+
+(defn scale-saturation
+  "Scale the saturation of a color by amount"
+  [color amount]
+  (update-color color :saturation scale-color-value amount))
