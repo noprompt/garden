@@ -570,3 +570,48 @@
   "Scale the saturation of a color by amount"
   [color amount]
   (update-color color :saturation scale-color-value amount))
+
+(defn- decrown-hex [hex]
+  (string/replace hex #"^#" ""))
+
+(defn- crown-hex [hex]
+  (if (re-find #"^#" hex)
+    hex
+    (str "#" hex)))
+
+(defn- expand-hex
+  "(expand-hex \"#abc\") -> \"aabbcc\"
+   (expand-hex \"333333\") -> \"333333\""
+  [hex]
+  (as-> (decrown-hex hex) _
+        (cond
+         (= 3 (count _)) (string/join (mapcat vector _ _))
+         (= 1 (count _)) (string/join (repeat 6 _))
+         :else _)))
+
+(defn- hex->long
+  "(hex->long \"#abc\") -> 11189196"
+  [hex]
+  (-> hex
+      (string/replace #"^#" "")
+      (expand-hex)
+      (Long/parseLong 16)))
+
+(defn- long->hex
+  "(long->hex 11189196) -> \"aabbcc\""
+  [long]
+  (Integer/toHexString long))
+
+(defn weighted-mix
+  "`weight` is number 0 to 100 (%).
+   At 0, it weighs color-1 at 100%.
+   At 100, it weighs color-2 at 100%.
+   Returns hex string."
+  [color-1 color-2 weight]
+  (let [[weight-1 weight-2] (map #(/ % 100) [(- 100 weight) weight])
+        [long-1 long-2] (map (comp hex->long as-hex)
+                             [color-1 color-2])]
+    (-> (+ (* long-1 weight-1) (* long-2 weight-2))
+        (long->hex)
+        (expand-hex)
+        (crown-hex))))
