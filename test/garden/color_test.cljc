@@ -211,3 +211,23 @@
     (is (identical? (color/from-name "aquamarine")
                     (color/from-name "aquamarine")))
     (is (thrown? ExceptionInfo (color/from-name "aqualung")))))
+
+(deftest scale-lightness-test []
+  (testing "scale-lightness"
+    (is (= 75 (-> (color/hsl 50 50 50) (color/scale-lightness 50) :lightness)))
+    (is (= 25 (-> (color/hsl 50 50 50) (color/scale-lightness -50) :lightness)))))
+
+(deftest scale-saturation-test []
+  (testing "scale-lightness"
+    (is (= 75 (-> (color/hsl 50 50 50) (color/scale-saturation 50) :saturation)))
+    (is (= 25 (-> (color/hsl 50 50 50) (color/scale-saturation -50) :saturation)))))
+
+(deftest hex-tests []
+  (testing "decrown hex"
+    (is (= "aabbcc" (#'garden.color/decrown-hex "#aabbcc"))))
+  (testing "expand-hex"
+    (is (= "aabbcc" (#'garden.color/expand-hex "#abc")))))
+
+(deftest weighted-mix-test []
+  (testing "weighted-mix basics"
+    (is (= "#000000" (color/weighted-mix "#000" "#fff" 0)))))
