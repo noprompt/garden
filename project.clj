@@ -17,9 +17,12 @@
               :plugins  [[codox "0.9.1"]
                          [lein-npm "0.6.1"]
                          [com.jakemccrary/lein-test-refresh "0.12.0"]]}}
-  :aliases {"build-cljs"  ["run" "-m" "user/build"]
-            "test-clj"    ["do" "clean,"
-                           "run" "-m" "user/build,"
-                           "test-refresh"]
-            "test-cljs"   ["run" "-m" "garden.tests/test-all"]
-            "node-repl"   ["run" "-m" "user/node-repl"]})
+  :aliases {"build-cljs" ["run" "-m" "user/build"]
+            "test-clj" ["do" ["clean"] ["test"]]
+            "test-cljs" ["do"
+                         ["build-cljs"]
+                         ["run" "-m" "garden.tests/test-all"]]
+            "test-cljc" ["do"
+                         ["test-clj"]
+                         ["test-cljs"]]
+            "node-repl" ["run" "-m" "user/node-repl"]})
