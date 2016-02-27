@@ -595,12 +595,14 @@
   (-> hex
       (string/replace #"^#" "")
       (expand-hex)
-      (Long/parseLong 16)))
+      #?(:clj (Long/parseLong 16)
+         :cljs (js/parseInt 16))))
 
 (defn- long->hex
   "(long->hex 11189196) -> \"aabbcc\""
   [long]
-  (Integer/toHexString long))
+  #?(:clj (Integer/toHexString long)
+     :cljs (.toString long 16)))
 
 (defn weighted-mix
   "`weight` is number 0 to 100 (%).
