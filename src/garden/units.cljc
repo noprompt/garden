@@ -1,35 +1,43 @@
 (ns garden.units
   "Functions and macros for working with CSS units."
   (:refer-clojure :exclude [rem])
-  #?(:cljs
-     (:require-macros
-      [garden.units :refer [defunit]]))
-  (:require
-   [garden.types :as t]
-   [garden.util :as util]
-   #?(:cljs
-      [cljs.reader :refer [read-string]]))
-  #?(:clj
-     (:import garden.types.CSSUnit)))
+  #?@(:clj
+     [(:require
+       [garden.types :as types]
+       [garden.util :as util])
+      (:import
+       [garden.types CSSUnit])])
+  #?@(:cljs
+      [(:require
+        [cljs.reader :refer [read-string]]
+        [garden.types :as types :refer [CSSUnit]]
+        [garden.util :as util])
+       (:require-macros
+        [garden.units :refer [defunit]])]))
 
 ;;;; ## Unit families
 
-(def length-units #{:in :cm :pc :mm :pt :px (keyword "%")})
+(def length-units
+  #{:in :cm :pc :mm :pt :px (keyword "%")})
 
-(def angular-units #{:deg :grad :rad :turn})
+(def angular-units
+  #{:deg :grad :rad :turn})
 
-(def time-units #{:s :ms})
+(def time-units
+  #{:s :ms})
 
-(def frequency-units #{:Hz :kHz})
+(def frequency-units
+  #{:Hz :kHz})
 
-(def resolution-units #{:dpi :dpcm :dppx})
+(def resolution-units
+  #{:dpi :dpcm :dppx})
 
 ;;;; ## Unit predicates
 
 (defn unit?
   "True if x is of type CSSUnit."
   [x]
-  (instance? #?(:clj CSSUnit) #?(:cljs t/CSSUnit) x))
+  (instance? CSSUnit x))
 
 (defn length?
   [x]
@@ -61,23 +69,55 @@
 (def ^{:private true
        :doc "Map associating CSS unit types to their conversion values."}
   conversions
-  {:in {:in 1, :cm 2.54, :pc 6, :mm 25.4, :pt 72, :px 96}
-   :cm {:cm 1, :pc 2.36220473, :mm 10, :pt 28.3464567, :px 37.795275591}
-   :pc {:pc 1, :mm 4.23333333, :pt 12, :px 16}
-   :mm {:mm 1, :pt 2.83464567, :px 3.7795275591}
-   :pt {:pt 1, :px 1.3333333333}
+  {;; Absolute units
+   :cm {:cm 1
+        :mm 10
+        :pc 2.36220473
+        :pt 28.3464567
+        :px 37.795275591}
+   :in {:cm 2.54
+        :in 1
+        :mm 25.4
+        :pc 6
+        :pt 72
+        :px 96}
+   :mm {:mm 1
+        :pt 2.83464567
+        :px 3.7795275591}
+   :pc {:mm 4.23333333
+        :pc 1
+        :pt 12
+        :px 16}
+   :pt {:pt 1
+        :px 1.3333333333}
    :px {:px 1}
-   :deg {:deg 1, :grad 1.111111111, :rad 0.0174532925, :turn 0.002777778}
-   :grad {:grad 1, :rad 63.661977237, :turn 0.0025}
-   :rad {:rad 1, :turn 0.159154943}
-   :turn {:turn 1}
-   :s {:s 1, :ms 1000}
-   :ms {:ms 1}
-   :Hz {:Hz 1, :kHz 0.001}
-   :kHz {:kHz 1}
+   (keyword "%") {(keyword "%") 1}
+
+   ;; Relative untis
    :em {:em 1}
    :rem {:rem 1}
-   (keyword "%") {(keyword "%") 1}})
+
+   ;; Angular units
+   :deg {:deg 1
+         :grad 1.111111111
+         :rad 0.0174532925
+         :turn 0.002777778}
+   :grad {:grad 1
+          :rad 63.661977237
+          :turn 0.0025}
+   :rad {:rad 1
+         :turn 0.159154943}
+   :turn {:turn 1}
+
+   ;; Time units
+   :s {:ms 1000
+       :s 1}
+   :ms {:ms 1}
+
+   ;; Frequency units
+   :Hz {:Hz 1
+        :kHz 0.001}
+   :kHz {:kHz 1}})
 
 (defn- convertable?
   "True if unit is a key of convertable-units, false otherwise."
@@ -91,12 +131,17 @@
     (let [v1 (get-in conversions [left right])
           v2 (get-in conversions [right left])]
       (cond
-       v1 (t/CSSUnit. right (* v1 m))
-       v2 (t/CSSUnit. right (/ m v2))
+        v1
+        (CSSUnit. right (* v1 m))
+
+        v2
+        (CSSUnit. right (/ m v2))
+
        ;; Both units are convertible but no conversion between them exists.
-       :else (throw
-              (ex-info
-               (util/format "Can't convert %s to %s" (name left) (name right)) {}))))
+       :else
+       (throw
+        (ex-info
+         (util/format "Can't convert %s to %s" (name left) (name right)) {}))))
     ;; Display the inconvertible unit.
     (let [x (first (drop-while convertable? [left right]))]
       (throw (ex-info (str "Inconvertible unit " (name x)) {})))))
@@ -115,7 +160,7 @@
   (when-let [[_ magnitude unit] (re-matches unit-re s)]
     (let [unit (keyword unit)
           magnitude (if magnitude (read-string magnitude) 0)]
-      (t/CSSUnit. unit magnitude))))
+      (CSSUnit. unit magnitude))))
 
 (defn make-unit-predicate
   "Creates a function for verifying the given unit type."
@@ -130,14 +175,25 @@
   [unit]
   (fn [x]
     (cond
-     (number? x) (t/CSSUnit. unit x)
-     (unit? x) (or (and (= (unit x) unit) x)
-                   (convert x unit))
-     :else (throw
-            (ex-info
-             (util/format "Don't know how to convert type %s to %s"
-                     (.getName (type x))
-                     (name unit)) {})))))
+      (number? x)
+      (CSSUnit. unit x)
+
+      (unit? x)
+      (if (and (= (unit x) unit))
+        x
+        (convert x unit))
+
+      :else
+      (let [;; Does `.getName` even work in CLJS? -- @noprompt
+            ex-message (util/format "Unable to convert from %s to %s"
+                                    (.getName type)
+                                    (name unit))
+            ;; TODO: This needs to be populated with more helpful
+            ;; data.
+            ex-data {:given {:type type
+                             :unit unit}}]
+        (throw
+         (ex-info ex-message ex-data))))))
 
 (defn make-unit-adder
   "Create a addition function for adding Units."
