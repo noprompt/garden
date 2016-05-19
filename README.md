@@ -12,6 +12,7 @@ preprocessor for a programming language.
 * [Syntax](#syntax)
 * [Development](#development)
 * [Community](#community)
+* [Help!](#help)
 
 
 ## Getting Started
@@ -227,6 +228,11 @@ Listed by first commit:
 * [ToBeReplaced](https://github.com/ToBeReplaced)
 * [migroh](https://github.com/migroh)
 * [priyatam](https://github.com/priyatam)
+
+## Help!
+
+This project is looking for team members who can help this project succeed!
+If you are interested in becoming a team member please open an issue.
 
 
 ## Community
