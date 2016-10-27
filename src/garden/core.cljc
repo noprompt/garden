@@ -15,3 +15,7 @@
   [& maps]
   (compiler/compile-style maps))
 
+#_
+(garden.core/css
+  [:x
+   {:display #{:flexbox :-ms-flexbox}}])

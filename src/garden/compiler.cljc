@@ -2,20 +2,22 @@
   "Functions for compiling Clojure data structures to CSS."
   (:require
    [clojure.string :as string]
-   #?(:clj  [garden.color :as color]
-      :cljs [garden.color :as color :refer [CSSColor]])
+   [garden.color :as color]
    [garden.compression :as compression]
    [garden.selectors :as selectors]
    [garden.units :as units]
    [garden.util :as util]
-   #?(:cljs
-      [garden.types :refer [CSSUnit CSSFunction CSSAtRule]]))
+   #?@(:cljs
+       [[garden.types :refer [CSSAtRule CSSFunction]]
+        [garden.color :refer [Hsl Hsla Rgb Rgba]]]))
   #?(:cljs
      (:require-macros
-      [garden.compiler :refer [with-media-query-context with-selector-context]]))
+      [garden.compiler :refer [with-media-query-context
+                               with-selector-context]]))
   #?(:clj
-     (:import (garden.types CSSUnit CSSFunction CSSAtRule)
-              (garden.color CSSColor))))
+     (:import (garden.color Hsl Hsla Rgb Rgba)
+              (garden.types CSSAtRule CSSFunction)
+              (garden.units Unit))))
 
 ;; ---------------------------------------------------------------------
 ;; Compiler flags
@@ -147,25 +149,35 @@
 ;; ---------------------------------------------------------------------
 ;; Declaration expansion
 
-(defn expand-declaration-1
+
+(defn- identifier-name [x]
+  (if (or (keyword? x)
+          (symbol? x))
+    (if-let [ns (namespace x)]
+      (str ns \- (name x))
+      (name x))
+    x))
+
+(defn- expand-declaration*
   [d]
   (let [prefix #(util/as-str %1 "-" %2)]
     (reduce
      (fn [m [k v]]
-       (if (util/hash-map? v)
-         (reduce
-          (fn [m1 [k1 v1]]
-            (assoc m1 (prefix k k1) v1))
-          m
-          (expand-declaration-1 v))
-         (assoc m (util/to-str k) v)))
+       (let [prop (identifier-name k)]
+         (if (util/hash-map? v)
+           (reduce
+            (fn [m1 [k1 v1]]
+              (assoc m1 (prefix prop k1) v1))
+            m
+            (expand-declaration* v))
+           (assoc m (util/to-str prop) v))))
      {}
      d)))
 
 (defn- expand-declaration
   [d]
   (when (seq d)
-    (with-meta (expand-declaration-1 d) (meta d))))
+    (with-meta (expand-declaration* d) (meta d))))
 
 ;; ---------------------------------------------------------------------
 ;; Rule expansion
@@ -286,8 +298,7 @@
   #?(:cljs (expand [this] (expand-seqs this)))
 
   #?(:cljs Cons)
-  #?(:cljs (
-            expand [this] (expand-seqs this)))
+  #?(:cljs (expand [this] (expand-seqs this)))
 
   #?(:cljs ChunkedCons)
   #?(:cljs (expand [this] (expand-seqs this)))
@@ -301,7 +312,7 @@
   #?(:cljs List)
   #?(:cljs (expand [this] (expand-seqs this)))
 
-  #?(:clj  clojure.lang.IPersistentVector
+  #?(:clj  clojure.lang.PersistentVector
      :cljs PersistentVector)
   (expand [this] (expand-rule this))
 
@@ -314,12 +325,13 @@
   #?(:cljs RedNode)
   #?(:cljs (expand [this] (expand-rule this)))
 
-  #?(:clj clojure.lang.IPersistentMap
+  #?(:clj clojure.lang.PersistentArrayMap
      :cljs PersistentArrayMap)
   (expand [this] (list (expand-declaration this)))
 
-  #?(:cljs PersistentHashMap)
-  #?(:cljs (expand [this] (list (expand-declaration this))))
+  #?(:clj clojure.lang.PersistentHashMap
+     :cljs PersistentHashMap)
+  (expand [this] (list (expand-declaration this)))
 
   #?(:cljs PersistentTreeMap)
   #?(:cljs (expand [this] (list (expand-declaration this))))
@@ -333,9 +345,6 @@
 
   CSSAtRule
   (expand [this] (expand-at-rule this))
-
-  CSSColor
-  (expand [this] (list this))
 
   nil
   (expand [this] nil))
@@ -404,8 +413,15 @@
 (defn- render-value
   "Render the value portion of a declaration."
   [x]
-  (if (util/at-keyframes? x)
+  (cond
+    (util/at-keyframes? x)
     (util/to-str (get-in x [:value :identifier]))
+
+    (or (keyword? x)
+        (symbol? x))
+    (identifier-name x)
+
+    :else
     (render-css x)))
 
 (defn- render-property-and-value
@@ -421,32 +437,32 @@
       (util/as-str prop colon val semicolon))))
 
 (defn- add-blocks
-  "For each block in `declaration`, add sequence of blocks
-   returned from calling `f` on the block."
+  "For each block in `declaration`, add sequence of blocks returned
+  from calling `f` on the block."
   [f declaration]
   (mapcat #(cons % (f %)) declaration))
 
 (defn- prefixed-blocks
-  "Sequence of blocks with their properties prefixed by
-   each vendor in `vendors`."
+  "Sequence of blocks with their properties prefixed by each vendor in
+  `vendors`."
   [vendors [p v]]
   (for [vendor vendors]
-    [(util/vendor-prefix vendor (name p)) v]))
+    [(util/vendor-prefix vendor p) v]))
 
 (defn- prefix-all-properties
-  "Add prefixes to all blocks in `declaration` using
-   vendor prefixes in `vendors`."
+  "Add prefixes to all blocks in `declaration` using vendor prefixes
+  in `vendors`."
   [vendors declaration]
   (add-blocks (partial prefixed-blocks vendors) declaration))
 
 (defn- prefix-auto-properties
-  "Add prefixes to all blocks in `declaration` when property
-   is in the `:auto-prefix` set."
+  "Add prefixes to all blocks in `declaration` when property is in the
+  `:auto-prefix` set."
   [vendors declaration]
   (add-blocks
    (fn [block]
      (let [[p _] block]
-       (when (auto-prefix? (name p))
+       (when (auto-prefix? p)
          (prefixed-blocks vendors block))))
    declaration))
 
@@ -454,7 +470,8 @@
   "Prefix properties within a `declaration` if `{:prefix true}` is
    set in its meta, or if a property is in the `:auto-prefix` set."
   [declaration]
-  (let [vendors (or (:vendors (meta declaration)) (vendors))
+  (let [vendors (or (:vendors (meta declaration))
+                    (vendors))
         prefix-fn (if (:prefix (meta declaration))
                     prefix-all-properties
                     prefix-auto-properties)]
@@ -517,16 +534,6 @@
 ;; ---------------------------------------------------------------------
 ;; Garden type rendering
 
-(defn- render-unit
-  "Render a CSSUnit."
-  [css-unit]
-  (let [{:keys [magnitude unit]} css-unit
-        magnitude #?(:cljs magnitude)
-        #?(:clj (if (ratio? magnitude)
-                  (float magnitude)
-                  magnitude))]
-    (str magnitude (name unit))))
-
 (defn- render-function
   "Render a CSS function."
   [css-function]
@@ -535,13 +542,6 @@
                (comma-separated-list args)
                (util/to-str args))]
     (util/format "%s(%s)" (util/to-str function) args)))
-
-(defn ^:private render-color [c]
-  (if-let [a (:alpha c)]
-    (let [{:keys [hue saturation lightness]} (color/as-hsl c)
-          [s l] (map units/percent [saturation lightness])]
-      (util/format "hsla(%s)" (comma-separated-list [hue s l a])))
-    (color/as-hex c)))
 
 ;; ---------------------------------------------------------------------
 ;; At-rule rendering
@@ -603,91 +603,150 @@
 ;; ---------------------------------------------------------------------
 ;; CSSRenderer implementation
 
+#?(:clj
+   (extend-protocol CSSRenderer
+     nil
+     (render-css [this] "")
+
+     clojure.lang.Keyword
+     (render-css [k] (name k))
+
+     clojure.lang.PersistentArrayMap
+     (render-css [this] (render-declaration this))
+
+     clojure.lang.PersistentHashMap
+     (render-css [this] (render-declaration this))
+
+     clojure.lang.PersistentVector
+     (render-css [this] (render-rule this))
+
+     clojure.lang.ISeq
+     (render-css [this] (map render-css this))
+
+     clojure.lang.Ratio
+     (render-css [this] (str (float this)))
+
+     Object
+     (render-css [this] (str this)))
+
+   :cljs
+   (extend-protocol CSSRenderer
+     default
+     (render-css [this] (str this))
+
+     nil
+     (render-css [this] "")
+
+     number
+     (render-css [this] (str this))
+
+     ArrayNodeSeq
+     (render-css [this] (map render-css this))
+
+     BlackNode
+     (render-css [this] (render-rule this))
+
+     Cons
+     (render-css [this] (map render-css this))
+
+     ChunkedCons
+     (render-css [this] (map render-css this))
+
+     ChunkedSeq
+     (render-css [this] (map render-css this))
+
+     IndexedSeq
+     (render-css [this] (map render-css this))
+
+     Keyword
+     (render-css [this] (name this))
+
+     LazySeq
+     (render-css [this] (map render-css this))
+     
+     List
+     (render-css [this] (map render-css this))
+
+     NodeSeq
+     (render-css [this] (map render-css this))
+
+     PersistentArrayMap
+     (render-css [this] (render-declaration this))
+
+     PersistentArrayMapSeq
+     (render-css [this] (map render-css this))
+
+     PersistentHashMap
+     (render-css [this] (render-declaration this))
+
+     PersistentTreeMap
+     (render-css [this] (render-declaration this))
+
+     RedNode
+     (render-css [this] (render-rule this))
+
+     RSeq
+     (render-css [this] (map render-css this))
+
+     Subvec
+     (render-css [this]) (render-rule this)))
+
 (extend-protocol CSSRenderer
-  #?(:clj clojure.lang.ISeq
-     :cljs IndexedSeq)
-  (render-css [this] (map render-css this))
-
-  #?(:cljs LazySeq)
-  #?(:cljs (render-css [this] (map render-css this)))
-
-  #?(:cljs RSeq)
-  #?(:cljs (render-css [this] (map render-css this)))
-
-  #?(:cljs NodeSeq)
-  #?(:cljs (render-css [this] (map render-css this)))
-
-  #?(:cljs ArrayNodeSeq)
-  #?(:cljs (render-css [this] (map render-css this)))
-
-  #?(:cljs Cons)
-  #?(:cljs (render-css [this] (map render-css this)))
-
-  #?(:cljs ChunkedCons)
-  #?(:cljs (render-css [this] (map render-css this)))
-
-  #?(:cljs ChunkedSeq)
-  #?(:cljs (render-css [this] (map render-css this)))
-
-  #?(:cljs PersistentArrayMapSeq)
-  #?(:cljs (render-css [this] (map render-css this)))
-
-  #?(:cljs List)
-  #?(:cljs (render-css [this] (map render-css this)))
-
-  #?(:clj clojure.lang.IPersistentVector
-     :cljs PersistentVector)
-  (render-css [this] (render-rule this))
-
-  #?(:cljs Subvec)
-  #?(:cljs (render-css [this] (render-rule this)))
-
-  #?(:cljs BlackNode)
-  #?(:cljs (render-css [this] (render-rule this)))
-
-  #?(:cljs RedNode)
-  #?(:cljs (render-css [this] (render-rule this)))
-
-  #?(:clj clojure.lang.IPersistentMap
-     :cljs PersistentArrayMap)
-  (render-css [this] (render-declaration this))
-
-  #?(:cljs PersistentHashMap)
-  #?(:cljs (render-css [this] (render-declaration this)))
-
-  #?(:cljs PersistentTreeMap)
-  #?(:cljs (render-css [this] (render-declaration this)))
-
-  #?(:clj clojure.lang.Ratio)
-  #?(:clj (render-css [this] (str (float this))))
-
-  #?(:cljs number)
-  #?(:cljs (render-css [this] (str this)))
-
-  #?(:clj clojure.lang.Keyword
-     :cljs Keyword)
-  (render-css [this] (name this))
-
-  CSSUnit
-  (render-css [this] (render-unit this))
-
   CSSFunction
   (render-css [this] (render-function this))
 
   CSSAtRule
   (render-css [this] (render-at-rule this))
 
-  #?(:clj CSSColor
-     :cljs color/CSSColor)
-  (render-css [this] (render-color this))
+  Hsl
+  (render-css [c]
+    (str "hsl("
+         (comma-separated-list
+          [(color/hue c)
+           (str (color/saturation c) "%")
+           (str (color/lightness c) "%")])
+         ")"))
 
-  #?(:clj Object
-     :cljs default)
-  (render-css [this] (str this))
 
-  nil
-  (render-css [this] ""))
+  Hsla
+  (render-css [c]
+    (str "hsla("
+         (comma-separated-list
+          [(color/hue c)
+           (str (color/saturation c) "%")
+           (str (color/lightness c) "%")
+           (color/alpha c)])
+         ")"))
 
+  Rgb
+  (render-css [c]
+    (str "rgb("
+         (comma-separated-list
+          [(color/red c)
+           (color/blue c)
+           (color/green c)])
+         ")"))
+
+
+  Rgba
+  (render-css [c]
+    (str "rgba("
+         (comma-separated-list
+          [(color/red c)
+           (color/blue c)
+           (color/green c)
+           (color/alpha c)])
+         ")"))
+
+  Unit
+  (render-css [u]
+    (let [magnitude (units/magnitude u)
+          magnitude #?(:clj (if (ratio? magnitude)
+                              (float magnitude)
+                              magnitude)
+                       :cljs magnitude)
+          measurement (name (units/measurement u))]
+      (str magnitude measurement))))
 
 ;; ---------------------------------------------------------------------
 ;; Compilation

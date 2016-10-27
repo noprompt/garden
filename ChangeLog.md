@@ -1,3 +1,97 @@
+## Changes from 1.3.2 and 2.0.0-alpha1
+
+`2.0.0-alpha1` has *breaking changes*.
+
+### Changes to `garden.units`
+
+The namespace `garden.units` has been extracted into a
+[separate project](https://github.com/garden-clojure/garden-units)
+which this project now depends on. There are several breaking API
+changes with respect to this change.
+
+`garden.units.CSSUnit` has been replaced by `garden.units.Unit`
+
+The `defunit` macro only defines a unit construction/conversion
+function for a particular unit and no longer defines unit specific
+arithmetic operators. This is to trim down on the amount of generated
+code and to simplify implementation.
+
+Unit specific arithmetic operations (i.e. `px+`, `in+`, etc.) have
+been replaced by more generic `+`, `-`, `*`, and `/`.
+
+### Changes to `garden.color`
+
+The namespace `garden.color` has been extracted into a
+[separate project](https://github.com/garden-clojure/garden-color)
+which this project now depends on. There are several breaking API
+changes with respect to this change.
+
+`garden.units.CSSColor` has been replaced by `garden.color.Hsl`,
+`garden.color.Hsla`, and `garden.color.Rgb`, `garden.color.Rgba`.
+
+The functions `hsl`, `hsla`, `rgb`, and `rgba` are now unary and are
+capable of automatically converting their arguments to the correct
+type. As a result the functions
+
+* `as-hex`,
+* `as-color`,
+* `as-hsl`,
+* `as-rbg`,
+* `hsl->hex`,
+* `hsl->rgb`,
+* `rgb->hex`,
+* and `rgb->hsl`
+
+have been eliminated. Hex string values can be produced by the `hex`
+function. To achieve the behavior of previous 3 and 4 arity versions
+of `hsl`, `hsla`, `rgb`, and `rgba` pass a vector. This may change in
+the future.
+
+The functions
+
+* `color+`,
+* `color-`,
+* `color*`,
+* and `color-div`
+
+have been replaced by the more generic `+`, `-`, `*`, and `/`.
+
+```clj
+(require '[garden.color :as color])
+
+;; Garden 1.X.X
+(color/rgb 0 1 2)
+
+;; Garden 2.X.X
+(color/rgb [0 1 2])
+```
+
+### Other changes
+
+The namespace `garden.arithmetic` has been eliminated as both
+`garden.units` and `garden.color` provide operators arithmetic
+operators for types in their respective domains.
+
+Namespaced keywords are honored as prefixes for properties and
+identifiers. The rule
+
+```clj
+[:x
+ #:font {:weight "bold"
+         :family "monspace"}
+ {:display :-ms/flexbox}]
+```
+
+will now be rendered as
+
+```css
+x {
+  font-weight: bold;
+  font-family: monspace;
+  display: -ms-flexbox;
+}
+```
+
 ## Changes from 1.3.0
 
 Migrate cljx to cljc and maintain parity with Clojure/Cljs with 1.7. For
