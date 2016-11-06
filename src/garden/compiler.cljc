@@ -689,7 +689,7 @@
      (render-css [this] (map render-css this))
 
      Subvec
-     (render-css [this]) (render-rule this)))
+     (render-css [this] (render-rule this))))
 
 (extend-protocol CSSRenderer
   CSSFunction
