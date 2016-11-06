@@ -8,8 +8,9 @@
    [garden.units :as units]
    [garden.util :as util]
    #?@(:cljs
-       [[garden.types :refer [CSSAtRule CSSFunction]]
-        [garden.color :refer [Hsl Hsla Rgb Rgba]]]))
+       [[garden.color :refer [Hsl Hsla Rgb Rgba]]
+        [garden.types :refer [CSSAtRule CSSFunction]]
+        [garden.units :refer [Unit]]]))
   #?(:cljs
      (:require-macros
       [garden.compiler :refer [with-media-query-context
