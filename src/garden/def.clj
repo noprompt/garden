@@ -53,7 +53,7 @@
   accept any number of arguments.
 
   Ex.
-      (def cssfn url)
+      (defcssfn url)
       ;; => #'user/url
 
       (url \"http://fonts.googleapis.com/css?family=Lato\")
