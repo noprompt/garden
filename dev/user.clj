@@ -1,9 +1,11 @@
 (ns user
   (:require
-    cljs.repl
-    cljs.build.api
-    cljs.repl.node
-    cljs.repl.browser))
+   [cljs.repl]
+   [cljs.build.api]
+   [cljs.repl.node]
+   [cljs.repl.browser]
+   [clojure.java.io :as io]))
+
 
 (defn build
   ([& options]
@@ -12,12 +14,12 @@
    (let [start (System/nanoTime)]
      (println "setting main as: " 'garden)
      (cljs.build.api/build "src"
-              {:main 'garden
-               :output-to "target/build/garden.js"
-               :output-dir "target/build"
-               :optimizations :none
-               :source-map true
-               :verbose true})
+                           {:main 'garden
+                            :output-to "target/build/garden.js"
+                            :output-dir "target/build"
+                            :optimizations :none
+                            :source-map true
+                            :verbose true})
      (println "... done. Elapsed" (/ (- (System/nanoTime) start) 1e9) "seconds"))))
 
 (defn repl [main env & dirs]

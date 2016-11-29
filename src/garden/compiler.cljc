@@ -2,775 +2,438 @@
   "Functions for compiling Clojure data structures to CSS."
   (:require
    [clojure.string :as string]
-   [garden.color :as color]
-   [garden.compression :as compression]
+   [garden.ast]
+   [garden.normalize]
+   [garden.parse]
    [garden.selectors :as selectors]
-   [garden.units :as units]
-   [garden.util :as util]
-   #?@(:cljs
-       [[garden.color :refer [Hsl Hsla Rgb Rgba]]
-        [garden.types :refer [CSSAtRule CSSFunction]]
-        [garden.units :refer [Unit]]]))
-  #?(:cljs
-     (:require-macros
-      [garden.compiler :refer [with-media-query-context
-                               with-selector-context]]))
-  #?(:clj
-     (:import (garden.color Hsl Hsla Rgb Rgba)
-              (garden.types CSSAtRule CSSFunction)
-              (garden.units Unit))))
+   [garden.util :as util]))
 
-;; ---------------------------------------------------------------------
-;; Compiler flags
+;; =====================================================================
+;; Compiler environments
 
-(def
-  ^{:dynamic true
-    :private true
-    :doc "The current compiler flags."}
-  *flags*
-  {;; When set to `true` the compiled stylesheet will be "pretty
-   ;; printed." This would be equivalent to setting
-   ;; `{:ouput-style => :expanded}` in Sass. When set to `false`
-   ;; the compiled stylesheet will be compressed with the YUI
-   ;; compressor.
-   :pretty-print? true
-   ;; A sequence of files to prepend to the output file.
-   :preamble []
+(def default-env
+  {;; A set of properties to automatically prefix with `:vendors`.
+   :auto-prefix #{}
+   :comma ","
+   :colon ":"
+   :curly-brace-left "{"
+   :curly-brace-right "}"
+   :minus "-"
+   :nesting-level 0
+   :obelus "/"
    ;; Location to save a stylesheet after compiling.
    :output-to nil
+   :plus "+"
+   ;; A sequence of files to prepend to the output file.
+   :preamble []
+   ;; When set to `true` the compiled stylesheet will be "pretty
+   ;; printed." This would be equivalent to setting
+   ;; `{:ouput-style => :expanded}` in Sass. When set to `false`
+   ;; the compiled stylesheet will be compressed.
+   :pretty-print? false
+   :round-brace-left "("
+   :round-brace-right ")"
+   :selector-context nil
+   :semicolon ";"
+   :separator ""
+   :tab "  "
+   :times "*"
    ;; A list of vendor prefixes to prepend to things like
    ;; `@keyframes`, properties within declarations containing the
    ;; `^:prefix` meta data, and properties defined in `:auto-prefix`.
-   :vendors []
-   ;; A set of properties to automatically prefix with `:vendors`.
-   :auto-prefix #{}
-   ;; `@media-query` specific configuration.
-   :media-expressions {;; May either be `:merge` or `:default`. When
-                       ;; set to `:merge` nested media queries will
-                       ;; have their expressions merged with their
-                       ;; parent's.
-                       :nesting-behavior :default}})
+   :vendors []})
 
-(def
-  ^{:private true
-    :doc "Retun a function to call when rendering a media expression.
-  The returned function accepts two arguments: the media
-  expression being evaluated and the current media expression context.
-  Both arguments are maps. This is used to provide semantics for nested
-  media queries."}
-  media-expression-behavior
-  {:merge (fn [expr context] (merge context expr))
-   :default (fn [expr _] expr)})
+(def pretty-env
+  (merge default-env
+         {:colon ": "
+          :comma ", "
+          :curly-brace-left " {\n"
+          :curly-brace-right "}\n"
+          :minus " - "
+          :nesting-level 0
+          :obelus " / "
+          :plus " + "
+          :pretty-print? true
+          :round-brace-left "("
+          :round-brace-right ")"
+          :selector-context nil
+          :semicolon ";\n"
+          :separator "\n"
+          :tab "  "
+          :times " * "}))
 
-(def
-  ^{:dynamic true
-    :private true
-    :doc "The current parent selector context."}
-  *selector-context* nil)
-
-(def
-  ^{:dynamic true
-    :private true
-    :doc "The current media query context."}
-  *media-query-context* nil)
-
-;; ---------------------------------------------------------------------
-;; Utilities
-
-(defmacro with-selector-context
-  [selector-context & body]
-  `(binding [*selector-context* ~selector-context]
-     (do ~@body)))
-
-(defmacro with-media-query-context
-  [selector-context & body]
-  `(binding [*media-query-context* ~selector-context]
-     (do ~@body)))
-
-(defn- vendors
-  "Return the current list of browser vendors specified in `*flags*`."
-  []
-  (seq (:vendors *flags*)))
-
-(defn- auto-prefixed-properties
-  "Return the current list of auto-prefixed properties specified in `*flags*`."
-  []
-  (set (map name (:auto-prefix *flags*))))
-
-(defn- auto-prefix?
-  [property]
-  (contains? (auto-prefixed-properties) property))
-
-(defn- top-level-expression? [x]
-  (or (util/rule? x)
-      (util/at-import? x)
-      (util/at-media? x)
-      (util/at-keyframes? x)))
-
-(defn- divide-vec
-  "Return a vector of [(filter pred coll) (remove pred coll)]."
-  [pred coll]
-  ((juxt filter remove) pred coll))
-
-#?(:clj
-   (defn- save-stylesheet
-     "Save a stylesheet to disk."
-     [path stylesheet]
-     (spit path stylesheet)))
 
 ;; =====================================================================
-;; Expansion
+;; Environment helpers
 
-;; The expansion process ensures that before a stylesheet is rendered
-;; it is in a format that can be easily digested. That is, it produces
-;; a new data structure which is a list of only one level.
+(defn indent
+  "Return an indent string with respect to the environment `env`."
+  [env]
+  (if (:pretty-print? env)
+    (let [{:keys [tab nesting-level]} env]
+      (apply str (repeat nesting-level tab)))
+    ""))
 
-;; This intermediate process between input and compilation separates
-;; concerns between parsing data structures and compiling them to CSS.
+(defn inc-nesting-level
+  "Incement the nesting level of `env` by one."
+  [env]
+  (update env :nesting-level inc))
 
-;; All data types that implement `IExpandable` should produce a list.
+(defn- vendors
+  "Return the current set of browser vendors specified in `env`."
+  [env]
+  (:vendors env))
 
-(defprotocol IExpandable
-  (expand [this]
-    "Return a list containing the expanded form of `this`."))
+(defn- auto-prefixed-properties
+  "Return the current list of auto-prefixed properties specified in `env`."
+  [env]
+  (:auto-prefix env))
 
-;; ---------------------------------------------------------------------
-;; List expansion
-
-(defn- expand-seqs
-  "Like flatten but only affects seqs."
-  [coll]
-  (mapcat
-   (fn [x]
-     (if (seq? x)
-       (expand-seqs x)
-       (list x)))
-   coll))
-
-;; ---------------------------------------------------------------------
-;; Declaration expansion
+(defn- auto-prefix?
+  [env property]
+  (contains? (auto-prefixed-properties env) property))
 
 
-(defn- identifier-name [x]
-  (if (or (keyword? x)
-          (symbol? x))
-    (if-let [ns (namespace x)]
-      (str ns \- (name x))
-      (name x))
-    x))
+;; =====================================================================
+;; Node compilation
 
-(defn- expand-declaration*
-  [d]
-  (let [prefix #(util/as-str %1 "-" %2)]
-    (reduce
-     (fn [m [k v]]
-       (let [prop (identifier-name k)]
-         (if (util/hash-map? v)
-           (reduce
-            (fn [m1 [k1 v1]]
-              (assoc m1 (prefix prop k1) v1))
-            m
-            (expand-declaration* v))
-           (assoc m (util/to-str prop) v))))
-     {}
-     d)))
+(defn tag
+  "Used to retrieve the tag from tagged union value (e.g. a vector
+  such that the first element is a keyword)."
+  {:private true}
+  [[tag :as tagged-data]]
+  {:pre [(vector? tagged-data)]}
+  tag)
 
-(defn- expand-declaration
-  [d]
-  (when (seq d)
-    (with-meta (expand-declaration* d) (meta d))))
+(defmulti
+  ^{:arglists '([node env])}
+  compile-node
+  "Compile a CSS AST node."
+  (fn [node env]
+    (tag node))
+  :default ::unknown-node)
 
-;; ---------------------------------------------------------------------
-;; Rule expansion
+(defn compile-nodes [nodes env]
+  (map compile-node nodes (repeat env)))
 
-(def
-  ^{:private true
-    :doc "Matches a single \"&\" or \"&\" follow by one or more 
-  non-whitespace characters."}
-  parent-selector-re
-  #"^&(?:\S+)?$")
+(defmethod compile-node :css/comma-separated-list
+  [[_ & nodes] env]
+  (string/join (:comma env)
+               (compile-nodes nodes env)))
 
-(defn- extract-reference
-  "Extract the selector portion of a parent selector reference."
-  [selector]
-  (when-let [reference (->> (last selector)
-                            (util/to-str)
-                            (re-find parent-selector-re))]
-    (apply str (rest reference))))
+(defmethod compile-node :css/declaration
+  [[_ property-node value-node :as node] env]
+  (let [compiled-property (compile-node property-node env)
+        compiled-value (compile-node value-node env)]
+    (if (auto-prefix? env compiled-property)
+      (string/join 
+       (for [vendor (vendors env)]
+         (str
+          (indent env)
+          "-" (name vendor) "-" compiled-property
+          (:colon env)
+          compiled-value
+          (:semicolon env))))
+      (str
+       (indent env)
+       compiled-property
+       (:colon env)
+       compiled-value
+       (:semicolon env)))))
 
-(defn- expand-selector-reference
-  [selector]
-  (if-let [reference (extract-reference selector)]
-    (let [parent (butlast selector)]
-      (concat (butlast parent)
-              (-> (last parent)
-                  (util/as-str reference)
-                  (list))))
-    selector))
+(defmethod compile-node :css/fragment
+  [[_ & children] env]
+  (string/join (:separator env) (compile-nodes children env)))
 
-(defn- expand-selector [selector parent]
-  (let [selector (map selectors/css-selector selector)
-        selector (if (seq parent)
-                   (->> (util/cartesian-product parent selector)
-                        (map flatten))
-                   (map list selector))]
-    (map expand-selector-reference selector)))
+(defmethod compile-node :css.declaration/block
+  [[_ & declaration-nodes] env]
+  (let [env* (inc-nesting-level env)]
+    (str
+     (:curly-brace-left env)
+     (string/join (compile-nodes declaration-nodes env*))
+     (indent env)
+     (:curly-brace-right env))))
 
-(defn- expand-rule
-  [rule]
-  (let [[selector children] (split-with selectors/selector? rule)
-        selector (expand-selector selector *selector-context*)
-        children (expand children)
-        [declarations xs] (divide-vec util/declaration? children)
-        ys (with-selector-context
-             (if (seq selector)
-               selector
-               *selector-context*)
-             (doall (mapcat expand xs)))]
-    (->> (mapcat expand declarations)
-         (conj [selector])
-         (conj ys))))
+(defmethod compile-node :css.declaration/property
+  [[_ property] _]
+  (name property))
 
-;; ---------------------------------------------------------------------
-;; At-rule expansion
+(defmethod compile-node :css.declaration/value
+  [[_ value-node] env]
+  (compile-node value-node env))
 
-(defmulti ^:private expand-at-rule :identifier)
+(defmethod compile-node :css/function
+  [[_ identifier arguments] env]
+  (str (compile-node identifier env)
+       (:round-brace-left env)
+       (compile-node arguments env)
+       (:round-brace-right env)))
 
-(defmethod expand-at-rule :default
-  [at-rule]
-  (list at-rule))
+(defmethod compile-node :css/identifier
+  [[_ identifier] _]
+  (name identifier))
 
-;; @keyframes expansion
+(defmethod compile-node :css/import
+  [[_ url media-query-list] env]
+  (str
+   (string/trim 
+    (str "@import " (pr-str url) " " (compile-node media-query-list env)))
+   ";"))
 
-(defmethod expand-at-rule :keyframes
-  [{:keys [value]}]
-  (let [{:keys [identifier frames]} value]
-    (->> {:identifier (util/to-str identifier)
-          :frames (mapcat expand frames)}
-         (CSSAtRule. :keyframes)
-         (list))))
+(defmethod compile-node :css/noop
+  [_ _]
+  "")
 
-;; @media expansion
+(defmethod compile-node :css/number
+  [[_ number] _]
+  (str number))
 
-(defn- expand-media-query-expression [expression]
-  (if-let [f (->> [:media-expressions :nesting-behavior]
-                  (get-in *flags*)
-                  (media-expression-behavior))]
-    (f expression *media-query-context*)
-    expression))
+(defmethod compile-node :css/percentage
+  [[_ number] _]
+  (str number "%"))
 
-(defmethod expand-at-rule :media
-  [{:keys [value]}]
-  (let [{:keys [media-queries rules]} value 
-        media-queries (expand-media-query-expression media-queries)
-        xs (with-media-query-context media-queries             (doall (mapcat expand (expand rules))))
-        ;; Though media-queries may be nested, they may not be nested
-        ;; at compile time. Here we make sure this is the case.  
-        [subqueries rules] (divide-vec util/at-media? xs)]
-    (cons
-     (CSSAtRule. :media {:media-queries media-queries
-                         :rules rules})
-     subqueries)))
+(defmethod compile-node :css/raw
+  [[_ x] _]
+  x)
 
-;; ---------------------------------------------------------------------
-;; Stylesheet expansion
+(defmethod compile-node :css/rule
+  [[_ selector-node declaration-block] env]
+  (str 
+   (indent env)
+   (compile-node selector-node env)
+   (compile-node declaration-block env)))
 
-(defn- expand-stylesheet [xs]
-  (->> (expand xs)
-       (map expand)
-       (apply concat)))
+(defmethod compile-node :css/selector
+  [[_ selector-node] env]
+  (compile-node selector-node env))
 
-(extend-protocol IExpandable
+(defmethod compile-node :css.selector/simple
+  [[_ identifier] env]
+  (name identifier))
 
-  #?(:clj clojure.lang.ISeq
-     :cljs IndexedSeq)
-  (expand [this] (expand-seqs this))
+(defmethod compile-node :css.selector/compound
+  [[_ & selector-nodes] env]
+  (string/join " " (compile-nodes selector-nodes env)))
 
-  #?(:cljs LazySeq)
-  #?(:cljs (expand [this] (expand-seqs this)))
+(defmethod compile-node :css.selector/complex
+  [[_ & selector-nodes] env]
+  (string/join (:comma env)
+               (compile-nodes selector-nodes env)))
 
-  #?(:cljs RSeq)
-  #?(:cljs(expand [this] (expand-seqs this)))
+(defmethod compile-node :css/space-separated-list
+  [[_ & nodes] env]
+  (string/join " " (compile-nodes nodes env)))
 
-  #?(:cljs NodeSeq)
-  #?(:cljs (expand [this] (expand-seqs this)))
+(defmethod compile-node :css/stylesheet
+  [[_ & nodes] env]
+  (string/join (:separator env) (compile-nodes nodes env)))
 
-  #?(:cljs ArrayNodeSeq)
-  #?(:cljs (expand [this] (expand-seqs this)))
-
-  #?(:cljs Cons)
-  #?(:cljs (expand [this] (expand-seqs this)))
-
-  #?(:cljs ChunkedCons)
-  #?(:cljs (expand [this] (expand-seqs this)))
-
-  #?(:cljs ChunkedSeq)
-  (expand [this] (expand-seqs this))
-
-  #?(:cljs PersistentArrayMapSeq)
-  #?(:cljs (expand [this] (expand-seqs this)))
-
-  #?(:cljs List)
-  #?(:cljs (expand [this] (expand-seqs this)))
-
-  #?(:clj  clojure.lang.PersistentVector
-     :cljs PersistentVector)
-  (expand [this] (expand-rule this))
-
-  #?(:cljs Subvec)
-  #?(:cljs (expand [this] (expand-rule this)))
-
-  #?(:cljs BlackNode)
-  #?(:cljs (expand [this] (expand-rule this)))
-
-  #?(:cljs RedNode)
-  #?(:cljs (expand [this] (expand-rule this)))
-
-  #?(:clj clojure.lang.PersistentArrayMap
-     :cljs PersistentArrayMap)
-  (expand [this] (list (expand-declaration this)))
-
-  #?(:clj clojure.lang.PersistentHashMap
-     :cljs PersistentHashMap)
-  (expand [this] (list (expand-declaration this)))
-
-  #?(:cljs PersistentTreeMap)
-  #?(:cljs (expand [this] (list (expand-declaration this))))
-
-  #?(:clj Object
-     :cljs default)
-  (expand [this] (list this))
-
-  CSSFunction
-  (expand [this] (list this))
-
-  CSSAtRule
-  (expand [this] (expand-at-rule this))
-
-  nil
-  (expand [this] nil))
+(defmethod compile-node :css/unit
+  [[_ magnitude-node unit-node] env]
+  (str (compile-node magnitude-node env)
+       (compile-node unit-node env)))
 
 ;; ---------------------------------------------------------------------
-;; Rendering
+;; calc compilation
 
-(defprotocol CSSRenderer
-  (render-css [this]
-    "Convert a Clojure data type in to a string of CSS."))
+(defmethod compile-node :css/calc
+  [[_ value-node] env]
+  (str "calc"
+       (:round-brace-left env)
+       (compile-node value-node env)
+       (:round-brace-right env)))
 
-;; ---------------------------------------------------------------------
-;; Punctuation
+(defmethod compile-node :css.calc/difference
+  [[_ value-node-1 value-node-2] env]
+  (str (:round-brace-left env)
+       (compile-node value-node-1 env)
+       (:minus env)
+       (compile-node value-node-2 env)
+       (:round-brace-right env)))
 
-(def ^:private comma ", ")
-(def ^:private colon ": ")
-(def ^:private semicolon ";")
-(def ^:private l-brace " {\n")
-(def ^:private r-brace "\n}")
-(def ^:private l-brace-1 " {\n\n")
-(def ^:private r-brace-1 "\n\n}")
-(def ^:private rule-sep "\n\n")
-(def ^:private indent "  ")
+(defmethod compile-node :css.calc/product
+  [[_ value-node-1 value-node-2] env]
+  (str (:round-brace-left env)
+       (compile-node value-node-1 env)
+       (:times env)
+       (compile-node value-node-2 env)
+       (:round-brace-right env)))
 
-(defn- space-separated-list
-  "Return a space separated list of values."
-  ([xs]
-   (space-separated-list render-css xs))
-  ([f xs]
-   (string/join " " (map f xs))))
+(defmethod compile-node :css.calc/quotient
+  [[_ value-node-1 value-node-2] env]
+  (str (:round-brace-left env)
+       (compile-node value-node-1 env)
+       (:obelus env)
+       (compile-node value-node-2 env)
+       (:round-brace-right env)))
 
-(defn- comma-separated-list
-  "Return a comma separated list of values. Subsequences are joined with
-   spaces."
-  ([xs]
-   (comma-separated-list render-css xs))
-  ([f xs]
-   (let [ys (for [x xs]
-              (if (sequential? x)
-                (space-separated-list f x)
-                (f x)))]
-     (string/join comma ys))))
-
-(defn- rule-join [xs]
-  (string/join rule-sep xs))
-
-(def
-  ^{:private true
-    :doc "Match the start of a line if the characters immediately
-  after it are spaces or used in a CSS id (#), class (.), or tag name."}
-  indent-loc-re
-  #?(:clj
-     #"(?m)(?=[\sA-z#.}-]+)^")
-  #?(:cljs
-     (js/RegExp. "(?=[ A-Za-z#.}-]+)^" "gm")))
-
-(defn- indent-str [s]
-  #?(:clj
-     (string/replace s indent-loc-re indent))
-  #?(:cljs
-     (.replace s indent-loc-re indent)))
+(defmethod compile-node :css.calc/sum
+  [[_ value-node-1 value-node-2] env]
+  (str (:round-brace-left env)
+       (compile-node value-node-1 env)
+       (:plus env)
+       (compile-node value-node-2 env)
+       (:round-brace-right env)))
 
 ;; ---------------------------------------------------------------------
-;; Declaration rendering
+;; Media query compilation
 
-(defn- render-value
-  "Render the value portion of a declaration."
-  [x]
-  (cond
-    (util/at-keyframes? x)
-    (util/to-str (get-in x [:value :identifier]))
+(defmethod compile-node :css.media.query/conjunction
+  [[_ & child-nodes] env]
+  (string/join " and " (compile-nodes child-nodes env)))
 
-    (or (keyword? x)
-        (symbol? x))
-    (identifier-name x)
+(defmethod compile-node :css.media.query/constraint
+  [[_ constraint] _]
+  (str (name constraint) " "))
 
-    :else
-    (render-css x)))
+(defmethod compile-node :css.media.query/expression
+  [[_ & [feature value]] env]
+  (str 
+   (:round-brace-left env)
+   (if value
+     (str (compile-node feature env)
+          (:colon env)
+          (compile-node value env))
+     (compile-node feature env))
+   (:round-brace-right env)))
 
-(defn- render-property-and-value
-  [[prop val]]
-  (if (set? val)
-    (->> (interleave (repeat prop) val)
-         (partition 2)
-         (map render-property-and-value)
-         (string/join "\n"))
-    (let [val (if (sequential? val)
-                (comma-separated-list render-value val)
-                (render-value val))]
-      (util/as-str prop colon val semicolon))))
+(defmethod compile-node :css.media.query/feature
+  [[_ feature] env]
+  (name feature))
 
-(defn- add-blocks
-  "For each block in `declaration`, add sequence of blocks returned
-  from calling `f` on the block."
-  [f declaration]
-  (mapcat #(cons % (f %)) declaration))
+(defmethod compile-node :css.media.query/type
+  [[_ type] _]
+  (name type))
 
-(defn- prefixed-blocks
-  "Sequence of blocks with their properties prefixed by each vendor in
-  `vendors`."
-  [vendors [p v]]
-  (for [vendor vendors]
-    [(util/vendor-prefix vendor p) v]))
+(defmethod compile-node :css.media.query/value
+  [[_ value] env]
+  (str value))
 
-(defn- prefix-all-properties
-  "Add prefixes to all blocks in `declaration` using vendor prefixes
-  in `vendors`."
-  [vendors declaration]
-  (add-blocks (partial prefixed-blocks vendors) declaration))
+(defmethod compile-node :css.media/query
+  [[_ constraint type conjunction] env]
+  (let [query-head  (str (compile-node constraint env)
+                         (compile-node type env))
+        query-tail (compile-node conjunction env)]
+    (case [(empty? query-head) (empty? query-tail)]
+      [true true]
+      ""
 
-(defn- prefix-auto-properties
-  "Add prefixes to all blocks in `declaration` when property is in the
-  `:auto-prefix` set."
-  [vendors declaration]
-  (add-blocks
-   (fn [block]
-     (let [[p _] block]
-       (when (auto-prefix? p)
-         (prefixed-blocks vendors block))))
-   declaration))
+      [true false]
+      query-tail
 
-(defn- prefix-declaration
-  "Prefix properties within a `declaration` if `{:prefix true}` is
-   set in its meta, or if a property is in the `:auto-prefix` set."
-  [declaration]
-  (let [vendors (or (:vendors (meta declaration))
-                    (vendors))
-        prefix-fn (if (:prefix (meta declaration))
-                    prefix-all-properties
-                    prefix-auto-properties)]
-    (prefix-fn vendors declaration)))
+      [false true]
+      query-head
 
-(defn- render-declaration
-  [declaration]
-  (->> (prefix-declaration declaration)
-       (map render-property-and-value)
-       (string/join "\n")))
+      [false false]
+      (str query-head " and " query-tail))))
+
+(defmethod compile-node :css.media/query-list
+  [[_ & query-nodes] env]
+  (string/join (:comma env) (compile-nodes query-nodes env)))
+
+(defmethod compile-node :css.media/rule
+  [[_ query-list-node & child-nodes] env]
+  (let [new-env (inc-nesting-level env)]
+    (str "@media "
+         (compile-node query-list-node env)
+         (:curly-brace-left env)
+         (string/join (:separator env)
+                      (compile-nodes child-nodes new-env))
+         (:curly-brace-right env))))
 
 ;; ---------------------------------------------------------------------
-;; Rule rendering
+;; Keyframes compilation
 
-(defn- render-selector
-  [selector]
-  (comma-separated-list selector))
+(defmethod compile-node :css/keyframes
+  [[_ name-node block-node] env]
+  (string/join
+   (:separator env)
+   (cons
+    (str "@keyframes "
+         (compile-node name-node env)
+         (compile-node block-node env))
+    (for [vendor (:vendors env)]
+      (str "@-" (name vendor) "-keyframes "
+           (compile-node name-node env)
+           (compile-node block-node env))))))
 
-(defn- render-rule
-  "Convert a vector to a CSS rule string. The vector is expected to be
-  fully expanded."
-  [[selector declarations :as rule]]
-  (when (and (seq rule) (every? seq rule))
-    (str (render-selector selector)
-         l-brace
-         (->> (map render-css declarations)
-              (string/join "\n")
-              (indent-str))
-         r-brace)))
+(defmethod compile-node :css.keyframes/name
+  [[_ name] env]
+  name)
 
-;; ---------------------------------------------------------------------
-;; Media query rendering
+(defmethod compile-node :css.keyframes/block
+  [[_ & child-nodes] env]
+  (let [new-env (inc-nesting-level env)]
+    (str
+     (:curly-brace-left env)
+     (string/join (:separator env)
+                  (compile-nodes child-nodes new-env))
+     (indent env)
+     (:curly-brace-right env))))
 
-(defn- render-media-expr-part
-  "Render the individual components of a media expression."
-  [[k v]]
-  (let [[sk sv] (map render-value [k v])]
-    (cond
-      (true? v) sk
-      (false? v) (str "not " sk)
-      (= "only" sv) (str "only " sk)
-      :else (if (and v (seq sv))
-              (str "(" sk colon sv ")")
-              (str "(" sk ")")))))
+(defmethod compile-node :css.selector/keyframe
+  [[_ selector-node] env]
+  (compile-node selector-node env))
 
-(defn- render-media-expr
-  "Make a media query expession from one or more maps. Keys are not
-  validated but values have the following semantics:
-  
-    `true`  as in `{:screen true}`  == \"screen\"
-    `false` as in `{:screen false}` == \"not screen\"
-    `:only` as in `{:screen :only}  == \"only screen\""
-  [expr]
-  (if (sequential? expr)
-    (->> (map render-media-expr expr)
-         (comma-separated-list))
-    (->> (map render-media-expr-part expr)
-         (string/join " and "))))
-
-;; ---------------------------------------------------------------------
-;; Garden type rendering
-
-(defn- render-function
-  "Render a CSS function."
-  [css-function]
-  (let [{:keys [function args]} css-function
-        args (if (sequential? args)
-               (comma-separated-list args)
-               (util/to-str args))]
-    (util/format "%s(%s)" (util/to-str function) args)))
-
-;; ---------------------------------------------------------------------
-;; At-rule rendering
-
-(defmulti ^:private render-at-rule
-  "Render a CSS at-rule"
-  :identifier)
-
-(defmethod render-at-rule :default [_] nil)
-
-;; @import
-
-(defmethod render-at-rule :import
-  [{:keys [value]}]
-  (let [{:keys [url media-queries]} value 
-        url (if (string? url)
-              (util/wrap-quotes url)
-              (render-css url))
-        queries (when media-queries
-                  (render-media-expr media-queries))]
-    (str "@import "
-         (if queries (str url " " queries) url)
-         semicolon)))
-
-;; @keyframes
-
-(defmethod render-at-rule :keyframes
-  [{:keys [value]}]
-  (let [{:keys [identifier frames]} value]
-    (when (seq frames)
-      (let [body (str (util/to-str identifier)
-                      l-brace-1
-                      (->> (map render-css frames)
-                           (rule-join)
-                           (indent-str))
-                      r-brace-1)
-            prefix (fn [vendor]
-                     (str "@" (util/vendor-prefix vendor "keyframes ")))]
-        (->> (map prefix (vendors))
-             (cons "@keyframes ")
-             (map #(str % body))
-             (rule-join))))))
-
-;; @media
-
-(defmethod render-at-rule :media
-  [{:keys [value]}]
-  (let [{:keys [media-queries rules]} value]
-    (when (seq rules)
-      (str "@media "
-           (render-media-expr media-queries)
-           l-brace-1
-           (-> (map render-css rules)
-               (rule-join)
-               (indent-str)) 
-           r-brace-1))))
+(defmethod compile-node :css.keyframes/rule
+  [[_ selector-node declaration-block-node] env]
+  (str (indent env)
+       (compile-node selector-node env)
+       (compile-node declaration-block-node env)))
 
 
-;; ---------------------------------------------------------------------
-;; CSSRenderer implementation
-
-#?(:clj
-   (extend-protocol CSSRenderer
-     nil
-     (render-css [this] "")
-
-     clojure.lang.Keyword
-     (render-css [k] (name k))
-
-     clojure.lang.PersistentArrayMap
-     (render-css [this] (render-declaration this))
-
-     clojure.lang.PersistentHashMap
-     (render-css [this] (render-declaration this))
-
-     clojure.lang.PersistentVector
-     (render-css [this] (render-rule this))
-
-     clojure.lang.ISeq
-     (render-css [this] (map render-css this))
-
-     clojure.lang.Ratio
-     (render-css [this] (str (float this)))
-
-     Object
-     (render-css [this] (str this)))
-
-   :cljs
-   (extend-protocol CSSRenderer
-     default
-     (render-css [this] (str this))
-
-     nil
-     (render-css [this] "")
-
-     number
-     (render-css [this] (str this))
-
-     ArrayNodeSeq
-     (render-css [this] (map render-css this))
-
-     BlackNode
-     (render-css [this] (render-rule this))
-
-     Cons
-     (render-css [this] (map render-css this))
-
-     ChunkedCons
-     (render-css [this] (map render-css this))
-
-     ChunkedSeq
-     (render-css [this] (map render-css this))
-
-     IndexedSeq
-     (render-css [this] (map render-css this))
-
-     Keyword
-     (render-css [this] (name this))
-
-     LazySeq
-     (render-css [this] (map render-css this))
-     
-     List
-     (render-css [this] (map render-css this))
-
-     NodeSeq
-     (render-css [this] (map render-css this))
-
-     PersistentArrayMap
-     (render-css [this] (render-declaration this))
-
-     PersistentArrayMapSeq
-     (render-css [this] (map render-css this))
-
-     PersistentHashMap
-     (render-css [this] (render-declaration this))
-
-     PersistentTreeMap
-     (render-css [this] (render-declaration this))
-
-     RedNode
-     (render-css [this] (render-rule this))
-
-     RSeq
-     (render-css [this] (map render-css this))
-
-     Subvec
-     (render-css [this] (render-rule this))))
-
-(extend-protocol CSSRenderer
-  CSSFunction
-  (render-css [this] (render-function this))
-
-  CSSAtRule
-  (render-css [this] (render-at-rule this))
-
-  Hsl
-  (render-css [c]
-    (str "hsl("
-         (comma-separated-list
-          [(color/hue c)
-           (str (color/saturation c) "%")
-           (str (color/lightness c) "%")])
-         ")"))
-
-
-  Hsla
-  (render-css [c]
-    (str "hsla("
-         (comma-separated-list
-          [(color/hue c)
-           (str (color/saturation c) "%")
-           (str (color/lightness c) "%")
-           (color/alpha c)])
-         ")"))
-
-  Rgb
-  (render-css [c]
-    (str "rgb("
-         (comma-separated-list
-          [(color/red c)
-           (color/blue c)
-           (color/green c)])
-         ")"))
-
-
-  Rgba
-  (render-css [c]
-    (str "rgba("
-         (comma-separated-list
-          [(color/red c)
-           (color/blue c)
-           (color/green c)
-           (color/alpha c)])
-         ")"))
-
-  Unit
-  (render-css [u]
-    (let [magnitude (units/magnitude u)
-          magnitude #?(:clj (if (ratio? magnitude)
-                              (float magnitude)
-                              magnitude)
-                       :cljs magnitude)
-          measurement (name (units/measurement u))]
-      (str magnitude measurement))))
-
-;; ---------------------------------------------------------------------
-;; Compilation
+;; =====================================================================
+;; Main API
 
 (defn compile-style
   "Convert a sequence of maps into CSS for use with the HTML style
    attribute."
-  [ms]
-  (->> (filter util/declaration? ms)
-       (reduce merge)
-       (expand)
-       (render-css)
-       (first)))
+  [maps]
+  {:pre [(every? map? maps)]}
+  (transduce
+   (comp
+    ;; A sequence of :css/declaration-block nodes.
+    (map garden.parse/parse)
+    (mapcat
+     (fn [node]
+       (garden.normalize/flatten-node node garden.normalize/empty-context)))
+    ;; An alternating sequence of :css.declaration/property and
+    ;; :css.declaration/value nodes.
+    (mapcat garden.ast/children)
+    (map (fn [node] (compile-node node default-env))))
+   str
+   ""
+   maps))
 
-(defn- do-compile
-  "Return a string of CSS."
-  [flags rules]
-  (binding [*flags* flags]
-    (->> (expand-stylesheet rules)
-         (filter top-level-expression?) 
-         (map render-css)
-         (remove nil?)
-         (rule-join))))
+(defn compile-vdom-style
+  "Convert a sequence of maps into a map for use with the a virtual
+  DOM `style` attribute."
+  [maps]
+  {:pre [(every? map? maps)]}
+  (transduce
+   (comp 
+    ;; A sequence of :css/declaration-block nodes.
+    (map garden.parse/parse)
+    ;; A sequence of :css/declaration nodes.
+    (mapcat garden.ast/children)
+    ;; A sequence of :css.declaration/property and
+    ;; :css.declaration/value pairs.
+    (map garden.ast/children)
+    ;; A sequence of compiled property and value pairs.
+    (map (fn [property-and-value-nodes]
+           (vec (compile-nodes property-and-value-nodes default-env)))))
+   conj
+   {}
+   maps))
+
+(defn- do-compile [options xs]
+  (let [env (if (:pretty-print? options)
+              (merge pretty-env options)
+              (merge default-env options))]
+    (-> xs
+        (garden.parse/parse)
+        (garden.normalize/normalize)
+        (compile-node env))))
 
 (defn- do-preamble
   "Prefix stylesheet with files in preamble. Not available in
@@ -781,31 +444,18 @@
   #?(:cljs
      stylesheet))
 
-(defn- do-compression
-  "Compress CSS if the pretty-print(?) flag is true."
-  [{:keys [pretty-print? pretty-print]} stylesheet]
-  ;; Also accept pretty-print like CLJS.
-  (if (or pretty-print? pretty-print) 
-    stylesheet
-    (compression/compress-stylesheet stylesheet)))
-
 (defn- do-output-to
   "Write contents of stylesheet to disk."
   [{:keys [output-to]} stylesheet]
   #?(:clj
      (when output-to
-       (save-stylesheet output-to stylesheet)
+       (spit output-to stylesheet)
        (println "Wrote:" output-to)))
   stylesheet)
 
 (defn compile-css
   "Convert any number of Clojure data structures to CSS."
-  [flags & rules]
-  (let [[flags rules] (if (and (util/hash-map? flags)
-                               (some (set (keys flags)) (keys *flags*)))
-                        [(merge *flags* flags) rules]
-                        [*flags* (cons flags rules)])]
-    (->> (do-compile flags rules)
-         (do-preamble flags)
-         (do-compression flags)
-         (do-output-to flags))))
+  [options xs]
+  (->> (do-compile options xs)
+       (do-preamble options)
+       (do-output-to options)))
