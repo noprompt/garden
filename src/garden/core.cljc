@@ -5,7 +5,7 @@
 (defn ^String css
   "Convert a variable number of Clojure data structure to a string of
   CSS. The first argument may be a list of flags for the compiler."
-  {:arglists '([& rules] [flags? & rules])}
+  {:arglists '([& rules] [flags & rules])}
   [& xs]
   (let [potential-options (first xs)
         options (when (and (map? potential-options)
