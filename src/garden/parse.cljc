@@ -1,10 +1,9 @@
 (ns garden.parse
   "Parser for Garden syntax."
-  (:require
-   [clojure.spec :as spec]
-   [garden.ast])
   #?@(:clj
       [(:require
+        [clojure.spec :as spec]
+        [garden.ast]
         [garden.color]
         [garden.units])
        (:import
@@ -12,8 +11,9 @@
         (garden.units Unit))]
       :cljs
       [(:require
-        [garden.color :refer [Hsl Hsla Rgb Rgba]])
-       (:require
+        [clojure.spec :as spec]
+        [garden.ast]
+        [garden.color :refer [Hsl Hsla Rgb Rgba]]
         [garden.units :refer [Unit]])]))
 
 (defprotocol IParse
