@@ -40,8 +40,7 @@
    :tab "  "
    :times "*"
    ;; A list of vendor prefixes to prepend to things like
-   ;; `@keyframes`, properties within declarations containing the
-   ;; `^:prefix` meta data, and properties defined in `:auto-prefix`.
+   ;; `@keyframes`, properties, etc.
    :vendors []})
 
 (def pretty-env
@@ -81,18 +80,18 @@
   (update env :nesting-level inc))
 
 (defn- vendors
-  "Return the current set of browser vendors specified in `env`."
+  "Return the set of browser vendors specified in `env`."
   [env]
   (:vendors env))
 
-(defn- auto-prefixed-properties
-  "Return the current list of auto-prefixed properties specified in `env`."
+(defn- prefixed-properties
+  "Return the list of prefixed properties specified in `env`."
   [env]
-  (:auto-prefix env))
+  (:prefix-properties env))
 
-(defn- auto-prefix?
+(defn- prefix-property?
   [env property]
-  (contains? (auto-prefixed-properties env) property))
+  (contains? (prefixed-properties env) property))
 
 
 ;; =====================================================================
@@ -126,7 +125,7 @@
   [[_ property-node value-node :as node] env]
   (let [compiled-property (compile-node property-node env)
         compiled-value (compile-node value-node env)]
-    (if (auto-prefix? env compiled-property)
+    (if (prefix-property? env compiled-property)
       (string/join 
        (for [vendor (vendors env)]
          (str

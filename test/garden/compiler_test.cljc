@@ -227,11 +227,10 @@
       (is (re-find #"@-webkit-keyframes" compiled))
       (is (re-find #"@keyframes" compiled))))
 
-  (testing ":auto-prefix"
+  (testing ":prefix-properties"
     (let [compiled (garden.compiler/compile-css
                     {:prefix-properties #{"a" "b"}
-                     :vendors #{:moz :webkit}
-                     :pretty-print? false}
+                     :vendors #{:moz :webkit}}
                     [:x {:a 1 :b 1 :c 1}])]
       (are [re] (re-find re compiled)
         #"-moz-a:1"
