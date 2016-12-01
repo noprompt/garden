@@ -10,8 +10,8 @@
   :dependencies
   [[org.clojure/clojure "1.9.0-alpha13" :scope "provided"]
    [org.clojure/clojurescript "1.9.293" :scope "provided"]
-   [garden/garden-color "1.0.0"]
-   [garden/garden-units "1.0.0"]]
+   [garden/garden-color "1.0.0-RC1"]
+   [garden/garden-units "1.0.0-RC1"]]
 
   :npm
   {:dependencies [[source-map-support "0.4.0"]]}
@@ -25,7 +25,7 @@
                    [hiccup "1.0.5"]]
     :jvm-opts ["-Dclojure.spec.compile-asserts=true"
                "-Dclojure.spec.check-asserts=true"]
-    :plugins  [[codox "0.9.1"]
+    :plugins  [[lein-codox "0.10.2"]
                [lein-npm "0.6.1"]
                [com.jakemccrary/lein-test-refresh "0.17.0"]]
     :source-paths ["src" "test" "dev"]}}
