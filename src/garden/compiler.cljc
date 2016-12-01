@@ -13,9 +13,7 @@
 ;; Compiler environments
 
 (def default-env
-  {;; A set of properties to automatically prefix with `:vendors`.
-   :auto-prefix #{}
-   :comma ","
+  {:comma ","
    :colon ":"
    :curly-brace-left "{"
    :curly-brace-right "}"
@@ -27,6 +25,8 @@
    :plus "+"
    ;; A sequence of files to prepend to the output file.
    :preamble []
+   ;; A set of property names to automatically prefix with `:vendors`.
+   :prefix-properties #{}
    ;; When set to `true` the compiled stylesheet will be "pretty
    ;; printed." This would be equivalent to setting
    ;; `{:ouput-style => :expanded}` in Sass. When set to `false`

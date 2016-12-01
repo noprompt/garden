@@ -229,7 +229,7 @@
 
   (testing ":auto-prefix"
     (let [compiled (garden.compiler/compile-css
-                    {:auto-prefix #{"a" "b"}
+                    {:prefix-properties #{"a" "b"}
                      :vendors #{:moz :webkit}
                      :pretty-print? false}
                     [:x {:a 1 :b 1 :c 1}])]
