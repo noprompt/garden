@@ -8,6 +8,7 @@
    [garden.selectors :as selectors]
    [garden.util :as util]))
 
+
 ;; =====================================================================
 ;; Compiler environments
 
@@ -454,8 +455,8 @@
   stylesheet)
 
 (defn compile-css
-  "Convert any number of Clojure data structures to CSS."
-  [options xs]
-  (->> (do-compile options xs)
+  "Compile `x` to CSS."
+  [options x]
+  (->> (do-compile options x)
        (do-preamble options)
        (do-output-to options)))
