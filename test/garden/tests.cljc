@@ -3,6 +3,8 @@
    #?(:cljs [cljs.test :as t :refer-macros [is are deftest testing]]
       :clj  [clojure.test :as t :refer [is are deftest testing]])
    garden.compiler-test
+   garden.normalize-test
+   garden.parse-test
    garden.selectors-test
    garden.stylesheet-test
    garden.util-test))
