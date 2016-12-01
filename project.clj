@@ -11,7 +11,7 @@
   [[org.clojure/clojure "1.9.0-alpha13" :scope "provided"]
    [org.clojure/clojurescript "1.9.293" :scope "provided"]
    [garden/garden-color "1.0.0-RC1"]
-   [garden/garden-units "1.0.0-RC1"]]
+   [garden/garden-units "1.0.0-RC2"]]
 
   :npm
   {:dependencies [[source-map-support "0.4.0"]]}
