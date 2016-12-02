@@ -72,3 +72,9 @@
   [x]
   (and (node? x)
        (= (tag x) :css/import)))
+
+(defn function?
+  "True if `x` is a CSS import node, false otherwise."
+  [x]
+  (and (node? x)
+       (= (tag x) :css/function)))

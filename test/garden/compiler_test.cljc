@@ -242,4 +242,21 @@
         #"c:1")
 
       (is (not (re-find #"-moz-c:1" compiled)))
-      (is (not (re-find #"-webkit-c:1" compiled))))))
+      (is (not (re-find #"-webkit-c:1" compiled)))))
+
+  (testing ":prefix-functions"
+    (let [fn-a (stylesheet/cssfn :a)
+          fn-b (stylesheet/cssfn :b)
+          fn-c (stylesheet/cssfn :c)
+          compiled (garden.compiler/compile-css
+                    {:prefix-functions #{"a" "b"}
+                     :vendors #{:moz :webkit}}
+                    {:x [(fn-a 1) (fn-b 1) (fn-c 1)]})]
+      (are [re] (re-find re compiled)
+        #"x:-moz-a\(1\),-moz-b\(1\),c\(1\)"
+        #"x:-webkit-a\(1\),-webkit-b\(1\),c\(1\)"
+        #"x:a\(1\),b\(1\),c\(1\)")
+
+      (is (not (re-find #"-moz-c\(1\)" compiled)))
+      (is (not (re-find #"-webkit-c\(1\)" compiled)))))
+  )

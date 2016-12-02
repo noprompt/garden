@@ -2,6 +2,7 @@
   "Functions for compiling Clojure data structures to CSS."
   (:require
    [clojure.string :as string]
+   [clojure.spec :as spec]
    [garden.ast]
    [garden.normalize]
    [garden.parse]
@@ -12,9 +13,34 @@
 ;; =====================================================================
 ;; Compiler environments
 
+(spec/def ::env
+  (spec/keys :req-un [::colon
+                      ::comma
+                      ::curly-brace-left
+                      ::curly-brace-right
+                      ::current-vendor
+                      ::minus
+                      ::nesting-level
+                      ::obelus
+                      ::output-to
+                      ::plus
+                      ::preamble
+                      ::prefix-properties
+                      ::prefix-functions
+                      ::pretty-print?
+                      ::round-brace-left
+                      ::round-brace-right
+                      ::selector-context
+                      ::semicolon
+                      ::separator
+                      ::tab
+                      ::times
+                      ::vendors]))
+
 (def default-env
   {:comma ","
    :colon ":"
+   :current-vendor nil
    :curly-brace-left "{"
    :curly-brace-right "}"
    :minus "-"
@@ -25,7 +51,11 @@
    :plus "+"
    ;; A sequence of files to prepend to the output file.
    :preamble []
-   ;; A set of property names to automatically prefix with `:vendors`.
+   ;; A set of function names to automatically vendor prefix with
+   ;; `:vendors`.
+   :prefix-functions #{}
+   ;; A set of property names to automatically vendor prefix with
+   ;; `:vendors`.
    :prefix-properties #{}
    ;; When set to `true` the compiled stylesheet will be "pretty
    ;; printed." This would be equivalent to setting
@@ -84,6 +114,10 @@
   [env]
   (:vendors env))
 
+(defn- vendors?
+  [env]
+  (not (empty? (:vendors env))))
+
 (defn- prefixed-properties
   "Return the list of prefixed properties specified in `env`."
   [env]
@@ -93,24 +127,41 @@
   [env property]
   (contains? (prefixed-properties env) property))
 
+(defn- prefixed-functions
+  "Return the list of prefixed functions specified in `env`."
+  [env]
+  (:prefix-functions env))
+
+(defn- prefix-function?
+  [env function]
+  (contains? (prefixed-functions env) function))
+
+(defn contains-functions-needing-prefix?
+  "true if `node` contains at least one `:css/function` node whose
+  identifier is a member of the environment `env`'s
+  `:prefix-functions` value."
+  {:private true}
+  [node env]
+  (and (vendors? env)
+       (boolean
+        (some
+         (fn [x]
+           (when (garden.ast/function? x)
+             (let [[identifier-node] (garden.ast/children x)
+                   [_ identifier] identifier-node]
+               (prefix-function? env identifier))))
+         (tree-seq garden.ast/node? garden.ast/children node)))))
+
 
 ;; =====================================================================
 ;; Node compilation
-
-(defn tag
-  "Used to retrieve the tag from tagged union value (e.g. a vector
-  such that the first element is a keyword)."
-  {:private true}
-  [[tag :as tagged-data]]
-  {:pre [(vector? tagged-data)]}
-  tag)
 
 (defmulti
   ^{:arglists '([node env])}
   compile-node
   "Compile a CSS AST node."
   (fn [node env]
-    (tag node))
+    (garden.ast/tag node))
   :default ::unknown-node)
 
 (defn compile-nodes [nodes env]
@@ -123,23 +174,55 @@
 
 (defmethod compile-node :css/declaration
   [[_ property-node value-node :as node] env]
-  (let [compiled-property (compile-node property-node env)
-        compiled-value (compile-node value-node env)]
-    (if (prefix-property? env compiled-property)
-      (string/join 
-       (for [vendor (vendors env)]
-         (str
-          (indent env)
-          "-" (name vendor) "-" compiled-property
-          (:colon env)
-          compiled-value
-          (:semicolon env))))
-      (str
-       (indent env)
-       compiled-property
-       (:colon env)
-       compiled-value
-       (:semicolon env)))))
+  (let [[_ property] property-node
+        compiled-declaration (str
+                              (indent env)
+                              (compile-node property-node env)
+                              (:colon env)
+                              (compile-node value-node env)
+                              (:semicolon env))]
+    (case [(prefix-property? env property)
+           (contains-functions-needing-prefix? value-node env)]
+      [true true]
+      (string/join
+       (cons compiled-declaration
+             (for [vendor (vendors env)
+                   :let [env* (assoc env :current-vendor vendor)]]
+               (str
+                (indent env)
+                (compile-node property-node env*)
+                (:colon env)
+                (compile-node value-node env*)
+                (:semicolon env)))))
+
+      [true false]
+      (let [compiled-value (compile-node value-node env)]
+        (string/join
+         (cons compiled-declaration
+               (for [vendor (vendors env)
+                     :let [env* (assoc env :current-vendor vendor)]]
+                 (str
+                  (indent env)
+                  (compile-node property-node env*)
+                  (:colon env)
+                  compiled-value
+                  (:semicolon env))))))
+
+      [false true]
+      (let [compiled-property (compile-node property-node env)]
+        (string/join
+         (cons compiled-declaration
+               (for [vendor (vendors env)
+                     :let [env* (assoc env :current-vendor vendor)]]
+                 (str
+                  (indent env)
+                  compiled-property
+                  (:colon env)
+                  (compile-node value-node env*)
+                  (:semicolon env))))))
+
+      [false false]
+      compiled-declaration)))
 
 (defmethod compile-node :css/fragment
   [[_ & children] env]
@@ -155,19 +238,27 @@
      (:curly-brace-right env))))
 
 (defmethod compile-node :css.declaration/property
-  [[_ property] _]
-  (name property))
+  [[_ property] env]
+  (if-let [vendor (:current-vendor env)]
+    (str "-" (name vendor) "-" (name property))
+    (name property)))
 
 (defmethod compile-node :css.declaration/value
   [[_ value-node] env]
   (compile-node value-node env))
 
 (defmethod compile-node :css/function
-  [[_ identifier arguments] env]
-  (str (compile-node identifier env)
-       (:round-brace-left env)
-       (compile-node arguments env)
-       (:round-brace-right env)))
+  [[_ identifier-node arguments] env]
+  (let [[_ identifier] identifier-node
+        identifier (if (prefix-function? env identifier)
+                     (if-let [vendor (:current-vendor env)]
+                       (str "-" (name vendor) "-" identifier)
+                       identifier)
+                     identifier)]
+    (str identifier
+         (:round-brace-left env)
+         (compile-node arguments env)
+         (:round-brace-right env))))
 
 (defmethod compile-node :css/identifier
   [[_ identifier] _]
