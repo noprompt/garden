@@ -2,7 +2,9 @@
 
 `2.0.0-alpha1` has *breaking changes*.
 
-### Changes to `garden.units`
+### API Changes
+
+#### Changes to `garden.units`
 
 The namespace `garden.units` has been extracted into a
 [separate project](https://github.com/garden-clojure/garden-units)
@@ -19,7 +21,7 @@ code and to simplify implementation.
 Unit specific arithmetic operations (i.e. `px+`, `in+`, etc.) have
 been replaced by more generic `+`, `-`, `*`, and `/`.
 
-### Changes to `garden.color`
+#### Changes to `garden.color`
 
 The namespace `garden.color` has been extracted into a
 [separate project](https://github.com/garden-clojure/garden-color)
@@ -66,11 +68,53 @@ have been replaced by the more generic `+`, `-`, `*`, and `/`.
 (color/rgb [0 1 2])
 ```
 
-### Other changes
+#### Compiler options
+
+`:auto-prefix` has been renamed to `:prefix-properties` since this was
+it's role.
+
+`:prefix-functions` has been added to support automatic and configured
+vendor prefixing of functions.
+
+`:media-expressions` has been removed.
+
+
+#### Other changes
 
 The namespace `garden.arithmetic` has been eliminated as both
 `garden.units` and `garden.color` provide operators arithmetic
 operators for types in their respective domains.
+
+### Syntax changes
+
+#### Selector syntax
+
+Selector syntax has changed since version 1 and is likely the most
+significant breaking change. Selectors must either be a `Keyword`,
+`Symbol`, a vector of either two, or a set of the previous three.
+A variable number of selectors at the head of a rule is no longer
+supported.
+
+```clj
+[:x]
+;; Compiles to x{}
+
+[[:x :y] ,,,]
+;; Compiles to x y{}
+
+[#{:x :y}]
+;; Compiles to x,y{}
+
+[#{[:w :x] [:y :z]}]
+;; Compiles to w x,y z{}
+
+[#{[:v :w] :x [:y :z]}]
+;; Compiles to v w,x,y z{}
+```
+
+This change was made to simplify both the syntax and parsing.
+
+#### Declaration syntax
 
 Namespaced keywords are honored as prefixes for properties and
 identifiers. The rule
