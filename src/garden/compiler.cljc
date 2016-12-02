@@ -180,9 +180,13 @@
                               (compile-node property-node env)
                               (:colon env)
                               (compile-node value-node env)
-                              (:semicolon env))]
-    (case [(prefix-property? env property)
-           (contains-functions-needing-prefix? value-node env)]
+                              (:semicolon env))
+        prefix? (:prefix? (meta node))
+        prefix-property? (or prefix?
+                             (prefix-property? env property))
+        prefix-functions? (or prefix?
+                              (contains-functions-needing-prefix? value-node env))]
+    (case [prefix-property? prefix-functions?]
       [true true]
       (string/join
        (cons compiled-declaration

@@ -103,6 +103,14 @@
            (spec/tuple ::declaration-property
                        ::declaration-value)))
 
+;; Support ^:prefix {,,,}.
+(spec/def ::declaration-block-with-prefix
+  (spec/and (fn [x]
+              (and (map? x)
+                   (not (record? x))
+                   (:prefix (meta x))))
+            (spec/* ::declaration)))
+
 (spec/def ::declaration-block
   (spec/and (fn [x]
               (and (map? x)
@@ -131,7 +139,8 @@
            ::complex-selector ::complex-selector))
 
 (spec/def ::vector-rule-child
-  (spec/or ::declaration-block ::declaration-block
+  (spec/or ::declaration-block-with-prefix ::declaration-block-with-prefix
+           ::declaration-block ::declaration-block
            ::vector-rule ::vector-rule
            ::iparse ::iparse))
 
@@ -212,6 +221,19 @@
   (into
    [:css.declaration/block]
    (map process-tagged-parse-data parse-data)))
+
+(defmethod process-tagged-parse-data ::declaration-block-with-prefix
+  [[_ parse-data]]
+  (into
+   [:css.declaration/block]
+   (map (fn [data]
+          ;; HACK: This is *extremely* undesirable. Toting around
+          ;; special meta data adds complexity here and elsewhere
+          ;; (since it must persist though AST transformations).
+          (with-meta 
+            (process-tagged-parse-data data)
+            {:prefix? true}))
+        parse-data)))
 
 (defmethod process-tagged-parse-data ::declaration
   [[_ parse-data]]
@@ -312,7 +334,7 @@
   [m]
   (let [parse-data (spec/conform ::declaration-block m)
         node (process-tagged-parse-data [::declaration-block parse-data])]
-    (with-meta node (meta m))))
+    node))
 
 (defn parse-seq
   [s]

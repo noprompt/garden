@@ -203,10 +203,10 @@
                  "calc((1+2))")))
 
 (deftest flag-tests
-  (testing ":vendors"
-    #_ ;; Unclear on the best way to implement this.
-    (let [compiled (compile-css
-                    {:vendors test-vendors :pretty-print? false}
+  (testing "^:prefix"
+    (let [compiled (garden.compiler/compile-css
+                    {:vendors #{"moz" "webkit"}
+                     :pretty-print? false}
                     [:a ^:prefix {:a 1 :b 1}])]
 
       (are [re] (re-find re compiled)
@@ -215,11 +215,13 @@
         #"a:1"
         #"-moz-b:1"
         #"-webkit-b:1"
-        #"b:1"))
+        #"b:1")))
 
-    (let [vendors [:moz :webkit]
+  (testing "@keyframes prefix"
+    (let [vendors #{"moz" "webkit"}
           compiled (garden.compiler/compile-css
-                    {:vendors vendors :pretty-print? false}
+                    {:vendors vendors
+                     :pretty-print? false}
                     (stylesheet/at-keyframes "fade"
                       [:from {:foo "bar"}]
                       [:to {:foo "baz"}]))]
@@ -258,5 +260,4 @@
         #"x:a\(1\),b\(1\),c\(1\)")
 
       (is (not (re-find #"-moz-c\(1\)" compiled)))
-      (is (not (re-find #"-webkit-c\(1\)" compiled)))))
-  )
+      (is (not (re-find #"-webkit-c\(1\)" compiled))))))

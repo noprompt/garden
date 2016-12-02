@@ -331,17 +331,21 @@
         [:css.declaration/property property*]))))
 
 (defmethod flatten-node :css/declaration
-  [[_ property-node value-node] context]
-  (let [[_ node] value-node
-        property-node* (normalize-property property-node context)]
-    (case (garden.ast/tag node)
+  [[_ property-node value-node :as node] context]
+  (let [property-node* (normalize-property property-node context)
+        [_ value-child-node] value-node]
+    (case (garden.ast/tag value-child-node)
       :css.declaration/block
-      (let [context* (assoc context :parent-property-node property-node*)
-            [_ & children] node]
-        (flatten-nodes children context*))
+      (let [context* (assoc context :parent-property-node property-node*)]
+        (flatten-nodes (garden.ast/children value-child-node) context*))
 
       ;; else
-      (list [:css/declaration property-node* value-node]))))
+      (list
+       ;; `with-meta` is a hangover form parsing declaration blocks
+       ;; which have meta attached to them. When the meta data can
+       ;; be ignored this should go away.
+       (with-meta [:css/declaration property-node* value-node]
+         (meta node))))))
 
 (defmethod flatten-node :css/fragment
   [[_ & children] context]
