@@ -517,8 +517,15 @@
     ;; A sequence of compiled property and value pairs.
     (map (fn [property-and-value-nodes]
            (vec (compile-nodes property-and-value-nodes default-env)))))
-   conj
-   {}
+
+   #?@(:clj
+       [conj {}]
+       :cljs
+       [(fn [o [p v]]
+          (if (some? v)
+            (doto o (aset p v))
+            o))
+        (js-obj)])
    maps))
 
 (defn- do-compile [options xs]
