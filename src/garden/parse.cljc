@@ -385,6 +385,10 @@
      (-parse [n]
        [:css/number n])
 
+     IndexedSeq
+     (-parse [s]
+       (parse-seq s))
+
      LazySeq
      (-parse [s]
        (parse-seq s))
@@ -396,10 +400,6 @@
      PersistentHashMap
      (-parse [m]
        (parse-hash-map m))
-
-     PersistentList
-     (-parse [s]
-       (parse-seq s))
 
      PersistentVector
      (-parse [v]
