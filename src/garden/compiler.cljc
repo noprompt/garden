@@ -159,7 +159,7 @@
           m
           (expand-declaration-1 v))
          (assoc m (util/to-str k) v)))
-     {}
+     (empty d)
      d)))
 
 (defn- expand-declaration

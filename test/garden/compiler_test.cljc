@@ -40,8 +40,20 @@
     (is (render= {:a [1 2 3]}
                  "a: 1, 2, 3;"))
     (is (render= {:a [[1 2] 3 [4 5]]}
-                 "a: 1 2, 3, 4 5;")))
-  
+                 "a: 1 2, 3, 4 5;"))
+
+    (testing "ordering"
+      (is (render= {:a 1 :b 2 :c 3 :d 4 :e 5 :f 6 :g 7 :h 8}
+                   "a: 1;\nb: 2;\nc: 3;\nd: 4;\ne: 5;\nf: 6;\ng: 7;\nh: 8;"))
+      (is (not (render= {:a 1 :b 2 :c 3 :d 4 :e 5 :f 6 :g 7 :h 8 :i 9}
+                        "a: 1;\nb: 2;\nc: 3;\nd: 4;\ne: 5;\nf: 6;\ng: 7;\nh: 8;\ni: 9;")))
+      (is (not (render= (array-map :a 1 :b 2 :c 3 :d 4 :e 5 :f 6 :g 7 :h 8 :i 9 :j 10)
+                        "a: 1;\nb: 2;\nc: 3;\nd: 4;\ne: 5;\nf: 6;\ng: 7;\nh: 8;\ni: 9;\nj: 10;")))
+      (is (render= (sorted-map :a 1 :k 11 :b 2 :j 10 :c 3 :i 9 :d 4 :h 8 :e 5 :g 7 :f 6)
+                   "a: 1;\nb: 2;\nc: 3;\nd: 4;\ne: 5;\nf: 6;\ng: 7;\nh: 8;\ni: 9;\nj: 10;\nk: 11;"))
+      (is (render= (sorted-map-by #(compare %2 %1) :a 1 :b 2 :c 3 :d 4 :e 5 :f 6 :g 7 :h 8 :i 9 :j 10 :k 11)
+                   "k: 11;\nj: 10;\ni: 9;\nh: 8;\ng: 7;\nf: 6;\ne: 5;\nd: 4;\nc: 3;\nb: 2;\na: 1;" ))))
+
   (testing "vectors"
     (is (compile= [:a {:x 1} {:y 2}]
                   "a{x:1;y:2}"))
