@@ -25,7 +25,7 @@
 (def test-vendors ["moz" "webkit"])
 
 ;; Tests
-(deftest render-css-test 
+(deftest render-css-test
   (testing "maps"
     (is (render= {:a 1}
                  "a: 1;"))
@@ -141,19 +141,19 @@
     (is (render= (CSSFunction. :x [(CSSFunction. :y 1) (CSSFunction. :z 2)])
                  "x(y(1), z(2))"))))
 
-(deftest at-rule-test 
+(deftest at-rule-test
   (testing "@import"
     (let [url "http://example.com/foo.css"]
       (is (render= (at-import url)
                    "@import \"http://example.com/foo.css\";"))
-      (is (render= (at-import url {:screen true}) 
+      (is (render= (at-import url {:screen true})
                    "@import \"http://example.com/foo.css\" screen;"))))
 
   (testing "@keyframes"
     (let [kfs (at-keyframes :id
                             [:from {:x 0}]
                             [:to {:x 1}])]
-      (is (compile= kfs 
+      (is (compile= kfs
                     "@keyframes id{from{x:0}to{x:1}}"))
       (is (compile= [:a {:d kfs}]
                     "a{d:id}")))))
