@@ -528,6 +528,7 @@
         (js-obj)])
    maps))
 
+;; TODO: Rename `xs`.
 (defn- do-compile [options xs]
   (let [env (if (:pretty-print? options)
               (merge pretty-env options)
