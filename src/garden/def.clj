@@ -54,7 +54,8 @@
   `:function` field will be set to `(str name)`.
 
   If only the `name` argument is provided the returned function will
-  accept any number of arguments.
+  accept any number of arguments. If a function body is provided the
+  return value of the function must be a vector.
 
   Ex.
       (def cssfn url)
@@ -68,7 +69,7 @@
 
   Ex.
       (defcssfn attr
-        ([name] name)
+        ([name] [name])
         ([name type-or-unit]
            [[name type-or-unit]])
         ([name type-or-unit fallback]
