@@ -327,11 +327,13 @@
 
 (defn parse-comma-separated-list
   [v]
+  (spec/assert ::comma-separated-list v)
   (let [parse-data (spec/conform ::comma-separated-list v)]
     (process-tagged-parse-data [::comma-separated-list parse-data])))
 
 (defn parse-hash-map
   [m]
+  (spec/assert ::declaration-block m)
   (let [parse-data (spec/conform ::declaration-block m)
         node (process-tagged-parse-data [::declaration-block parse-data])]
     node))
@@ -342,6 +344,7 @@
 
 (defn parse-vector
   [v]
+  (spec/assert ::vector-rule v)
   (let [parse-data (spec/conform ::vector-rule v)]
     (process-tagged-parse-data [::vector-rule parse-data])))
 

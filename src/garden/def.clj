@@ -1,6 +1,8 @@
 (ns garden.def
-  (:require [garden.core]
+  (:require [clojure.spec :as spec]
+            [garden.core]
             [garden.keyframes]
+            [garden.parse]
             [garden.stylesheet]
             [garden.util :as util]))
 
@@ -59,7 +61,7 @@
       ;; => #'user/url
 
       (url \"http://fonts.googleapis.com/css?family=Lato\")
-      ;; => #garden.types.CSSFunction{:function \"url\", :args \"http://fonts.googleapis.com/css?family=Lato\"}
+      ;; => #garden.stylesheet.Function{:function \"url\", :args \"http://fonts.googleapis.com/css?family=Lato\"}
 
       (css (url \"http://fonts.googleapis.com/css?family=Lato\"))
       ;; => url(http://fonts.googleapis.com/css?family=Lato) 
@@ -80,25 +82,29 @@
       ;; => \"attr(vertical length)\"
 
       (attr :end-of-quote :string :inherit) 
-      ;; => #garden.stylehseet.Function{:function \"url\", :args [:end-of-quote [:string :inherit]]}
+      ;; => #garden.stylesheet.Function{:function \"url\", :args [:end-of-quote [:string :inherit]]}
 
       (css (attr :end-of-quote :string :inherit))
       ;; => \"attr(end-of-quote string, inherit)\""
   ([sym]
    (let [[_ sym fn-tail] (macroexpand
-                          `(defn ~sym [& ~'args]
-                             (garden.stylesheet/map->Function
-                              {:name ~(str sym)
-                               :args ~'args})))]
+                          `(defn ~sym [& args#]
+                             (garden.stylesheet.Function.
+                              ~(str sym)
+                              (vec args#))))]
      `(def ~sym ~fn-tail)))
   ([sym & fn-tail]
    (let [[_ sym [_ & fn-spec]] (macroexpand `(defn ~sym ~@fn-tail))
          cssfn-name (str sym)]
      `(def ~sym
         (fn [& args#]
-          (garden.stylesheet/map->Function
-           {:name ~cssfn-name
-            :args (apply (fn ~@fn-spec) args#)}))))))
+          (let [result# (apply (fn ~@fn-spec) args#)]
+            (if (vector? result#)
+              (garden.stylesheet.Function. ~cssfn-name result#)
+              (throw
+               (ex-info ~(format "The CSS function `%s` must return vector"
+                                 (symbol (name (ns-name *ns*)) (name sym)))
+                        (spec/explain-data vector? result#))))))))))
 
 (defmacro defkeyframes
   "Define a CSS @keyframes animation.

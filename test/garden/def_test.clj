@@ -23,7 +23,7 @@
 
 (garden.def/defcssfn foo
   "This is a docstring."
-  ([x] x)
+  ([x] [x])
   ([x y] [x y]))
 
 (deftest defcssfn-test
@@ -34,7 +34,7 @@
          '(1)))
 
   (is (= (:args (foo 1))
-         1))
+         [1]))
 
   (is (= (:args (foo 1 2))
          [1 2]))
