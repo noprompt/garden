@@ -342,7 +342,7 @@
   [[_ value-node-1 value-node-2] env]
   (str (:round-brace-left env)
        (compile-node value-node-1 env)
-       (:minus env)
+       (str " " (:minus env) " ")
        (compile-node value-node-2 env)
        (:round-brace-right env)))
 
@@ -350,7 +350,7 @@
   [[_ value-node-1 value-node-2] env]
   (str (:round-brace-left env)
        (compile-node value-node-1 env)
-       (:times env)
+       (str " " (:times env) " ")
        (compile-node value-node-2 env)
        (:round-brace-right env)))
 
@@ -358,7 +358,7 @@
   [[_ value-node-1 value-node-2] env]
   (str (:round-brace-left env)
        (compile-node value-node-1 env)
-       (:obelus env)
+       (str " " (:obelus env) " ")
        (compile-node value-node-2 env)
        (:round-brace-right env)))
 
@@ -366,7 +366,7 @@
   [[_ value-node-1 value-node-2] env]
   (str (:round-brace-left env)
        (compile-node value-node-1 env)
-       (:plus env)
+       (str " " (:plus env) " ")
        (compile-node value-node-2 env)
        (:round-brace-right env)))
 

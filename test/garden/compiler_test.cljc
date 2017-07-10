@@ -200,7 +200,9 @@
 (deftest calc-test
   (testing "calc"
     (compiles-to (stylesheet/calc (+ 1 2))
-                 "calc((1+2))")))
+                 "calc((1 + 2))")
+    (compiles-to (stylesheet/calc (+ 1 2 3))
+                 "calc(((1 + 2) + 3))")))
 
 (deftest flag-tests
   (testing "^:prefix"
