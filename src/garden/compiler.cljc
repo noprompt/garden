@@ -149,6 +149,7 @@
 
 (defn expand-declaration-1
   [declaration]
+  {:pre [(map? declaration)]}
   (let [prefix #(util/as-str %1 "-" %2)]
     (reduce
      (fn [m [k v]]
