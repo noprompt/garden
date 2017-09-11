@@ -164,7 +164,8 @@
 
 (defn- expand-declaration
   [declaration]
-  (when (seq declaration)
+  (if (empty? declaration)
+    declaration
     (with-meta (expand-declaration-1 declaration) (meta declaration))))
 
 ;; ---------------------------------------------------------------------
