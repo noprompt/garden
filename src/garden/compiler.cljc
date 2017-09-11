@@ -148,7 +148,7 @@
 ;; Declaration expansion
 
 (defn expand-declaration-1
-  [d]
+  [declaration]
   (let [prefix #(util/as-str %1 "-" %2)]
     (reduce
      (fn [m [k v]]
@@ -159,13 +159,13 @@
           m
           (expand-declaration-1 v))
          (assoc m (util/to-str k) v)))
-     (empty d)
-     d)))
+     (empty declaration)
+     declaration)))
 
 (defn- expand-declaration
-  [d]
-  (when (seq d)
-    (with-meta (expand-declaration-1 d) (meta d))))
+  [declaration]
+  (when (seq declaration)
+    (with-meta (expand-declaration-1 declaration) (meta declaration))))
 
 ;; ---------------------------------------------------------------------
 ;; Rule expansion
