@@ -1,4 +1,4 @@
-(defproject garden "1.3.3"
+(defproject garden "1.3.4-SNAPSHOT"
   :description "Generate CSS from Clojure/Cljs data structures."
   :url "https://github.com/noprompt/garden"
   :license {:name "Eclipse Public License"
