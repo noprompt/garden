@@ -148,7 +148,8 @@
 ;; Declaration expansion
 
 (defn expand-declaration-1
-  [d]
+  [declaration]
+  {:pre [(map? declaration)]}
   (let [prefix #(util/as-str %1 "-" %2)]
     (reduce
      (fn [m [k v]]
@@ -159,20 +160,21 @@
           m
           (expand-declaration-1 v))
          (assoc m (util/to-str k) v)))
-     {}
-     d)))
+     (empty declaration)
+     declaration)))
 
 (defn- expand-declaration
-  [d]
-  (when (seq d)
-    (with-meta (expand-declaration-1 d) (meta d))))
+  [declaration]
+  (if (empty? declaration)
+    declaration
+    (with-meta (expand-declaration-1 declaration) (meta declaration))))
 
 ;; ---------------------------------------------------------------------
 ;; Rule expansion
 
 (def
   ^{:private true
-    :doc "Matches a single \"&\" or \"&\" follow by one or more 
+    :doc "Matches a single \"&\" or \"&\" follow by one or more
   non-whitespace characters."}
   parent-selector-re
   #"^&(?:\S+)?$")
@@ -248,11 +250,11 @@
 
 (defmethod expand-at-rule :media
   [{:keys [value]}]
-  (let [{:keys [media-queries rules]} value 
+  (let [{:keys [media-queries rules]} value
         media-queries (expand-media-query-expression media-queries)
         xs (with-media-query-context media-queries             (doall (mapcat expand (expand rules))))
         ;; Though media-queries may be nested, they may not be nested
-        ;; at compile time. Here we make sure this is the case.  
+        ;; at compile time. Here we make sure this is the case.
         [subqueries rules] (divide-vec util/at-media? xs)]
     (cons
      (CSSAtRule. :media {:media-queries media-queries
@@ -503,7 +505,7 @@
 (defn- render-media-expr
   "Make a media query expession from one or more maps. Keys are not
   validated but values have the following semantics:
-  
+
     `true`  as in `{:screen true}`  == \"screen\"
     `false` as in `{:screen false}` == \"not screen\"
     `:only` as in `{:screen :only}  == \"only screen\""
@@ -556,7 +558,7 @@
 
 (defmethod render-at-rule :import
   [{:keys [value]}]
-  (let [{:keys [url media-queries]} value 
+  (let [{:keys [url media-queries]} value
         url (if (string? url)
               (util/wrap-quotes url)
               (render-css url))
@@ -596,7 +598,7 @@
            l-brace-1
            (-> (map render-css rules)
                (rule-join)
-               (indent-str)) 
+               (indent-str))
            r-brace-1))))
 
 
@@ -707,7 +709,7 @@
   [flags rules]
   (binding [*flags* flags]
     (->> (expand-stylesheet rules)
-         (filter top-level-expression?) 
+         (filter top-level-expression?)
          (map render-css)
          (remove nil?)
          (rule-join))))
@@ -725,7 +727,7 @@
   "Compress CSS if the pretty-print(?) flag is true."
   [{:keys [pretty-print? pretty-print]} stylesheet]
   ;; Also accept pretty-print like CLJS.
-  (if (or pretty-print? pretty-print) 
+  (if (or pretty-print? pretty-print)
     stylesheet
     (compression/compress-stylesheet stylesheet)))
 
