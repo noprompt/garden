@@ -158,6 +158,25 @@ user=> (css [:h1 {30000 "nom-nom"}])
 We've already seen strings used as declaration map values, but Garden also
 supports keywords, symbols, numbers, maps, vectors, and lists in addition.
 
+##### Custom functions
+
+Since Garden doesn't have wrappers for all the possible CSS functions,
+sometimes you might need to define the function you need yourself.
+This is where the `defcssfn` macro comes in handy.
+Suppose you want to use the `url` CSS function, even if it's not available
+in Garden directly you can just define it yourself by simply:
+
+```
+(defcssfn url)
+;; => #'user/url
+```
+
+Which will render like this:
+```
+(css (url "http://fonts.googleapis.com/css?family=Lato"))
+;; => url(http://fonts.googleapis.com/css?family=Lato)
+```
+
 ##### Strings, keywords, symbols, and numbers
 
 Strings, keywords, symbols, and numbers are rendered as literal CSS values:
@@ -172,6 +191,7 @@ Be warned, you must escape literal string values yourself:
 ```clojure
 user=> (css [:pre {:font-family "\"Liberation Mono\", Consolas, monospace"}])
 "pre{font-family:\"Liberation Mono\", Consolas, monospace}"
+
 ```
 
 ## Development
