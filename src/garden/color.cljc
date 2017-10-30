@@ -562,12 +562,14 @@
              (/ (* value amount) 100))))
 
 (defn scale-lightness
-  "Scale the lightness of a color by amount"
+  "Scales the lightness of a color by amount, which is treated as a percentage.
+  Supply positive values to scale upwards and negative values to scale downwards."
   [color amount]
   (update-color color :lightness scale-color-value amount))
 
 (defn scale-saturation
-  "Scale the saturation of a color by amount"
+  "Scales the saturation of a color by amount, which is treated as a percentage.
+  Supply positive values to scale upwards and negative values to scale downwards."
   [color amount]
   (update-color color :saturation scale-color-value amount))
 
