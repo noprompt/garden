@@ -555,13 +555,12 @@
     h
     (throw (ex-info-color-name n))))
 
-(defn- clamp
-  [value min-val max-val]
-  (max min-val (min value max-val)))
-
 (defn- scale-color-value
-  [value amt]
-  (clamp (* value (+ 1 (/ amt 100))) 0 100))
+  ([value amount]
+    (scale-color-value value amount 0 100))
+  ([value amount min-val max-val]
+    (util/clip min-val max-val (* value (+ 1 (/ amount 100))))))
+
 
 (defn scale-lightness
   "Scales the lightness of a color by amount, which is treated as a percentage.
