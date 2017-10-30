@@ -14,9 +14,9 @@
 ;; the implementations included with Sass
 ;; (http://sass-lang.com/docs/yardoc/Sass/Script/Functions.html).
 ;; Some additional functions have been added such as `triad` and
-;; `tetrad` for generating sets of colors. 
+;; `tetrad` for generating sets of colors.
 
-;; Converts a color to a hexadecimal string (implementation below). 
+;; Converts a color to a hexadecimal string (implementation below).
 (declare as-hex)
 
 (defrecord CSSColor [red green blue hue saturation lightness alpha]
@@ -66,7 +66,7 @@
 (defn hsl
   "Create an HSL color."
   ([[h s l]]
-     ;; Handle CSSUnits. 
+     ;; Handle CSSUnits.
      (let [[h s l] (map #(get % :magnitude %) [h s l])]
        (if (and (util/between? s 0 100)
                 (util/between? l 0 100))
@@ -320,7 +320,7 @@
   ([color-1 color-2 & more]
      (reduce mix (mix color-1 color-2) more)))
 
-;;;; Color wheel functions. 
+;;;; Color wheel functions.
 
 (defn complement
   "Return the complement of a color."
