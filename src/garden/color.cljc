@@ -98,6 +98,12 @@
   (and (map? color)
        (every? color #{:hue :saturation :lightness})))
 
+(defn hsla?
+  "Return true if color is an HSLA color."
+  [color]
+  (and (map? color)
+       (every? color #{:hue :saturation :lightness :alpha})))
+
 (defn color?
   "Return true if x is a color."
   [x]
@@ -236,6 +242,15 @@
    (hex? x) (hex->hsl x)
    (number? x) (hsl [x (percent-clip x) (percent-clip x)])
    :else (throw (ex-info (str "Can't convert " x " to a color.") {}))))
+
+(defn as-hsla
+  "Converts a color to HSLA. Assumes an alpha value of 1.00 unless one is
+  currently set on color."
+  [color]
+  (let [current-alpha (or (:alpha color) 1.00)]
+    (cond
+      (hsla? color) color
+      :else (-> color as-hsl (assoc :alpha current-alpha)))))
 
 (defn- restrict-rgb
   [m]
