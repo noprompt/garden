@@ -292,34 +292,35 @@
     :arglists '([a] [a b] [a b & more])}
   color-div /)
 
-(defn- update-color [color field f v]
-  (let [v (or (:magnitude v) v)]
-    (update-in (as-hsl color) [field] f v)))
+(defn- update-hsla-field
+  [color field f v]
+  (let [v (:magnitude v v)]
+    (-> color as-hsla (update field f v))))
 
 (defn rotate-hue
   "Rotates the hue value of a given color by amount."
   [color amount]
-  (update-color color :hue (comp #(mod % 360) +) amount))
+  (update-hsla-field color :hue (comp #(mod % 360) +) amount))
 
 (defn saturate
   "Increase the saturation value of a given color by amount."
   [color amount]
-  (update-color color :saturation (comp percent-clip +) amount))
+  (update-hsla-field color :saturation (comp percent-clip +) amount))
 
 (defn desaturate
   "Decrease the saturation value of a given color by amount."
   [color amount]
-  (update-color color :saturation (comp percent-clip -) amount))
+  (update-hsla-field color :saturation (comp percent-clip -) amount))
 
 (defn lighten
   "Increase the lightness value a given color by amount."
   [color amount]
-  (update-color color :lightness (comp percent-clip +) amount))
+  (update-hsla-field color :lightness (comp percent-clip +) amount))
 
 (defn darken
   "Decrease the lightness value a given color by amount."
   [color amount]
-  (update-color color :lightness (comp percent-clip -) amount))
+  (update-hsla-field color :lightness (comp percent-clip -) amount))
 
 (defn invert
   "Return the inversion of a color."
@@ -579,12 +580,12 @@
 (defn scale-lightness
   "Scale the lightness of a color by amount"
   [color amount]
-  (update-color color :lightness scale-color-value amount))
+  (update-hsla-field color :lightness scale-color-value amount))
 
 (defn scale-saturation
   "Scale the saturation of a color by amount"
   [color amount]
-  (update-color color :saturation scale-color-value amount))
+  (update-hsla-field color :saturation scale-color-value amount))
 
 (defn- decrown-hex [hex]
   (string/replace hex #"^#" ""))
