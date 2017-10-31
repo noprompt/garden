@@ -211,6 +211,11 @@
 (def percent-clip
   (partial util/clip 0 100))
 
+(def ^{:arglists '([n])
+       :private true}
+  zero-to-one-clip
+  (partial util/clip 0.0 1.0))
+
 (def rgb-clip
   (partial util/clip 0 255))
 
@@ -247,10 +252,10 @@
   "Converts a color to HSLA. Assumes an alpha value of 1.00 unless one is
   currently set on color."
   [color]
-  (let [current-alpha (or (:alpha color) 1.00)]
-    (cond
-      (hsla? color) color
-      :else (-> color as-hsl (assoc :alpha current-alpha)))))
+  (let [current-alpha (get color :alpha 1.00)]
+    (if (hsla? color)
+      color
+      (-> color as-hsl (assoc :alpha current-alpha)))))
 
 (defn- restrict-rgb
   [m]
@@ -321,6 +326,16 @@
   "Decrease the lightness value a given color by amount."
   [color amount]
   (update-hsla-field color :lightness (comp percent-clip -) amount))
+
+(defn transparentize
+  "Decreases the alpha value of a given color by amount."
+  [color amount]
+  (update-hsla-field color :alpha (comp zero-to-one-clip -) amount))
+
+(defn opacify
+  "Increases the alpha value of a given color by amount."
+  [color amount]
+  (update-hsla-field color :alpha (comp zero-to-one-clip +) amount))
 
 (defn invert
   "Return the inversion of a color."
@@ -586,6 +601,12 @@
   "Scale the saturation of a color by amount"
   [color amount]
   (update-hsla-field color :saturation scale-color-value amount))
+
+(defn scale-alpha
+  "Scales the alpha of a color by amount, which is treated as a percentage.
+  Supply positive values to scale upwards and negative values to scale downwards."
+  [color amount]
+  (update-hsla-field color :alpha #(zero-to-one-clip (* %1 (+ 1 (/ %2 100)))) amount))
 
 (defn- decrown-hex [hex]
   (string/replace hex #"^#" ""))
