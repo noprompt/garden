@@ -214,13 +214,21 @@
 
 (deftest scale-lightness-test []
   (testing "scale-lightness"
-    (is (= 75 (-> (color/hsl 50 50 50) (color/scale-lightness 50) :lightness)))
-    (is (= 25 (-> (color/hsl 50 50 50) (color/scale-lightness -50) :lightness)))))
+    (is (= 75 (-> (color/hsl 50 50 50) (color/scale-lightness   50) :lightness)))
+    (is (= 25 (-> (color/hsl 50 50 50) (color/scale-lightness  -50) :lightness)))
+    (is (= 20 (-> (color/hsl 50 50 10) (color/scale-lightness  100) :lightness)))
+    (is (=  0 (-> (color/hsl 50 50 10) (color/scale-lightness -100) :lightness)))
+    (is (= 15 (-> (color/hsl 50 50 10) (color/scale-lightness   50) :lightness)))
+    (is (=  5 (-> (color/hsl 50 50 10) (color/scale-lightness  -50) :lightness)))))
 
 (deftest scale-saturation-test []
   (testing "scale-lightness"
-    (is (= 75 (-> (color/hsl 50 50 50) (color/scale-saturation 50) :saturation)))
-    (is (= 25 (-> (color/hsl 50 50 50) (color/scale-saturation -50) :saturation)))))
+    (is (= 75 (-> (color/hsl 50 50 50) (color/scale-saturation   50) :saturation)))
+    (is (= 25 (-> (color/hsl 50 50 50) (color/scale-saturation  -50) :saturation)))
+    (is (= 20 (-> (color/hsl 50 10 50) (color/scale-saturation  100) :saturation)))
+    (is (=  0 (-> (color/hsl 50 10 50) (color/scale-saturation -100) :saturation)))
+    (is (= 15 (-> (color/hsl 50 10 50) (color/scale-saturation   50) :saturation)))
+    (is (=  5 (-> (color/hsl 50 10 50) (color/scale-saturation  -50) :saturation)))))
 
 (deftest hex-tests []
   (testing "decrown hex"

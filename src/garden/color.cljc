@@ -14,9 +14,9 @@
 ;; the implementations included with Sass
 ;; (http://sass-lang.com/docs/yardoc/Sass/Script/Functions.html).
 ;; Some additional functions have been added such as `triad` and
-;; `tetrad` for generating sets of colors. 
+;; `tetrad` for generating sets of colors.
 
-;; Converts a color to a hexadecimal string (implementation below). 
+;; Converts a color to a hexadecimal string (implementation below).
 (declare as-hex)
 
 (defrecord CSSColor [red green blue hue saturation lightness alpha]
@@ -66,7 +66,7 @@
 (defn hsl
   "Create an HSL color."
   ([[h s l]]
-     ;; Handle CSSUnits. 
+     ;; Handle CSSUnits.
      (let [[h s l] (map #(get % :magnitude %) [h s l])]
        (if (and (util/between? s 0 100)
                 (util/between? l 0 100))
@@ -320,7 +320,7 @@
   ([color-1 color-2 & more]
      (reduce mix (mix color-1 color-2) more)))
 
-;;;; Color wheel functions. 
+;;;; Color wheel functions.
 
 (defn complement
   "Return the complement of a color."
@@ -556,18 +556,21 @@
     (throw (ex-info-color-name n))))
 
 (defn- scale-color-value
-  [value amount]
-  (+ value (if (pos? amount)
-             (* (- 100 value) (/ amount 100))
-             (/ (* value amount) 100))))
+  ([value amount]
+    (scale-color-value value amount 0 100))
+  ([value amount min-val max-val]
+    (util/clip min-val max-val (* value (+ 1 (/ amount 100))))))
+
 
 (defn scale-lightness
-  "Scale the lightness of a color by amount"
+  "Scales the lightness of a color by amount, which is treated as a percentage.
+  Supply positive values to scale upwards and negative values to scale downwards."
   [color amount]
   (update-color color :lightness scale-color-value amount))
 
 (defn scale-saturation
-  "Scale the saturation of a color by amount"
+  "Scales the saturation of a color by amount, which is treated as a percentage.
+  Supply positive values to scale upwards and negative values to scale downwards."
   [color amount]
   (update-color color :saturation scale-color-value amount))
 
