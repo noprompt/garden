@@ -98,6 +98,12 @@
   (and (map? color)
        (every? color #{:hue :saturation :lightness})))
 
+(defn hsla?
+  "Return true if color is an HSLA color."
+  [color]
+  (and (map? color)
+       (every? color #{:hue :saturation :lightness :alpha})))
+
 (defn color?
   "Return true if x is a color."
   [x]
@@ -205,6 +211,11 @@
 (def percent-clip
   (partial util/clip 0 100))
 
+(def ^{:arglists '([n])
+       :private true}
+  zero-to-one-clip
+  (partial util/clip 0.0 1.0))
+
 (def rgb-clip
   (partial util/clip 0 255))
 
@@ -236,6 +247,15 @@
    (hex? x) (hex->hsl x)
    (number? x) (hsl [x (percent-clip x) (percent-clip x)])
    :else (throw (ex-info (str "Can't convert " x " to a color.") {}))))
+
+(defn as-hsla
+  "Converts a color to HSLA. Assumes an alpha value of 1.00 unless one is
+  currently set on color."
+  [color]
+  (let [current-alpha (get color :alpha 1.00)]
+    (if (hsla? color)
+      color
+      (-> color as-hsl (assoc :alpha current-alpha)))))
 
 (defn- restrict-rgb
   [m]
@@ -277,34 +297,45 @@
     :arglists '([a] [a b] [a b & more])}
   color-div /)
 
-(defn- update-color [color field f v]
-  (let [v (or (:magnitude v) v)]
-    (update-in (as-hsl color) [field] f v)))
+(defn- update-hsla-field
+  [color field f v]
+  (let [v (:magnitude v v)]
+    (-> color as-hsla (update field f v))))
 
 (defn rotate-hue
   "Rotates the hue value of a given color by amount."
   [color amount]
-  (update-color color :hue (comp #(mod % 360) +) amount))
+  (update-hsla-field color :hue (comp #(mod % 360) +) amount))
 
 (defn saturate
   "Increase the saturation value of a given color by amount."
   [color amount]
-  (update-color color :saturation (comp percent-clip +) amount))
+  (update-hsla-field color :saturation (comp percent-clip +) amount))
 
 (defn desaturate
   "Decrease the saturation value of a given color by amount."
   [color amount]
-  (update-color color :saturation (comp percent-clip -) amount))
+  (update-hsla-field color :saturation (comp percent-clip -) amount))
 
 (defn lighten
   "Increase the lightness value a given color by amount."
   [color amount]
-  (update-color color :lightness (comp percent-clip +) amount))
+  (update-hsla-field color :lightness (comp percent-clip +) amount))
 
 (defn darken
   "Decrease the lightness value a given color by amount."
   [color amount]
-  (update-color color :lightness (comp percent-clip -) amount))
+  (update-hsla-field color :lightness (comp percent-clip -) amount))
+
+(defn transparentize
+  "Decreases the alpha value of a given color by amount."
+  [color amount]
+  (update-hsla-field color :alpha (comp zero-to-one-clip -) amount))
+
+(defn opacify
+  "Increases the alpha value of a given color by amount."
+  [color amount]
+  (update-hsla-field color :alpha (comp zero-to-one-clip +) amount))
 
 (defn invert
   "Return the inversion of a color."
@@ -566,13 +597,19 @@
   "Scales the lightness of a color by amount, which is treated as a percentage.
   Supply positive values to scale upwards and negative values to scale downwards."
   [color amount]
-  (update-color color :lightness scale-color-value amount))
+  (update-hsla-field color :lightness scale-color-value amount))
 
 (defn scale-saturation
   "Scales the saturation of a color by amount, which is treated as a percentage.
   Supply positive values to scale upwards and negative values to scale downwards."
   [color amount]
-  (update-color color :saturation scale-color-value amount))
+  (update-hsla-field color :saturation scale-color-value amount))
+
+(defn scale-alpha
+  "Scales the alpha of a color by amount, which is treated as a percentage.
+  Supply positive values to scale upwards and negative values to scale downwards."
+  [color amount]
+  (update-hsla-field color :alpha #(zero-to-one-clip (* %1 (+ 1 (/ %2 100)))) amount))
 
 (defn- decrown-hex [hex]
   (string/replace hex #"^#" ""))

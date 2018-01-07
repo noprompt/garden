@@ -127,76 +127,53 @@
 (deftest color-functions-test
   (testing "rotate-hue"
     (are [x y] (= x y)
-      (color/rotate-hue hsl-black 0)
-      (color/hsl 0 0 0)
-
-      (color/rotate-hue hsl-black 180)
-      (color/hsl 180 0 0)
-
-      (color/rotate-hue hsl-black 360)
-      (color/hsl 0 0 0)
-
-      (color/rotate-hue hsl-black -360)
-      (color/hsl 0 0 0)
-
-      (color/rotate-hue hsl-black -180)
-      (color/hsl 180 0 0)))
+      (-> hsl-black (color/rotate-hue    0) :hue)   0
+      (-> hsl-black (color/rotate-hue  180) :hue) 180
+      (-> hsl-black (color/rotate-hue  360) :hue)   0
+      (-> hsl-black (color/rotate-hue -360) :hue)   0
+      (-> hsl-black (color/rotate-hue -180) :hue) 180))
 
   (testing "saturate"
     (are [x y] (= x y)
-      (color/saturate hsl-black 0)
-      (color/hsl 0 0 0)
-
-      (color/saturate hsl-black 50)
-      (color/hsl 0 50 0)
-
-      (color/saturate hsl-black 100)
-      (color/hsl 0 100 0)
-
-      (color/saturate hsl-black 200)
-      (color/hsl 0 100 0)))
+      (-> hsl-black (color/saturate   0) :saturation)   0
+      (-> hsl-black (color/saturate  50) :saturation)  50
+      (-> hsl-black (color/saturate 100) :saturation) 100
+      (-> hsl-black (color/saturate 200) :saturation) 100))
 
   (testing "desaturate"
     (are [x y] (= x y)
-      (color/desaturate hsl-red 0)
-      (color/hsl 0 100 50)
-
-      (color/desaturate hsl-red 50)
-      (color/hsl 0 50 50)
-
-      (color/desaturate hsl-red 100)
-      (color/hsl 0 0 50)
-
-      (color/desaturate hsl-red 200)
-      (color/hsl 0 0 50)))
+      (-> hsl-red (color/desaturate   0) :saturation) 100
+      (-> hsl-red (color/desaturate  50) :saturation)  50
+      (-> hsl-red (color/desaturate 100) :saturation)   0
+      (-> hsl-red (color/desaturate 200) :saturation)   0))
 
   (testing "lighten"
     (are [x y] (= x y)
-      (color/lighten rgb-black 0)
-      (color/hsl 0 0 0)
-
-      (color/lighten rgb-black 50)
-      (color/hsl 0 0 50)
-
-      (color/lighten rgb-black 100)
-      (color/hsl 0 0 100)
-
-      (color/lighten rgb-black 200)
-      (color/hsl 0 0 100)))
+      (-> rgb-black (color/lighten   0) :lightness)   0
+      (-> rgb-black (color/lighten  50) :lightness)  50
+      (-> rgb-black (color/lighten 100) :lightness) 100
+      (-> rgb-black (color/lighten 200) :lightness) 100))
 
   (testing "darken"
     (are [x y] (= x y)
-      (color/darken rgb-white 0)
-      (color/hsl 0 0 100)
+      (-> rgb-white (color/darken   0) :lightness) 100
+      (-> rgb-white (color/darken  50) :lightness)  50
+      (-> rgb-white (color/darken 100) :lightness)   0
+      (-> rgb-white (color/darken 200) :lightness)   0))
 
-      (color/darken rgb-white 50)
-      (color/hsl 0 0 50)
+  (testing "transparentize"
+    (are [x y] (= x y)
+      (-> (color/hsla 180 50 50 0.50) (color/transparentize 0.10) :alpha) 0.40
+      (-> (color/hsla 180 50 50 0.50) (color/transparentize 0.50) :alpha) 0.00
+      (-> (color/hsla 180 50 50 1.00) (color/transparentize 0.50) :alpha) 0.50
+      (-> (color/hsla 180 50 50 0.01) (color/transparentize 0.10) :alpha) 0.00))
 
-      (color/darken rgb-white 100)
-      (color/hsl 0 0 0)
-
-      (color/darken rgb-white 200)
-      (color/hsl 0 0 0)))
+  (testing "opacify"
+    (are [x y] (= x y)
+      (-> (color/hsla 180 50 50 0.50) (color/opacify 0.10) :alpha) 0.60
+      (-> (color/hsla 180 50 50 0.50) (color/opacify 0.50) :alpha) 1.00
+      (-> (color/hsla 180 50 50 1.00) (color/opacify 0.50) :alpha) 1.00
+      (-> (color/hsla 180 50 50 0.00) (color/opacify 0.12) :alpha) 0.12))
 
   (testing "invert"
     (are [x y] (= x y)
@@ -229,6 +206,11 @@
     (is (=  0 (-> (color/hsl 50 10 50) (color/scale-saturation -100) :saturation)))
     (is (= 15 (-> (color/hsl 50 10 50) (color/scale-saturation   50) :saturation)))
     (is (=  5 (-> (color/hsl 50 10 50) (color/scale-saturation  -50) :saturation)))))
+
+(deftest scale-alpha-test []
+  (testing "scale-alpha"
+    (is (= 0.75 (-> (color/hsla 180 50 50 0.50) (color/scale-alpha  50) :alpha)))
+    (is (= 0.25 (-> (color/hsla 180 50 50 0.50) (color/scale-alpha -50) :alpha)))))
 
 (deftest hex-tests []
   (testing "decrown hex"
