@@ -532,11 +532,11 @@
 (defn- render-function
   "Render a CSS function."
   [css-function]
-  (let [{:keys [function args]} css-function
+  (let [{:keys [f args]} css-function
         args (if (sequential? args)
                (comma-separated-list args)
                (util/to-str args))]
-    (util/format "%s(%s)" (util/to-str function) args)))
+    (util/format "%s(%s)" (util/to-str f) args)))
 
 (defn ^:private render-color [c]
   (if-let [a (:alpha c)]
