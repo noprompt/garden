@@ -1,6 +1,6 @@
-## 1.3.1
+## Changes in 1.3.4
 
-**Breaking Change:** The `function` field in `CSSFunction` has been renamed to avoid Closure Compiler warnings. [#144](https://github.com/noprompt/garden/issues/144) 
+**Breaking Change:** The `function` field in `CSSFunction` has been renamed to avoid Closure Compiler warnings. [#144](https://github.com/noprompt/garden/issues/144)
 
 ## Changes from 1.3.0
 
