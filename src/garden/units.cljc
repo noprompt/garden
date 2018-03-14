@@ -226,7 +226,7 @@
   "Create a multiplication function for multiplying Units."
   [unit]
   (let [u  (make-unit-fn unit)
-        op (get {:% (fn [x y] (* 100 (* (/ x 100) (/ y 100))))} unit *)]
+      op (get {:% (fn [x y] (* 100 (* (/ x 100) (/ y 100))))} unit *)]
     (fn u*
       ([] (u 1))
       ([x] (u x))
