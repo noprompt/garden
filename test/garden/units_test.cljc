@@ -31,6 +31,27 @@
       #?(:clj
          (is (thrown? ArithmeticException (μm-div 2 0)))))))
 
+(deftest test-%-arthimetic
+  (let [u% (units/make-unit-fn :%)
+        u%+ (units/make-unit-adder :%)
+        u%- (units/make-unit-subtractor :%)
+        u%* (units/make-unit-multiplier :%)
+        u%-div (units/make-unit-divider :%)]
+    (testing "addition"
+      (is (= (u% 0) (u%+)))
+      (is (= (u% 2) (u%+ 1 1))))
+    (testing "subtraction"
+      (is (= (u% -1) (u%- 1)))
+      (is (= (u% 2) (u%- 4 2))))
+    (testing "multiplication"
+      (is (= (u% 1) (u%*)))
+      (is (= (u% #?(:clj 1/50 :cljs 0.02)) (u%* 1 2))))
+    (testing "division"
+      (is (= (u% 1) (u%-div 1)))
+      (is (= (u% 50) (u%-div 1 2)))
+      #?(:clj
+         (is (thrown? ArithmeticException (u%-div 2 0)))))))
+
 (deftest test-px
   (testing "px checking"
     (is (units/px? (units/px 0)))

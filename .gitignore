@@ -15,3 +15,5 @@ pom.xml.asc
 *\#
 .repl*
 out/*
+*.iml
+.idea

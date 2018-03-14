@@ -225,27 +225,29 @@
 (defn make-unit-multiplier
   "Create a multiplication function for multiplying Units."
   [unit]
-  (let [u (make-unit-fn unit)]
+  (let [u  (make-unit-fn unit)
+        op (get {:% (fn [x y] (* 100 (* (/ x 100) (/ y 100))))} unit *)]
     (fn u*
       ([] (u 1))
       ([x] (u x))
       ([x y]
          (let [{m1 :magnitude} (u x)
                {m2 :magnitude} (u y)]
-           (u (* m1 m2))))
+           (u (op m1 m2))))
       ([x y & more]
          (reduce u* (u* x y) more)))))
 
 (defn make-unit-divider
   "Create a division function for dividing Units."
   [unit]
-  (let [u (make-unit-fn unit)]
+  (let [u (make-unit-fn unit)
+      op (get {:% (fn [x y] (* 100 (/ (/ x 100) (/ y 100))))} unit /)]
     (fn ud
       ([x] (u (/ 1 x)))
       ([x y]
          (let [{m1 :magnitude} (u x)
                {m2 :magnitude} (u y)]
-           (u (/ m1 m2))))
+           (u (op m1 m2))))
       ([x y & more]
          (reduce ud (ud x y) more)))))
 
