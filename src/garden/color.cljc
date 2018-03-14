@@ -14,9 +14,9 @@
 ;; the implementations included with Sass
 ;; (http://sass-lang.com/docs/yardoc/Sass/Script/Functions.html).
 ;; Some additional functions have been added such as `triad` and
-;; `tetrad` for generating sets of colors. 
+;; `tetrad` for generating sets of colors.
 
-;; Converts a color to a hexadecimal string (implementation below). 
+;; Converts a color to a hexadecimal string (implementation below).
 (declare as-hex)
 
 (defrecord CSSColor [red green blue hue saturation lightness alpha]
@@ -66,7 +66,7 @@
 (defn hsl
   "Create an HSL color."
   ([[h s l]]
-     ;; Handle CSSUnits. 
+     ;; Handle CSSUnits.
      (let [[h s l] (map #(get % :magnitude %) [h s l])]
        (if (and (util/between? s 0 100)
                 (util/between? l 0 100))
@@ -97,6 +97,12 @@
   [color]
   (and (map? color)
        (every? color #{:hue :saturation :lightness})))
+
+(defn hsla?
+  "Return true if color is an HSLA color."
+  [color]
+  (and (map? color)
+       (every? color #{:hue :saturation :lightness :alpha})))
 
 (defn color?
   "Return true if x is a color."
@@ -151,7 +157,7 @@
               r (* 60 (/ (- g b) d))
               g (+ (* 60 (/ (- b r) d)) 120)
               b (+ (* 60 (/ (- r g) d)) 240))
-          l (/ (+ mx mn) 2)
+          l (trim-one (/ (+ mx mn) 2))
           s (trim-one
               (cond
                 (= mx mn) 0
@@ -205,6 +211,11 @@
 (def percent-clip
   (partial util/clip 0 100))
 
+(def ^{:arglists '([n])
+       :private true}
+  zero-to-one-clip
+  (partial util/clip 0.0 1.0))
+
 (def rgb-clip
   (partial util/clip 0 255))
 
@@ -236,6 +247,15 @@
    (hex? x) (hex->hsl x)
    (number? x) (hsl [x (percent-clip x) (percent-clip x)])
    :else (throw (ex-info (str "Can't convert " x " to a color.") {}))))
+
+(defn as-hsla
+  "Converts a color to HSLA. Assumes an alpha value of 1.00 unless one is
+  currently set on color."
+  [color]
+  (let [current-alpha (get color :alpha 1.00)]
+    (if (hsla? color)
+      color
+      (-> color as-hsl (assoc :alpha current-alpha)))))
 
 (defn- restrict-rgb
   [m]
@@ -277,34 +297,45 @@
     :arglists '([a] [a b] [a b & more])}
   color-div /)
 
-(defn- update-color [color field f v]
-  (let [v (or (:magnitude v) v)]
-    (update-in (as-hsl color) [field] f v)))
+(defn- update-hsla-field
+  [color field f v]
+  (let [v (:magnitude v v)]
+    (-> color as-hsla (update field f v))))
 
 (defn rotate-hue
   "Rotates the hue value of a given color by amount."
   [color amount]
-  (update-color color :hue (comp #(mod % 360) +) amount))
+  (update-hsla-field color :hue (comp #(mod % 360) +) amount))
 
 (defn saturate
   "Increase the saturation value of a given color by amount."
   [color amount]
-  (update-color color :saturation (comp percent-clip +) amount))
+  (update-hsla-field color :saturation (comp percent-clip +) amount))
 
 (defn desaturate
   "Decrease the saturation value of a given color by amount."
   [color amount]
-  (update-color color :saturation (comp percent-clip -) amount))
+  (update-hsla-field color :saturation (comp percent-clip -) amount))
 
 (defn lighten
   "Increase the lightness value a given color by amount."
   [color amount]
-  (update-color color :lightness (comp percent-clip +) amount))
+  (update-hsla-field color :lightness (comp percent-clip +) amount))
 
 (defn darken
   "Decrease the lightness value a given color by amount."
   [color amount]
-  (update-color color :lightness (comp percent-clip -) amount))
+  (update-hsla-field color :lightness (comp percent-clip -) amount))
+
+(defn transparentize
+  "Decreases the alpha value of a given color by amount."
+  [color amount]
+  (update-hsla-field color :alpha (comp zero-to-one-clip -) amount))
+
+(defn opacify
+  "Increases the alpha value of a given color by amount."
+  [color amount]
+  (update-hsla-field color :alpha (comp zero-to-one-clip +) amount))
 
 (defn invert
   "Return the inversion of a color."
@@ -320,7 +351,7 @@
   ([color-1 color-2 & more]
      (reduce mix (mix color-1 color-2) more)))
 
-;;;; Color wheel functions. 
+;;;; Color wheel functions.
 
 (defn complement
   "Return the complement of a color."
@@ -554,3 +585,75 @@
   (if-let [h (color-name->color (keyword n))]
     h
     (throw (ex-info-color-name n))))
+
+(defn- scale-color-value
+  ([value amount]
+    (scale-color-value value amount 0 100))
+  ([value amount min-val max-val]
+    (util/clip min-val max-val (* value (+ 1 (/ amount 100))))))
+
+
+(defn scale-lightness
+  "Scales the lightness of a color by amount, which is treated as a percentage.
+  Supply positive values to scale upwards and negative values to scale downwards."
+  [color amount]
+  (update-hsla-field color :lightness scale-color-value amount))
+
+(defn scale-saturation
+  "Scales the saturation of a color by amount, which is treated as a percentage.
+  Supply positive values to scale upwards and negative values to scale downwards."
+  [color amount]
+  (update-hsla-field color :saturation scale-color-value amount))
+
+(defn scale-alpha
+  "Scales the alpha of a color by amount, which is treated as a percentage.
+  Supply positive values to scale upwards and negative values to scale downwards."
+  [color amount]
+  (update-hsla-field color :alpha #(zero-to-one-clip (* %1 (+ 1 (/ %2 100)))) amount))
+
+(defn- decrown-hex [hex]
+  (string/replace hex #"^#" ""))
+
+(defn- crown-hex [hex]
+  (if (re-find #"^#" hex)
+    hex
+    (str "#" hex)))
+
+(defn- expand-hex
+  "(expand-hex \"#abc\") -> \"aabbcc\"
+   (expand-hex \"333333\") -> \"333333\""
+  [hex]
+  (as-> (decrown-hex hex) _
+        (cond
+         (= 3 (count _)) (string/join (mapcat vector _ _))
+         (= 1 (count _)) (string/join (repeat 6 _))
+         :else _)))
+
+(defn- hex->long
+  "(hex->long \"#abc\") -> 11189196"
+  [hex]
+  (-> hex
+      (string/replace #"^#" "")
+      (expand-hex)
+      #?(:clj (Long/parseLong 16)
+         :cljs (js/parseInt 16))))
+
+(defn- long->hex
+  "(long->hex 11189196) -> \"aabbcc\""
+  [long]
+  #?(:clj (Integer/toHexString long)
+     :cljs (.toString long 16)))
+
+(defn weighted-mix
+  "`weight` is number 0 to 100 (%).
+   At 0, it weighs color-1 at 100%.
+   At 100, it weighs color-2 at 100%.
+   Returns hex string."
+  [color-1 color-2 weight]
+  (let [[weight-1 weight-2] (map #(/ % 100) [(- 100 weight) weight])
+        [long-1 long-2] (map (comp hex->long as-hex)
+                             [color-1 color-2])]
+    (-> (+ (* long-1 weight-1) (* long-2 weight-2))
+        (long->hex)
+        (expand-hex)
+        (crown-hex))))

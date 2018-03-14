@@ -3,6 +3,6 @@
 
 (defrecord CSSUnit [unit magnitude])
 
-(defrecord CSSFunction [function args])
+(defrecord CSSFunction [f args])
 
 (defrecord CSSAtRule [identifier value])

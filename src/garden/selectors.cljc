@@ -3,14 +3,14 @@
   (:require
    [clojure.string :as string])
   #?(:clj
-     (:refer-clojure :exclude [+ - > empty first map meta not time link var]))
+     (:refer-clojure :exclude [+ - > empty first map meta not time var]))
   #?(:clj
      (:import clojure.lang.Keyword
               clojure.lang.Symbol
               clojure.lang.IFn
               clojure.lang.Named))
   #?(:cljs
-     (:refer-clojure :exclude [+ - > empty first map meta not time link]))
+     (:refer-clojure :exclude [+ - > empty first map meta not time]))
   #?(:cljs
      (:require-macros
       [garden.selectors :refer [defselector
@@ -823,7 +823,7 @@
     last-child
     last-of-type
     left
-    link
+    links
     only-child
     only-of-type
     optional
@@ -876,10 +876,8 @@
   (let [s (name x)]
     (if-let [m (re-matches nth-child-re s)]
       m
-      (throw
-       #?(:clj (IllegalArgumentException.)
-          :cljs (js/Error.)
-          (str "Invalid value " (pr-str s)))))))
+      (throw (ex-info
+              "Selector must be either a keyword, string, or symbol." (str "Invalid value " (pr-str s)))))))
 
 (defpseudoclass
   ^{:doc "CSS :nth-child pseudo class selector."} 
