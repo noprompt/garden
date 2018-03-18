@@ -226,7 +226,11 @@
   "Create a multiplication function for multiplying Units."
   [unit]
   (let [u  (make-unit-fn unit)
-      op (get {:% (fn [x y] (* 100 (* (/ x 100) (/ y 100))))} unit *)]
+        op (if (= unit :%)
+            (fn percent*
+              [x y]
+              (/ (* x y) 100))
+            *)]
     (fn u*
       ([] (u 1))
       ([x] (u x))
@@ -241,7 +245,11 @@
   "Create a division function for dividing Units."
   [unit]
   (let [u (make-unit-fn unit)
-      op (get {:% (fn [x y] (* 100 (/ (/ x 100) (/ y 100))))} unit /)]
+        op (if (= unit :%)
+            (fn percent-div
+              [x y]
+              (* 100 (/ x y)))
+             /)]
     (fn ud
       ([x] (u (/ 1 x)))
       ([x y]
