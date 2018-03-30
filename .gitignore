@@ -11,7 +11,8 @@ pom.xml.asc
 .nrepl-*
 *.swp
 \.\#*
-#*
 *\#
 .repl*
 out/*
+*.iml
+.idea
