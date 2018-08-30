@@ -30,17 +30,17 @@
    ;; `{:ouput-style => :expanded}` in Sass. When set to `false`
    ;; the compiled stylesheet will be compressed with the YUI
    ;; compressor.
-   :pretty-print?     true
+   :pretty-print? true
    ;; A sequence of files to prepend to the output file.
-   :preamble          []
+   :preamble []
    ;; Location to save a stylesheet after compiling.
-   :output-to         nil
+   :output-to nil
    ;; A list of vendor prefixes to prepend to things like
    ;; `@keyframes`, properties within declarations containing the
    ;; `^:prefix` meta data, and properties defined in `:auto-prefix`.
-   :vendors           []
+   :vendors []
    ;; A set of properties to automatically prefix with `:vendors`.
-   :auto-prefix       #{}
+   :auto-prefix #{}
    ;; `@media` and '@supports' query configuration.
    :media-expressions {;; May either be `:merge` or `:default`. When
                        ;; set to `:merge` nested query expressions will
@@ -50,11 +50,11 @@
 
 (def
   ^{:private true
-    :doc "Retun a function to call when rendering a query expression.
-  The returned function accepts two arguments: the query
-  expression being evaluated and the current query expression context.
+    :doc "Retun a function to call when rendering a media expression.
+  The returned function accepts two arguments: the media
+  expression being evaluated and the current media expression context.
   Both arguments are maps. This is used to provide semantics for nested
-  query expressions."}
+  media expressions.  Also used to support feature queries"}
   media-expression-behavior
   {:merge (fn [expr context] (merge context expr))
    :default (fn [expr _] expr)})
