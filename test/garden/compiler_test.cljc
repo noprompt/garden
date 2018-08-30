@@ -248,11 +248,11 @@
       (is (not (re-find #"-moz-c:1" compiled)))
       (is (not (re-find #"-webkit-c:1" compiled)))))
 
-  (testing ":query-expressions :nesting-behavior"
+  (testing ":media-expressions :nesting-behavior"
     (let [compiled (compile-css
-                     {:media-expressions {:nesting-behavior :merge}
-                      :pretty-print?     false}
-                     (at-media {:screen true}
+                    {:media-expressions {:nesting-behavior :merge}
+                     :pretty-print?     false}
+                    (at-media {:screen true}
                               [:a {:x 1}]
                               (at-media {:print true}
                                         [:b {:y 1}])))]

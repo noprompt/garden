@@ -54,7 +54,7 @@
   The returned function accepts two arguments: the media
   expression being evaluated and the current media expression context.
   Both arguments are maps. This is used to provide semantics for nested
-  media expressions.  Also used to support feature queries"}
+  media queries.  Also used to support feature queries"}
   media-expression-behavior
   {:merge (fn [expr context] (merge context expr))
    :default (fn [expr _] expr)})
