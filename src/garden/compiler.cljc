@@ -242,7 +242,7 @@
 
 ;; @media expansion
 
-(defn- expand-query-expression [expression]
+(defn- expand-media-query-expression [expression]
   (if-let [f (->> [:media-expressions :nesting-behavior]
                   (get-in *flags*)
                   (media-expression-behavior))]
@@ -252,8 +252,8 @@
 (defmethod expand-at-rule :media
   [{:keys [value]}]
   (let [{:keys [media-queries rules]} value
-        media-queries (expand-query-expression media-queries)
-        xs (with-media-query-context media-queries (doall (mapcat expand (expand rules))))
+        media-queries (expand-media-query-expression media-queries)
+        xs (with-media-query-context media-queries             (doall (mapcat expand (expand rules))))
         ;; Though media-queries may be nested, they may not be nested
         ;; at compile time. Here we make sure this is the case.
         [subqueries rules] (divide-vec util/at-media? xs)]
@@ -265,7 +265,7 @@
 (defmethod expand-at-rule :feature
   [{:keys [value]}]
   (let [{:keys [feature-queries rules]} value
-        feature-queries (expand-query-expression feature-queries)
+        feature-queries (expand-media-query-expression feature-queries)
         xs (with-media-query-context feature-queries (doall (mapcat expand (expand rules))))
         ;; Though feature-queries may be nested, they may not be nested
         ;; at compile time. Here we make sure this is the case.
