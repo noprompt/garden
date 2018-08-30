@@ -1,3 +1,7 @@
+## Changes in 1.3.6
+
+Add `@supports` rule support.
+
 ## Changes in 1.3.4
 
 **Breaking Change:** The `function` field in `CSSFunction` has been renamed to avoid Closure Compiler warnings. [#144](https://github.com/noprompt/garden/issues/144)
