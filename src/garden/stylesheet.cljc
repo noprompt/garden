@@ -60,6 +60,10 @@
   (at-rule :media {:media-queries media-queries
                    :rules rules}))
 
+(defn at-supports [feature-queries & rules]
+  (at-rule :feature {:feature-queries feature-queries
+                     :rules rules}))
+
 (defn at-keyframes
   "Create a CSS @keyframes rule."
   [identifier & frames]

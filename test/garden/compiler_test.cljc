@@ -6,7 +6,7 @@
       :cljs [garden.types :as types :refer [CSSFunction CSSUnit]])
    [garden.color :as color]
    [garden.compiler :refer [compile-css expand render-css]]
-   [garden.stylesheet :refer (at-import at-media at-keyframes)])
+   [garden.stylesheet :refer (at-import at-media at-keyframes at-supports)])
   #?(:clj
      (:import garden.types.CSSFunction
               garden.types.CSSUnit)))
@@ -117,6 +117,37 @@
                               [:h1 {:a "b"}]))]
       (is (re-find re compiled)))))
 
+(deftest at-supports-test
+  (let [flags {:pretty-print? false}]
+    (are [x y] (= (compile-css flags x) y)
+               (at-supports {:display :grid} [:h1 {:a :b}])
+               "@supports(display:grid){h1{a:b}}"
+
+               (list (at-supports {:display :grid}
+                               [:h1 {:a :b}])
+                     [:h2 {:c :d}])
+               "@supports(display:grid){h1{a:b}}h2{c:d}"
+
+               (list [:a {:a "b"}
+                      (at-supports {:display :grid}
+                                   [:&:hover {:c "d"}])])
+               "a{a:b}@supports(display:grid){a:hover{c:d}}"
+
+               (at-supports {:-vendor-prefix-x "2"}
+                            [:h1 {:a "b"}])
+               "@supports(-vendor-prefix-x:2){h1{a:b}}"
+
+               (at-supports {:min-width (CSSUnit. :em 1)}
+                            [:h1 {:a "b"}])
+               "@supports(min-width:1em){h1{a:b}}")
+
+    (let [re #"@supports(?:\(-vendor-prefix-x:2\) and \(display:grid\)|\(display:grid\) and \(-vendor-prefix-x:2\))"
+          compiled (compile-css
+                     {:pretty-print? false}
+                     (at-supports {:-vendor-prefix-x "2" :display :grid}
+                                  [:h1 {:a "b"}]))]
+      (is (re-find re compiled)))))
+
 (deftest parent-selector-test
   (testing "parent selector references"
     (is (compile= [:a [:&:hover {:x :y}]]
@@ -135,6 +166,11 @@
                    (at-media {:max-width "1em"}
                              [:&:hover {:x :y}])]
                   "@media(max-width:1em){a:hover{x:y}}"))
+
+    (is (compile= [:a
+                   (at-supports {:display :grid}
+                                [:&:hover {:x :y}])]
+                  "@supports(display:grid){a:hover{x:y}}"))
 
     (is (compile= (at-media {:screen true}
                             [:a {:f "bar"}
@@ -212,11 +248,11 @@
       (is (not (re-find #"-moz-c:1" compiled)))
       (is (not (re-find #"-webkit-c:1" compiled)))))
 
-  (testing ":media-expressions :nesting-behavior"
+  (testing ":query-expressions :nesting-behavior"
     (let [compiled (compile-css
-                    {:media-expressions {:nesting-behavior :merge}
-                     :pretty-print? false}
-                    (at-media {:screen true}
+                     {:query-expressions {:nesting-behavior :merge}
+                      :pretty-print?     false}
+                     (at-media {:screen true}
                               [:a {:x 1}]
                               (at-media {:print true}
                                         [:b {:y 1}])))]

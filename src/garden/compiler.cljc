@@ -12,7 +12,7 @@
       [garden.types :refer [CSSUnit CSSFunction CSSAtRule]]))
   #?(:cljs
      (:require-macros
-      [garden.compiler :refer [with-media-query-context with-selector-context]]))
+      [garden.compiler :refer [with-query-context with-selector-context]]))
   #?(:clj
      (:import (garden.types CSSUnit CSSFunction CSSAtRule)
               (garden.color CSSColor))))
@@ -30,32 +30,32 @@
    ;; `{:ouput-style => :expanded}` in Sass. When set to `false`
    ;; the compiled stylesheet will be compressed with the YUI
    ;; compressor.
-   :pretty-print? true
+   :pretty-print?     true
    ;; A sequence of files to prepend to the output file.
-   :preamble []
+   :preamble          []
    ;; Location to save a stylesheet after compiling.
-   :output-to nil
+   :output-to         nil
    ;; A list of vendor prefixes to prepend to things like
    ;; `@keyframes`, properties within declarations containing the
    ;; `^:prefix` meta data, and properties defined in `:auto-prefix`.
-   :vendors []
+   :vendors           []
    ;; A set of properties to automatically prefix with `:vendors`.
-   :auto-prefix #{}
-   ;; `@media-query` specific configuration.
-   :media-expressions {;; May either be `:merge` or `:default`. When
-                       ;; set to `:merge` nested media queries will
+   :auto-prefix       #{}
+   ;; `@media` and '@supports' query configuration.
+   :query-expressions {;; May either be `:merge` or `:default`. When
+                       ;; set to `:merge` nested query expressions will
                        ;; have their expressions merged with their
                        ;; parent's.
                        :nesting-behavior :default}})
 
 (def
   ^{:private true
-    :doc "Retun a function to call when rendering a media expression.
-  The returned function accepts two arguments: the media
-  expression being evaluated and the current media expression context.
+    :doc "Retun a function to call when rendering a query expression.
+  The returned function accepts two arguments: the query
+  expression being evaluated and the current query expression context.
   Both arguments are maps. This is used to provide semantics for nested
-  media queries."}
-  media-expression-behavior
+  query expressions."}
+  query-expression-behavior
   {:merge (fn [expr context] (merge context expr))
    :default (fn [expr _] expr)})
 
@@ -69,7 +69,7 @@
   ^{:dynamic true
     :private true
     :doc "The current media query context."}
-  *media-query-context* nil)
+  *query-context* nil)
 
 ;; ---------------------------------------------------------------------
 ;; Utilities
@@ -79,9 +79,9 @@
   `(binding [*selector-context* ~selector-context]
      (do ~@body)))
 
-(defmacro with-media-query-context
+(defmacro with-query-context
   [selector-context & body]
-  `(binding [*media-query-context* ~selector-context]
+  `(binding [*query-context* ~selector-context]
      (do ~@body)))
 
 (defn- vendors
@@ -102,6 +102,7 @@
   (or (util/rule? x)
       (util/at-import? x)
       (util/at-media? x)
+      (util/at-supports? x)
       (util/at-keyframes? x)))
 
 (defn- divide-vec
@@ -241,18 +242,18 @@
 
 ;; @media expansion
 
-(defn- expand-media-query-expression [expression]
-  (if-let [f (->> [:media-expressions :nesting-behavior]
+(defn- expand-query-expression [expression]
+  (if-let [f (->> [:query-expressions :nesting-behavior]
                   (get-in *flags*)
-                  (media-expression-behavior))]
-    (f expression *media-query-context*)
+                  (query-expression-behavior))]
+    (f expression *query-context*)
     expression))
 
 (defmethod expand-at-rule :media
   [{:keys [value]}]
   (let [{:keys [media-queries rules]} value
-        media-queries (expand-media-query-expression media-queries)
-        xs (with-media-query-context media-queries             (doall (mapcat expand (expand rules))))
+        media-queries (expand-query-expression media-queries)
+        xs (with-query-context media-queries (doall (mapcat expand (expand rules))))
         ;; Though media-queries may be nested, they may not be nested
         ;; at compile time. Here we make sure this is the case.
         [subqueries rules] (divide-vec util/at-media? xs)]
@@ -260,6 +261,19 @@
      (CSSAtRule. :media {:media-queries media-queries
                          :rules rules})
      subqueries)))
+
+(defmethod expand-at-rule :feature
+  [{:keys [value]}]
+  (let [{:keys [feature-queries rules]} value
+        feature-queries (expand-query-expression feature-queries)
+        xs (with-query-context feature-queries (doall (mapcat expand (expand rules))))
+        ;; Though feature-queries may be nested, they may not be nested
+        ;; at compile time. Here we make sure this is the case.
+        [subqueries rules] (divide-vec util/at-supports? xs)]
+    (cons
+      (CSSAtRule. :feature {:feature-queries feature-queries
+                            :rules rules})
+      subqueries)))
 
 ;; ---------------------------------------------------------------------
 ;; Stylesheet expansion
@@ -491,7 +505,7 @@
 ;; Media query rendering
 
 (defn- render-media-expr-part
-  "Render the individual components of a media expression."
+  "Render the individual components of a query expression."
   [[k v]]
   (let [[sk sv] (map render-value [k v])]
     (cond
@@ -503,7 +517,7 @@
               (str "(" sk ")")))))
 
 (defn- render-media-expr
-  "Make a media query expession from one or more maps. Keys are not
+  "Make a query expession from one or more maps. Keys are not
   validated but values have the following semantics:
 
     `true`  as in `{:screen true}`  == \"screen\"
@@ -515,6 +529,33 @@
          (comma-separated-list))
     (->> (map render-media-expr-part expr)
          (string/join " and "))))
+
+;; ---------------------------------------------------------------------
+;; Feature query rendering
+
+
+(defn- render-feature-expr-part
+  "Render the individual components of a query expression."
+  [[k v]]
+  (let [[sk sv] (map render-value [k v])]
+    (if (and v (seq sv))
+      (str "(" sk colon sv ")")
+      (str "(" sk ")"))))
+
+(defn- render-feature-expr
+  "Make a query expession from one or more maps. Keys are not
+  validated but values have the following semantics:
+
+    `true`  as in `{:screen true}`  == \"screen\"
+    `false` as in `{:screen false}` == \"not screen\"
+    `:only` as in `{:screen :only}  == \"only screen\""
+  [expr]
+  (if (sequential? expr)
+    (->> (map render-feature-expr expr)
+         (comma-separated-list))
+    (->> (map render-feature-expr-part expr)
+         (string/join " and "))))
+
 
 ;; ---------------------------------------------------------------------
 ;; Garden type rendering
@@ -601,6 +642,19 @@
                (indent-str))
            r-brace-1))))
 
+;; @supports
+
+(defmethod render-at-rule :feature
+  [{:keys [value]}]
+  (let [{:keys [feature-queries rules]} value]
+    (when (seq rules)
+      (str "@supports "
+           (render-feature-expr feature-queries)
+           l-brace-1
+           (-> (map render-css rules)
+               (rule-join)
+               (indent-str))
+           r-brace-1))))
 
 ;; ---------------------------------------------------------------------
 ;; CSSRenderer implementation
