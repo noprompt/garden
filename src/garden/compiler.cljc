@@ -41,9 +41,9 @@
    :vendors []
    ;; A set of properties to automatically prefix with `:vendors`.
    :auto-prefix #{}
-   ;; `@media-query` specific configuration.
+   ;; `@media` and `@supports` query configuration.
    :media-expressions {;; May either be `:merge` or `:default`. When
-                       ;; set to `:merge` nested media queries will
+                       ;; set to `:merge` nested query expressions will
                        ;; have their expressions merged with their
                        ;; parent's.
                        :nesting-behavior :default}})
@@ -54,7 +54,7 @@
   The returned function accepts two arguments: the media
   expression being evaluated and the current media expression context.
   Both arguments are maps. This is used to provide semantics for nested
-  media queries."}
+  media queries.  Also used to support feature queries."}
   media-expression-behavior
   {:merge (fn [expr context] (merge context expr))
    :default (fn [expr _] expr)})
@@ -102,6 +102,7 @@
   (or (util/rule? x)
       (util/at-import? x)
       (util/at-media? x)
+      (util/at-supports? x)
       (util/at-keyframes? x)))
 
 (defn- divide-vec
@@ -260,6 +261,19 @@
      (CSSAtRule. :media {:media-queries media-queries
                          :rules rules})
      subqueries)))
+
+(defmethod expand-at-rule :feature
+  [{:keys [value]}]
+  (let [{:keys [feature-queries rules]} value
+        feature-queries (expand-media-query-expression feature-queries)
+        xs (with-media-query-context feature-queries (doall (mapcat expand (expand rules))))
+        ;; Though feature-queries may be nested, they may not be nested
+        ;; at compile time. Here we make sure this is the case.
+        [subqueries rules] (divide-vec util/at-supports? xs)]
+    (cons
+      (CSSAtRule. :feature {:feature-queries feature-queries
+                            :rules rules})
+      subqueries)))
 
 ;; ---------------------------------------------------------------------
 ;; Stylesheet expansion
@@ -517,6 +531,29 @@
          (string/join " and "))))
 
 ;; ---------------------------------------------------------------------
+;; Feature query rendering
+
+
+(defn- render-feature-expr-part
+  "Render the individual components of a query expression."
+  [[k v]]
+  (let [[sk sv] (map render-value [k v])]
+    (if (and v (seq sv))
+      (str "(" sk colon sv ")")
+      (str "(" sk ")"))))
+
+(defn- render-feature-expr
+  "Make a query expression from one or more maps. Keys are not
+  validated."
+  [expr]
+  (if (sequential? expr)
+    (->> (map render-feature-expr expr)
+         (comma-separated-list))
+    (->> (map render-feature-expr-part expr)
+         (string/join " and "))))
+
+
+;; ---------------------------------------------------------------------
 ;; Garden type rendering
 
 (defn- render-unit
@@ -601,6 +638,19 @@
                (indent-str))
            r-brace-1))))
 
+;; @supports
+
+(defmethod render-at-rule :feature
+  [{:keys [value]}]
+  (let [{:keys [feature-queries rules]} value]
+    (when (seq rules)
+      (str "@supports "
+           (render-feature-expr feature-queries)
+           l-brace-1
+           (-> (map render-css rules)
+               (rule-join)
+               (indent-str))
+           r-brace-1))))
 
 ;; ---------------------------------------------------------------------
 ;; CSSRenderer implementation

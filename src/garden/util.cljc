@@ -106,6 +106,11 @@
   [x]
   (and (at-rule? x) (= (:identifier x) :media)))
 
+(defn at-supports?
+  "True if `x` is a CSS `@supports` rule."
+  [x]
+  (and (at-rule? x) (= (:identifier x) :feature)))
+
 (defn at-keyframes?
   "True if `x` is a CSS `@keyframes` rule."
   [x]
