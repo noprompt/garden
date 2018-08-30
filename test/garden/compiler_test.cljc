@@ -251,7 +251,7 @@
   (testing ":media-expressions :nesting-behavior"
     (let [compiled (compile-css
                     {:media-expressions {:nesting-behavior :merge}
-                     :pretty-print?     false}
+                     :pretty-print? false}
                     (at-media {:screen true}
                               [:a {:x 1}]
                               (at-media {:print true}
