@@ -505,7 +505,7 @@
 ;; Media query rendering
 
 (defn- render-media-expr-part
-  "Render the individual components of a query expression."
+  "Render the individual components of a media expression."
   [[k v]]
   (let [[sk sv] (map render-value [k v])]
     (cond
@@ -517,7 +517,7 @@
               (str "(" sk ")")))))
 
 (defn- render-media-expr
-  "Make a query expession from one or more maps. Keys are not
+  "Make a media query expession from one or more maps. Keys are not
   validated but values have the following semantics:
 
     `true`  as in `{:screen true}`  == \"screen\"
@@ -543,12 +543,8 @@
       (str "(" sk ")"))))
 
 (defn- render-feature-expr
-  "Make a query expession from one or more maps. Keys are not
-  validated but values have the following semantics:
-
-    `true`  as in `{:screen true}`  == \"screen\"
-    `false` as in `{:screen false}` == \"not screen\"
-    `:only` as in `{:screen :only}  == \"only screen\""
+  "Make a query expression from one or more maps. Keys are not
+  validated."
   [expr]
   (if (sequential? expr)
     (->> (map render-feature-expr expr)
