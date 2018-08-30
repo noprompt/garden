@@ -250,7 +250,7 @@
 
   (testing ":query-expressions :nesting-behavior"
     (let [compiled (compile-css
-                     {:query-expressions {:nesting-behavior :merge}
+                     {:media-expressions {:nesting-behavior :merge}
                       :pretty-print?     false}
                      (at-media {:screen true}
                               [:a {:x 1}]

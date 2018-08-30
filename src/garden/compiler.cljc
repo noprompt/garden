@@ -12,7 +12,7 @@
       [garden.types :refer [CSSUnit CSSFunction CSSAtRule]]))
   #?(:cljs
      (:require-macros
-      [garden.compiler :refer [with-query-context with-selector-context]]))
+      [garden.compiler :refer [with-media-query-context with-selector-context]]))
   #?(:clj
      (:import (garden.types CSSUnit CSSFunction CSSAtRule)
               (garden.color CSSColor))))
@@ -42,7 +42,7 @@
    ;; A set of properties to automatically prefix with `:vendors`.
    :auto-prefix       #{}
    ;; `@media` and '@supports' query configuration.
-   :query-expressions {;; May either be `:merge` or `:default`. When
+   :media-expressions {;; May either be `:merge` or `:default`. When
                        ;; set to `:merge` nested query expressions will
                        ;; have their expressions merged with their
                        ;; parent's.
@@ -55,7 +55,7 @@
   expression being evaluated and the current query expression context.
   Both arguments are maps. This is used to provide semantics for nested
   query expressions."}
-  query-expression-behavior
+  media-expression-behavior
   {:merge (fn [expr context] (merge context expr))
    :default (fn [expr _] expr)})
 
@@ -69,7 +69,7 @@
   ^{:dynamic true
     :private true
     :doc "The current media query context."}
-  *query-context* nil)
+  *media-query-context* nil)
 
 ;; ---------------------------------------------------------------------
 ;; Utilities
@@ -79,9 +79,9 @@
   `(binding [*selector-context* ~selector-context]
      (do ~@body)))
 
-(defmacro with-query-context
+(defmacro with-media-query-context
   [selector-context & body]
-  `(binding [*query-context* ~selector-context]
+  `(binding [*media-query-context* ~selector-context]
      (do ~@body)))
 
 (defn- vendors
@@ -243,17 +243,17 @@
 ;; @media expansion
 
 (defn- expand-query-expression [expression]
-  (if-let [f (->> [:query-expressions :nesting-behavior]
+  (if-let [f (->> [:media-expressions :nesting-behavior]
                   (get-in *flags*)
-                  (query-expression-behavior))]
-    (f expression *query-context*)
+                  (media-expression-behavior))]
+    (f expression *media-query-context*)
     expression))
 
 (defmethod expand-at-rule :media
   [{:keys [value]}]
   (let [{:keys [media-queries rules]} value
         media-queries (expand-query-expression media-queries)
-        xs (with-query-context media-queries (doall (mapcat expand (expand rules))))
+        xs (with-media-query-context media-queries (doall (mapcat expand (expand rules))))
         ;; Though media-queries may be nested, they may not be nested
         ;; at compile time. Here we make sure this is the case.
         [subqueries rules] (divide-vec util/at-media? xs)]
@@ -266,7 +266,7 @@
   [{:keys [value]}]
   (let [{:keys [feature-queries rules]} value
         feature-queries (expand-query-expression feature-queries)
-        xs (with-query-context feature-queries (doall (mapcat expand (expand rules))))
+        xs (with-media-query-context feature-queries (doall (mapcat expand (expand rules))))
         ;; Though feature-queries may be nested, they may not be nested
         ;; at compile time. Here we make sure this is the case.
         [subqueries rules] (divide-vec util/at-supports? xs)]
