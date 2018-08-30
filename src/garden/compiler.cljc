@@ -41,7 +41,7 @@
    :vendors []
    ;; A set of properties to automatically prefix with `:vendors`.
    :auto-prefix #{}
-   ;; `@media` and '@supports' query configuration.
+   ;; `@media` and `@supports` query configuration.
    :media-expressions {;; May either be `:merge` or `:default`. When
                        ;; set to `:merge` nested query expressions will
                        ;; have their expressions merged with their
@@ -54,7 +54,7 @@
   The returned function accepts two arguments: the media
   expression being evaluated and the current media expression context.
   Both arguments are maps. This is used to provide semantics for nested
-  media queries.  Also used to support feature queries"}
+  media queries.  Also used to support feature queries."}
   media-expression-behavior
   {:merge (fn [expr context] (merge context expr))
    :default (fn [expr _] expr)})
