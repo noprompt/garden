@@ -872,7 +872,7 @@
   "nth-child helper."
   [x]
   (assert (or (string? x) (keyword? x) (symbol? x))
-          "Agument must be a string, keyword, or symbol")
+          "Argument must be a string, keyword, or symbol")
   (let [s (name x)]
     (if-let [m (re-matches nth-child-re s)]
       m
