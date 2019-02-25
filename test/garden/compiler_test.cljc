@@ -55,7 +55,10 @@
     (is (= "a{x:1}a b{y:1}" (compile [:a {:x 1} [[:b {:y 1}]]]))))
 
   (testing "colors"
-    (is (= "hsla(30, 40%, 50%, 0.5)" (render (color/hsla 30 40 50 0.5))))))
+    (is (= "hsla(30, 40%, 50%, 0.5)" (render (color/hsla 30 40 50 0.5))))
+    ;; there was a bug which incorrectly changed "0%" to "0", see https://github.com/noprompt/garden/issues/120
+    (is (= "hsla(0, 0%, 0%, 0.0)" (render (color/hsla 0 0 0 0.0))))
+    (is (= "a{color:hsla(0,0%,0%,0.0)}" (compile [:a {:color (color/hsla 0 0 0 0.0)}])))))
 
 (deftest at-media-test
   (let [flags {:pretty-print? false}]
@@ -179,7 +182,16 @@
       (is (= "@keyframes id{from{x:0}to{x:1}}"
              (compile kfs)))
       (is (= "a{d:id}"
-             (compile [:a {:d kfs}]))))))
+             (compile [:a {:d kfs}]))))
+    ;; there was a bug which incorrectly changed "0%" to "0", see https://github.com/noprompt/garden/issues/120
+    (is (= "@keyframes id{0%{x:0}100%{x:1}}"
+           (compile (at-keyframes :id
+                                  [:0% {:x 0}]
+                                  [:100% {:x 1}]))))
+    (is (= "@keyframes id{0%{x:0}100%{x:1}}"
+           (compile (at-keyframes :id
+                                  ["0%" {:x 0}]
+                                  ["100%" {:x 1}]))))))
 
 (deftest flag-tests
   (testing ":vendors"
