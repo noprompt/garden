@@ -70,6 +70,7 @@
       [:colon #"^:\s*"]
       [:semicolon #"^;"]
       ;; White space
+      [:and #"^and\s+"]
       [:space+ #"^ +"]
       [:white-space+ #"^\s+"]
       ;; Everything else
@@ -88,6 +89,7 @@
                           :l-brace "}"
                           :r-paren "("
                           :l-paren ")"
+                          :and "and "
                           :comma ","
                           :semi-comma ";"
                           :colon ":"
