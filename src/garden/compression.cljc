@@ -2,7 +2,7 @@
   "Stylesheet compression utilities."
   #?(:clj
      (:import (java.io StringReader StringWriter)
-               (com.yahoo.platform.yui.compressor CssCompressor))))
+              (com.yahoo.platform.yui.compressor CssCompressor))))
 
 ;; ---------------------------------------------------------------------
 ;; Clojure
@@ -19,11 +19,16 @@
      ([stylesheet]
       (compress-stylesheet stylesheet -1))
      ([^String stylesheet line-break-position]
-      (with-open [reader (StringReader. stylesheet)
+      ;; XXX: com.yahoo.platform.yui.compressor.CssCompressor#compress replaces "0%" with "0" everywhere
+      ;;      which might have worked in 2013 when YUI Compressor 2.4.8 was released, but not anymore in 2019.
+      (with-open [reader (-> stylesheet
+                             (.replaceAll "(^|[^0-9])0%" "$10__YUIHACK__%")
+                             (StringReader.))
                   writer (StringWriter.)]
         (doto (CssCompressor. reader)
           (.compress writer line-break-position))
-        (str writer)))))
+        (-> (str writer)
+            (.replaceAll "0__YUIHACK__%" "0%"))))))
 
 ;; ---------------------------------------------------------------------
 ;; ClojureScript
