@@ -252,7 +252,20 @@ Listed by first commit:
 ## Help!
 
 This project is looking for team members who can help this project succeed!
-If you are interested in becoming a team member please open an issue.
+Specifically of interest are people who can 
+
+* help fix bugs,
+* answer questions,
+* merge pull requests, and
+*  deploy new versions.
+
+If you are interested in becoming a team member please open an issue and direct
+message @noprompt, or direct message @noprompt on
+[Clojurians](https://clojurians.slack.com).
+
+The original author, @noprompt, is a busy person with a family, a job, and
+other projects. Be aware that it may take some time for pull requests to be
+evaluated.
 
 
 ## Community
@@ -267,6 +280,6 @@ If you are interested in becoming a team member please open an issue.
 
 ## License
 
-Copyright © 2013-2016 Joel Holdbrooks.
+Copyright © 2013-2019 Joel Holdbrooks.
 
 Distributed under the Eclipse Public License, the same as Clojure.
