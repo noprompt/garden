@@ -1,7 +1,7 @@
 (ns garden.stylesheet.alef
   "Utility functions for CSS properties, directives and functions."
   (:require [garden.util.alef]
-            [garden.color :as color]
+            [garden.color.alef :as color]
             [garden.media.alef]
             [garden.keyframes.alef]
             [garden.parse.alef]))
