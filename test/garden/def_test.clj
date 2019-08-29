@@ -1,12 +1,12 @@
 (ns garden.def-test
   (:require [clojure.test :refer :all]
-            [garden.def]
-            [garden.keyframes]
-            [garden.stylesheet]))
+            [garden.def.alef]
+            [garden.keyframes.alef]
+            [garden.stylesheet.alef]))
 
-(garden.def/defrule a)
+(garden.def.alef/defrule a)
 
-(garden.def/defrule sub-headings :h4 :h5 :h6)
+(garden.def.alef/defrule sub-headings :h4 :h5 :h6)
 
 (deftest defrule-test
   (testing "defrule"
@@ -19,11 +19,11 @@
            [#{:h4 :h5 :h6}
             {:font-weight "normal"}]))))
 
-(garden.def/defcssfn bar)
+(garden.def.alef/defcssfn bar)
 
-(garden.def/defcssfn foo
+(garden.def.alef/defcssfn foo
   "This is a docstring."
-  ([x] x)
+  ([x] [x])
   ([x y] [x y]))
 
 (deftest defcssfn-test
@@ -34,7 +34,7 @@
          '(1)))
 
   (is (= (:args (foo 1))
-         1))
+         [1]))
 
   (is (= (:args (foo 1 2))
          [1 2]))
@@ -46,7 +46,7 @@
          '([x] [x y]))))
 
 
-(garden.def/defkeyframes fade-out
+(garden.def.alef/defkeyframes fade-out
   [:from
    {:opacity 1}]
   [:to

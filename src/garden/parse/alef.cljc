@@ -1,9 +1,9 @@
-(ns garden.parse
+(ns garden.parse.alef
   "Parser for Garden syntax."
   #?@(:clj
       [(:require
         [clojure.spec :as spec]
-        [garden.ast]
+        [garden.ast.alef]
         [garden.color]
         [garden.units])
        (:import
@@ -12,7 +12,7 @@
       :cljs
       [(:require
         [clojure.spec :as spec]
-        [garden.ast]
+        [garden.ast.alef]
         [garden.color :refer [Hsl Hsla Rgb Rgba]]
         [garden.units :refer [Unit]])]))
 
@@ -27,7 +27,7 @@
 (defn parse
   "Parse a value into a CSS AST."
   [x]
-  {:post [(garden.ast/ast? %)]}
+  {:post [(garden.ast.alef/ast? %)]}
   (-parse x))
 
 (defn tag
@@ -146,7 +146,7 @@
 
 (spec/def ::vector-rule
   (spec/cat :selector ::selector
-            :children (spec/* ::vector-rule-child))) 
+            :children (spec/* ::vector-rule-child)))
 
 ;; ---------------------------------------------------------------------
 ;; Conformed data processing
@@ -230,7 +230,7 @@
           ;; HACK: This is *extremely* undesirable. Toting around
           ;; special meta data adds complexity here and elsewhere
           ;; (since it must persist though AST transformations).
-          (with-meta 
+          (with-meta
             (process-tagged-parse-data data)
             {:prefix? true}))
         parse-data)))
@@ -327,11 +327,13 @@
 
 (defn parse-comma-separated-list
   [v]
+  (spec/assert ::comma-separated-list v)
   (let [parse-data (spec/conform ::comma-separated-list v)]
     (process-tagged-parse-data [::comma-separated-list parse-data])))
 
 (defn parse-hash-map
   [m]
+  (spec/assert ::declaration-block m)
   (let [parse-data (spec/conform ::declaration-block m)
         node (process-tagged-parse-data [::declaration-block parse-data])]
     node))
@@ -342,6 +344,7 @@
 
 (defn parse-vector
   [v]
+  (spec/assert ::vector-rule v)
   (let [parse-data (spec/conform ::vector-rule v)]
     (process-tagged-parse-data [::vector-rule parse-data])))
 
@@ -415,7 +418,7 @@
       [:css/percentage (garden.color/saturation c)]
       [:css/percentage (garden.color/lightness c)]]])
 
-  
+
   Hsla
   (-parse [c]
     [:css/function

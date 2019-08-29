@@ -1,4 +1,4 @@
-(ns garden.ast)
+(ns garden.ast.alef)
 
 (defn node?
   "True if `x` is an AST node, false otherwise."

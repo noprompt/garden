@@ -3,7 +3,7 @@
    #?(:cljs [cljs.test :as t :refer-macros [is are deftest testing]]
       :clj  [clojure.test :as t :refer [is are deftest testing]])
    [garden.color :as color]
-   [garden.stylesheet :refer [rule]])
+   [garden.stylesheet.alef :refer [rule]])
   #?(:clj
      (:import clojure.lang.ExceptionInfo)))
 

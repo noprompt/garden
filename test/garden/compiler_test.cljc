@@ -2,18 +2,18 @@
   (:require
    [clojure.test :as t :include-macros true :refer [is are deftest testing]]
    [garden.color :as color]
-   [garden.compiler]
-   [garden.keyframes :as keyframes]
-   [garden.media :as media]
+   [garden.compiler.alef]
+   [garden.keyframes.alef]
+   [garden.media.alef]
    [garden.units :as units]
-   #?(:clj [garden.stylesheet :as stylesheet]
-      :cljs [garden.stylesheet :as stylesheet :include-macros true :refer [Function]]))
+   #?(:clj [garden.stylesheet.alef]
+      :cljs [garden.stylesheet.alef :include-macros true :refer [Function]]))
   #?(:clj
-     (:import garden.stylesheet.Function)))
+     (:import garden.stylesheet.alef.Function)))
 
 (defn compiles-to [x s]
   (let [expected s
-        actual (garden.compiler/compile-css {} x)]
+        actual (garden.compiler.alef/compile-css {} x)]
     (is (= expected
            actual))))
 
@@ -101,40 +101,40 @@
                  "rgba(30,40,50,0.5)")))
 
 (testing "media"
-  (compiles-to (media/rule (media/query :screen)
+  (compiles-to (garden.media.alef/rule (garden.media.alef/query :screen)
                  [:s {:a :b}])
                "@media screen{s{a:b;}}")
 
-  (compiles-to (media/rule (media/query {:foo nil})
+  (compiles-to (garden.media.alef/rule (garden.media.alef/query {:foo nil})
                  [:s {:a :b}])
                "@media (foo){s{a:b;}}")
   
-  (compiles-to (media/rule (media/query :screen)
+  (compiles-to (garden.media.alef/rule (garden.media.alef/query :screen)
                  [:s1 {:a :b}]
-                 (media/rule (media/query :screen)
+                 (garden.media.alef/rule (garden.media.alef/query :screen)
                    [:s2 {:a :b}]))
                "@media screen{s1{a:b;}}@media screen{s2{a:b;}}")
 
-  (compiles-to (media/rule (media/query :screen)
+  (compiles-to (garden.media.alef/rule (garden.media.alef/query :screen)
                  [:s1 {:a :b}]
-                 (media/rule (media/query :print)
+                 (garden.media.alef/rule (garden.media.alef/query :print)
                    [:s2 {:a :b}]))
                "@media screen{s1{a:b;}}")
 
-  (compiles-to (media/rule (media/query :not :screen)
+  (compiles-to (garden.media.alef/rule (garden.media.alef/query :not :screen)
                  [:s1 {:a :b}]
-                 (media/rule (media/query :screen)
+                 (garden.media.alef/rule (garden.media.alef/query :screen)
                    [:s2 {:a :b}]))
                "@media not screen{s1{a:b;}}")
 
-  (compiles-to (media/rule (media/query :screen)
+  (compiles-to (garden.media.alef/rule (garden.media.alef/query :screen)
                  [:s1 {:a :b}]
-                 (media/rule (media/query (sorted-map :a 1 :b 2))
+                 (garden.media.alef/rule (garden.media.alef/query (sorted-map :a 1 :b 2))
                    [:s2 {:a :b}]))
                "@media screen{s1{a:b;}}@media screen and (a:1) and (b:2){s2{a:b;}}")
 
   (compiles-to [:s1
-                (media/rule (media/query :screen)
+                (garden.media.alef/rule (garden.media.alef/query :screen)
                   [:s2 {:a :b}])]
                "s1{}@media screen{s1 s2{a:b;}}"))
 
@@ -153,13 +153,13 @@
                  "a{}a:b,a:c{x:y;}")
     
     (compiles-to [:a
-                  (media/rule (media/query {:max-width "1em"})
+                  (garden.media.alef/rule (garden.media.alef/query {:max-width "1em"})
                     [:&:hover {:x :y}])]
                  "a{}@media (max-width:1em){a:hover{x:y;}}")
 
-    (compiles-to (media/rule (media/query :screen)
+    (compiles-to (garden.media.alef/rule (garden.media.alef/query :screen)
                    [:a {:f "bar"}
-                    (media/rule (media/query {:max-with "1em"})
+                    (garden.media.alef/rule (garden.media.alef/query {:max-with "1em"})
                       [:& {:g "foo"}])])
                  "@media screen{a{f:bar;}}@media screen and (max-with:1em){a{g:foo;}}")))
 
@@ -177,20 +177,20 @@
 (deftest at-import-test
   (testing "@import"
     (let [url "http://example.com/foo.css"]
-      (compiles-to (stylesheet/at-import url)
+      (compiles-to (garden.stylesheet.alef/at-import url)
                    "@import \"http://example.com/foo.css\";")
 
-      (compiles-to (stylesheet/at-import url (media/query :screen)) 
+      (compiles-to (garden.stylesheet.alef/at-import url (garden.media.alef/query :screen)) 
                    "@import \"http://example.com/foo.css\" screen;"))))
 
 (deftest at-rule-test 
   (testing "@keyframes"
-    (compiles-to (stylesheet/at-keyframes :id
+    (compiles-to (garden.stylesheet.alef/at-keyframes :id
                    [:from {:x 0}]
                    [:to {:x 1}]) 
                  "@keyframes id{0%{x:0;}100%{x:1;}}")
 
-    (compiles-to (stylesheet/at-keyframes :id
+    (compiles-to (garden.stylesheet.alef/at-keyframes :id
                    [:to {:x 1}]
                    [:from {:x 0}]
                    [50 {:y 0}]
@@ -199,12 +199,14 @@
 
 (deftest calc-test
   (testing "calc"
-    (compiles-to (stylesheet/calc (+ 1 2))
-                 "calc((1+2))")))
+    (compiles-to (garden.stylesheet.alef/calc (+ 1 2))
+                 "calc((1 + 2))")
+    (compiles-to (garden.stylesheet.alef/calc (+ 1 2 3))
+                 "calc(((1 + 2) + 3))")))
 
 (deftest flag-tests
   (testing "^:prefix"
-    (let [compiled (garden.compiler/compile-css
+    (let [compiled (garden.compiler.alef/compile-css
                     {:vendors #{"moz" "webkit"}
                      :pretty-print? false}
                     [:a ^:prefix {:a 1 :b 1}])]
@@ -219,10 +221,10 @@
 
   (testing "@keyframes prefix"
     (let [vendors #{"moz" "webkit"}
-          compiled (garden.compiler/compile-css
+          compiled (garden.compiler.alef/compile-css
                     {:vendors vendors
                      :pretty-print? false}
-                    (stylesheet/at-keyframes "fade"
+                    (garden.stylesheet.alef/at-keyframes "fade"
                       [:from {:foo "bar"}]
                       [:to {:foo "baz"}]))]
       (is (re-find #"@-moz-keyframes" compiled))
@@ -230,7 +232,7 @@
       (is (re-find #"@keyframes" compiled))))
 
   (testing ":prefix-properties"
-    (let [compiled (garden.compiler/compile-css
+    (let [compiled (garden.compiler.alef/compile-css
                     {:prefix-properties #{"a" "b"}
                      :vendors #{:moz :webkit}}
                     [:x {:a 1 :b 1 :c 1}])]
@@ -247,10 +249,10 @@
       (is (not (re-find #"-webkit-c:1" compiled)))))
 
   (testing ":prefix-functions"
-    (let [fn-a (stylesheet/cssfn :a)
-          fn-b (stylesheet/cssfn :b)
-          fn-c (stylesheet/cssfn :c)
-          compiled (garden.compiler/compile-css
+    (let [fn-a (garden.stylesheet.alef/cssfn :a)
+          fn-b (garden.stylesheet.alef/cssfn :b)
+          fn-c (garden.stylesheet.alef/cssfn :c)
+          compiled (garden.compiler.alef/compile-css
                     {:prefix-functions #{"a" "b"}
                      :vendors #{:moz :webkit}}
                     {:x [(fn-a 1) (fn-b 1) (fn-c 1)]})]

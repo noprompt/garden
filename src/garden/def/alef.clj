@@ -1,8 +1,10 @@
-(ns garden.def
-  (:require [garden.core]
-            [garden.keyframes]
-            [garden.stylesheet]
-            [garden.util :as util]))
+(ns garden.def.alef
+  (:require [clojure.spec :as spec]
+            [garden.core.alef]
+            [garden.keyframes.alef]
+            [garden.parse.alef]
+            [garden.stylesheet.alef ]
+            [garden.util.alef]))
 
 (defmacro defstyles
   "Convenience macro equivalent to `(def name (list styles*))`."
@@ -13,7 +15,7 @@
   "Convenience macro equivalent to `(def name (css opts? styles*))`."
   [name & styles]
   `(def ~name
-     (garden.core/css ~@styles)))
+     (garden.core.alef/css ~@styles)))
 
 (defmacro defrule
   "Define a function for creating rules. If only the `name` argument is
@@ -52,21 +54,22 @@
   `:function` field will be set to `(str name)`.
 
   If only the `name` argument is provided the returned function will
-  accept any number of arguments.
+  accept any number of arguments. If a function body is provided the
+  return value of the function must be a vector.
 
   Ex.
       (def cssfn url)
       ;; => #'user/url
 
       (url \"http://fonts.googleapis.com/css?family=Lato\")
-      ;; => #garden.types.CSSFunction{:function \"url\", :args \"http://fonts.googleapis.com/css?family=Lato\"}
+      ;; => #garden.stylesheet.Function{:function \"url\", :args \"http://fonts.googleapis.com/css?family=Lato\"}
 
       (css (url \"http://fonts.googleapis.com/css?family=Lato\"))
       ;; => url(http://fonts.googleapis.com/css?family=Lato) 
 
   Ex.
       (defcssfn attr
-        ([name] name)
+        ([name] [name])
         ([name type-or-unit]
            [[name type-or-unit]])
         ([name type-or-unit fallback]
@@ -80,25 +83,29 @@
       ;; => \"attr(vertical length)\"
 
       (attr :end-of-quote :string :inherit) 
-      ;; => #garden.stylehseet.Function{:function \"url\", :args [:end-of-quote [:string :inherit]]}
+      ;; => #garden.stylesheet.Function{:function \"url\", :args [:end-of-quote [:string :inherit]]}
 
       (css (attr :end-of-quote :string :inherit))
       ;; => \"attr(end-of-quote string, inherit)\""
   ([sym]
    (let [[_ sym fn-tail] (macroexpand
-                          `(defn ~sym [& ~'args]
-                             (garden.stylesheet/map->Function
-                              {:name ~(str sym)
-                               :args ~'args})))]
+                          `(defn ~sym [& args#]
+                             (garden.stylesheet.alef.Function.
+                              ~(str sym)
+                              (vec args#))))]
      `(def ~sym ~fn-tail)))
   ([sym & fn-tail]
    (let [[_ sym [_ & fn-spec]] (macroexpand `(defn ~sym ~@fn-tail))
          cssfn-name (str sym)]
      `(def ~sym
         (fn [& args#]
-          (garden.stylesheet/map->Function
-           {:name ~cssfn-name
-            :args (apply (fn ~@fn-spec) args#)}))))))
+          (let [result# (apply (fn ~@fn-spec) args#)]
+            (if (vector? result#)
+              (garden.stylesheet.alef.Function. ~cssfn-name result#)
+              (throw
+               (ex-info ~(format "The CSS function `%s` must return vector"
+                                 (symbol (name (ns-name *ns*)) (name sym)))
+                        (spec/explain-data vector? result#))))))))))
 
 (defmacro defkeyframes
   "Define a CSS @keyframes animation.
@@ -118,6 +125,6 @@
          {:animation [[my-animation \"5s\"]]}])"
   [sym & frames]
   `(def ~sym
-     (garden.keyframes/rule ~(name sym) ~@frames)))
+     (garden.keyframes.alef/rule ~(name sym) ~@frames)))
 
 

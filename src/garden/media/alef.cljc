@@ -1,8 +1,8 @@
-(ns garden.media
+(ns garden.media.alef
   "Utility functions for working with media queries."
   (:require [clojure.core :as clj]
             [clojure.spec :as spec]
-            [garden.parse]))
+            [garden.parse.alef]))
 
 (def media-types
   #{:all
@@ -186,7 +186,7 @@
             expression-nodes))
     [:css.media.query/conjunction]))
 
-(extend-protocol garden.parse/IParse
+(extend-protocol garden.parse.alef/IParse
   MediaQuery
   (-parse [media-query]
     (let [constraint-node (parse-media-constraint media-query)
@@ -203,5 +203,5 @@
      [:css.media/rule
       (into
        [:css.media/query-list]
-       (map garden.parse/parse (:media media-rule)))]
-     (map garden.parse/parse (:rules media-rule)))))
+       (map garden.parse.alef/parse (:media media-rule)))]
+     (map garden.parse.alef/parse (:rules media-rule)))))

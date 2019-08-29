@@ -1,14 +1,14 @@
 (ns garden.normalize-test
   (:require
    [clojure.test :include-macros true :refer [are deftest is testing]]
-   [garden.normalize]))
+   [garden.normalize.alef]))
 
 (deftest nest-selector-simple-test
   (testing "simple selector nesting"
     (is (= [:css.selector/compound
             [:css.selector/simple "a"]
             [:css.selector/simple "b"]]
-           (garden.normalize/nest-selector
+           (garden.normalize.alef/nest-selector
             [:css.selector/simple "b"]
             [:css.selector/simple "a"]))
         "a simple selector nested within another simple selector is a compound selector")
@@ -17,7 +17,7 @@
             [:css.selector/simple "a"]
             [:css.selector/simple "b"]
             [:css.selector/simple "c"]]
-           (garden.normalize/nest-selector
+           (garden.normalize.alef/nest-selector
             [:css.selector/simple "c"]
             [:css.selector/compound
              [:css.selector/simple "a"]
@@ -31,7 +31,7 @@
             [:css.selector/compound
              [:css.selector/simple "b"]
              [:css.selector/simple "c"]]]
-           (garden.normalize/nest-selector
+           (garden.normalize.alef/nest-selector
             [:css.selector/simple "c"]
             [:css.selector/complex
              [:css.selector/simple "a"]
@@ -46,7 +46,7 @@
             [:css.selector/simple "a"]
             [:css.selector/simple "b"]
             [:css.selector/simple "c"]]
-           (garden.normalize/nest-selector
+           (garden.normalize.alef/nest-selector
             [:css.selector/simple "c"]
             [:css.selector/compound
              [:css.selector/simple "a"]
@@ -58,7 +58,7 @@
             [:css.selector/simple "b"]
             [:css.selector/simple "c"]
             [:css.selector/simple "d"]]
-           (garden.normalize/nest-selector
+           (garden.normalize.alef/nest-selector
             [:css.selector/compound
              [:css.selector/simple "c"]
              [:css.selector/simple "d"]]
@@ -76,7 +76,7 @@
              [:css.selector/simple "b"]
              [:css.selector/simple "c"]
              [:css.selector/simple "d"]]]
-           (garden.normalize/nest-selector
+           (garden.normalize.alef/nest-selector
             [:css.selector/compound
              [:css.selector/simple "c"]
              [:css.selector/simple "d"]]
@@ -94,7 +94,7 @@
             [:css.selector/compound
              [:css.selector/simple "a"]
              [:css.selector/simple "c"]]]
-           (garden.normalize/nest-selector
+           (garden.normalize.alef/nest-selector
             [:css.selector/complex
              [:css.selector/simple "b"]
              [:css.selector/simple "c"]]
@@ -114,7 +114,7 @@
             [:css.selector/compound
              [:css.selector/simple "b"]
              [:css.selector/simple "d"]]]
-           (garden.normalize/nest-selector
+           (garden.normalize.alef/nest-selector
             [:css.selector/complex
              [:css.selector/simple "c"]
              [:css.selector/simple "d"]]
@@ -127,7 +127,7 @@
   (let [child-selector [:css.selector/parent-reference ":hover"]
         parent-selector [:css.selector/simple "a"]
         expected [:css.selector/simple "a:hover"]
-        actual (garden.normalize/nest-selector child-selector parent-selector)]
+        actual (garden.normalize.alef/nest-selector child-selector parent-selector)]
     (is (= expected
            actual)
         "a parent reference selector nested within a simple selector is a simple selector"))
@@ -139,7 +139,7 @@
         expected [:css.selector/compound
                   [:css.selector/simple "h1"]
                   [:css.selector/simple "a:hover"]]
-        actual (garden.normalize/nest-selector child-selector parent-selector)]
+        actual (garden.normalize.alef/nest-selector child-selector parent-selector)]
     (is (= expected
            actual)
         "a parent reference selector nested within a compound selector is a compound selector"))
@@ -159,7 +159,7 @@
                   [:css.selector/compound
                    [:css.selector/simple "h2"]
                    [:css.selector/simple "a:hover"]]]
-        actual (garden.normalize/nest-selector child-selector parent-selector)]
+        actual (garden.normalize.alef/nest-selector child-selector parent-selector)]
     (is (= expected
            actual)
         "a parent reference selector nested within a complex selector is a complex selector")))
@@ -191,7 +191,7 @@
                           [:css.media.query/feature "child-feature"]
                           [:css.media.query/feature "child-value"]]]]]
       (is (= result-query
-             (garden.normalize/nest-media-query
+             (garden.normalize.alef/nest-media-query
               child-query
               parent-query)))))
 
@@ -221,7 +221,7 @@
                           [:css.media.query/feature "child-feature"]
                           [:css.media.query/feature "child-value"]]]]]
       (is (= result-query
-             (garden.normalize/nest-media-query
+             (garden.normalize.alef/nest-media-query
               child-query
               parent-query)))))
 
@@ -251,7 +251,7 @@
                           [:css.media.query/feature "child-feature"]
                           [:css.media.query/feature "child-value"]]]]]
       (is (= result-query
-             (garden.normalize/nest-media-query
+             (garden.normalize.alef/nest-media-query
               child-query
               parent-query)))))
 
@@ -272,7 +272,7 @@
                           [:css.media.query/feature "parent-value"]]]]
           result-query parent-query]
       (is (= result-query
-             (garden.normalize/nest-media-query
+             (garden.normalize.alef/nest-media-query
               child-query
               parent-query))))
 
@@ -302,7 +302,7 @@
                             [:css.media.query/feature "child-feature"]
                             [:css.media.query/feature "child-value"]]]]]
         (is (= result-query
-               (garden.normalize/nest-media-query
+               (garden.normalize.alef/nest-media-query
                 child-query
                 parent-query))))))
 
@@ -324,7 +324,7 @@
                             [:css.media.query/value "parent-value"]]]]
             result-query [:css/noop]]
         (is (= result-query
-               (garden.normalize/nest-media-query
+               (garden.normalize.alef/nest-media-query
                 child-query
                 parent-query)))))
 
@@ -345,7 +345,7 @@
                             [:css.media.query/value "parent-value"]]]]
             result-query [:css/noop]]
         (is (= result-query
-               (garden.normalize/nest-media-query
+               (garden.normalize.alef/nest-media-query
                 child-query
                 parent-query))))))
 
@@ -376,7 +376,7 @@
                             [:css.media.query/feature "child-feature"]
                             [:css.media.query/value "child-value"]]]]]
         (is (= result-query
-               (garden.normalize/nest-media-query
+               (garden.normalize.alef/nest-media-query
                 child-query
                 parent-query)))))
 
@@ -397,7 +397,7 @@
                             [:css.media.query/value "parent-value"]]]]
             result-query [:css/noop]]
         (is (= result-query
-               (garden.normalize/nest-media-query
+               (garden.normalize.alef/nest-media-query
                 child-query
                 parent-query)))))))
 
@@ -462,7 +462,7 @@
                   [:css.media.query/expression
                    [:css.media.query/feature "child-feature-2"]]]]]]
     (is (= result
-           (garden.normalize/nest-media-query-list
+           (garden.normalize.alef/nest-media-query-list
             child-query-list
             parent-query-list)))))
 
@@ -491,7 +491,7 @@
                     [:css/rule
                      [:css.selector/simple "z"]
                      [:css/block]]]
-          actual (garden.normalize/normalize node)]
+          actual (garden.normalize.alef/normalize node)]
       (is (= expected
              actual)))))
 
@@ -510,7 +510,7 @@
                     [:css/rule
                      [:css.selector/simple "x"]
                      [:css/block]]]
-          actual (garden.normalize/normalize node)]
+          actual (garden.normalize.alef/normalize node)]
       (is (= expected
              actual)))))
 
@@ -533,7 +533,7 @@
                     [:css/rule
                      [:css.selector/simple "x"]
                      [:css/block]]]
-          actual (garden.normalize/normalize node)]
+          actual (garden.normalize.alef/normalize node)]
       (is (= expected
              actual))))
 
@@ -549,7 +549,7 @@
                      [:css.media.query/feature "child-feature"]
                      [:css.media.query/value "child-value"]]]]]]]
           expected node
-          actual (garden.normalize/normalize node)]
+          actual (garden.normalize.alef/normalize node)]
       (is (= expected
              actual)))
 
@@ -572,7 +572,7 @@
                      [:css.media.query/expression
                       [:css.media.query/feature "child-feature"]
                       [:css.media.query/value "child-value"]]]]]]]]
-          actual (garden.normalize/normalize node)
+          actual (garden.normalize.alef/normalize node)
           expected [:css/stylesheet
                     [:css/import "a-import"
                      [:css.media/query-list
@@ -607,7 +607,7 @@
                  [:css/rule
                   [:css.selector/simple "y"]
                   [:css/block]]]]
-          actual (garden.normalize/normalize node)
+          actual (garden.normalize.alef/normalize node)
           expected [:css/stylesheet
                     [:css/rule
                      [:css.selector/simple "x"]
@@ -650,7 +650,7 @@
                      [:css.selector/simple "y"]]
                     [:css/block]]]]]
       (is (= result
-             (garden.normalize/normalize node))))))
+             (garden.normalize.alef/normalize node))))))
 
 (deftest normalize-media-rule-test
   (testing "nested media rules are unnested"
@@ -685,7 +685,7 @@
                        [:css.media.query/conjunction
                         [:css.media.query/feature "parent-feature"]
                         [:css.media.query/feature "child-feature"]]]]]]
-          actual (garden.normalize/normalize node)]
+          actual (garden.normalize.alef/normalize node)]
       (is (= expected
              actual))))
 
@@ -719,4 +719,4 @@
                      [:css.selector/simple "y"]]
                     [:css/block]]]]]
       (is (= result
-             (garden.normalize/normalize node))))))
+             (garden.normalize.alef/normalize node))))))
