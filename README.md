@@ -158,25 +158,6 @@ user=> (css [:h1 {30000 "nom-nom"}])
 We've already seen strings used as declaration map values, but Garden also
 supports keywords, symbols, numbers, maps, vectors, and lists in addition.
 
-##### Custom functions
-
-Since Garden doesn't have wrappers for all the possible CSS functions,
-sometimes you might need to define the function you need yourself.
-This is where the `defcssfn` macro comes in handy.
-Suppose you want to use the `url` CSS function, even if it's not available
-in Garden directly you can just define it yourself by simply:
-
-```
-(defcssfn url)
-;; => #'user/url
-```
-
-Which will render like this:
-```
-(css (url "http://fonts.googleapis.com/css?family=Lato"))
-;; => url(http://fonts.googleapis.com/css?family=Lato)
-```
-
 ##### Strings, keywords, symbols, and numbers
 
 Strings, keywords, symbols, and numbers are rendered as literal CSS values:
@@ -191,7 +172,6 @@ Be warned, you must escape literal string values yourself:
 ```clojure
 user=> (css [:pre {:font-family "\"Liberation Mono\", Consolas, monospace"}])
 "pre{font-family:\"Liberation Mono\", Consolas, monospace}"
-
 ```
 
 ## Development
@@ -252,20 +232,7 @@ Listed by first commit:
 ## Help!
 
 This project is looking for team members who can help this project succeed!
-Specifically of interest are people who can 
-
-* help fix bugs,
-* answer questions,
-* merge pull requests, and
-*  deploy new versions.
-
-If you are interested in becoming a team member please open an issue and direct
-message @noprompt, or direct message @noprompt on
-[Clojurians](https://clojurians.slack.com).
-
-The original author, @noprompt, is a busy person with a family, a job, and
-other projects. Be aware that it may take some time for pull requests to be
-evaluated.
+If you are interested in becoming a team member please open an issue.
 
 
 ## Community
@@ -280,6 +247,6 @@ evaluated.
 
 ## License
 
-Copyright © 2013-2019 Joel Holdbrooks.
+Copyright © 2013-2016 Joel Holdbrooks.
 
 Distributed under the Eclipse Public License, the same as Clojure.

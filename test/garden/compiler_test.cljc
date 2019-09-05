@@ -1,202 +1,214 @@
 (ns garden.compiler-test
   (:require
-   #?(:cljs [cljs.test :as t :refer-macros [is are deftest testing]]
-      :clj [clojure.test :as t :refer [is are deftest testing]])
-   #?(:clj [garden.types :as types]
-      :cljs [garden.types :as types :refer [CSSFunction CSSUnit]])
+   [clojure.test :as t :include-macros true :refer [is are deftest testing]]
    [garden.color :as color]
-   [garden.compiler :refer [compile-css expand render-css]]
-   [garden.stylesheet :refer (at-import at-media at-keyframes at-supports)])
+   [garden.compiler]
+   [garden.keyframes :as keyframes]
+   [garden.media :as media]
+   [garden.units :as units]
+   #?(:clj [garden.stylesheet :as stylesheet]
+      :cljs [garden.stylesheet :as stylesheet :include-macros true :refer [Function]]))
   #?(:clj
-     (:import garden.types.CSSFunction
-              garden.types.CSSUnit)))
+     (:import garden.stylesheet.Function)))
 
-;; Helpers
+(defn compiles-to [x s]
+  (let [expected s
+        actual (garden.compiler/compile-css {} x)]
+    (is (= expected
+           actual))))
 
-(defn render [x]
-  (first (render-css (expand x))))
-
-(defn compile [x & {:as flags}]
-  (-> (merge flags {:pretty-print? false})
-      (compile-css x)))
-
-(def test-vendors ["moz" "webkit"])
-
-;; Tests
-(deftest render-css-test
+(deftest map-compilation-test
   (testing "maps"
-    (is (= "a: 1;" (render {:a 1})))
-    (is (= "a: b;" (render {:a "b"})))
-    (is (= "a: b;" (render {:a :b})))
-    (is (= "a-b-c: 1;" (render {:a {:b {:c 1}}})))
-    (is (= "a: 1;\na: 2;\na: 3;" (render {:a (sorted-set 1 2 3)})))
-    (is (= "a: 1, 2, 3;" (render {:a [1 2 3]})))
-    (is (= "a: 1 2, 3, 4 5;" (render {:a [[1 2] 3 [4 5]]})))
+    (compiles-to {:a 1}
+                 "{a:1;}")
 
-    (testing "ordering"
-      (is (= "a: 1;\nb: 2;\nc: 3;\nd: 4;\ne: 5;\nf: 6;\ng: 7;\nh: 8;"
-             (render {:a 1 :b 2 :c 3 :d 4 :e 5 :f 6 :g 7 :h 8})))
-      (is (not= "a: 1;\nb: 2;\nc: 3;\nd: 4;\ne: 5;\nf: 6;\ng: 7;\nh: 8;\ni: 9;"
-                (render {:a 1 :b 2 :c 3 :d 4 :e 5 :f 6 :g 7 :h 8 :i 9})))
-      (is (not= "a: 1;\nb: 2;\nc: 3;\nd: 4;\ne: 5;\nf: 6;\ng: 7;\nh: 8;\ni: 9;\nj: 10;"
-                (render (array-map :a 1 :b 2 :c 3 :d 4 :e 5 :f 6 :g 7 :h 8 :i 9 :j 10))))
-      (is (= "a: 1;\nb: 2;\nc: 3;\nd: 4;\ne: 5;\nf: 6;\ng: 7;\nh: 8;\ni: 9;\nj: 10;\nk: 11;"
-             (render (sorted-map :a 1 :k 11 :b 2 :j 10 :c 3 :i 9 :d 4 :h 8 :e 5 :g 7 :f 6))))
-      (is (= "k: 11;\nj: 10;\ni: 9;\nh: 8;\ng: 7;\nf: 6;\ne: 5;\nd: 4;\nc: 3;\nb: 2;\na: 1;"
-             (render (sorted-map-by #(compare %2 %1) :a 1 :b 2 :c 3 :d 4 :e 5 :f 6 :g 7 :h 8 :i 9 :j 10 :k 11))))))
+    (compiles-to {:a "b"}
+                 "{a:b;}")
 
+    (compiles-to {:a :b}
+                 "{a:b;}")
+
+    (compiles-to {:a {:b {:c 1}}}
+                 "{a-b-c:1;}")
+
+    (compiles-to {:a [1 2 3]}
+                 "{a:1,2,3;}")
+
+    (compiles-to {:a [[1 2] 3 [4 5]]}
+                 "{a:1 2,3,4 5;}")
+
+    (compiles-to #:a {:b :a/b}
+                 "{a-b:a-b;}")
+
+    (compiles-to {:a (sorted-set 1 2 3)}
+                 "{a:1;a:2;a:3;}")))
+
+(deftest vector-compilation-test
   (testing "vectors"
-    (is (= "a{x:1;y:2}" (compile [:a {:x 1} {:y 2}])))
-    (is (= "a{x:1}a b{y:2}" (compile [:a {:x 1} [:b {:y 2}]])))
-    (is (= "a,b{x:1}a c,a d,b c,b d{y:2}" (compile [:a :b {:x 1} [:c :d {:y 2}]])))
-    (is (= "a,b{x:1}a c,a d,b c,b d{y:2}" (compile [:a :b '({:x 1}) '([:c :d {:y 2}])])))
-    (is (= "a{x:1}b{y:2}" (compile [[:a {:x 1}] [:b {:y 2}]])))
-    (is (= "a b{y:1}" (compile [:a [{:x 1} [:b {:y 1}]]])))
-    (is (= "a{x:1}a b{y:1}" (compile [:a {:x 1} [[:b {:y 1}]]]))))
+    (compiles-to [:a {:x 1} {:y 2}]
+                 "a{x:1;y:2;}")
 
+    (compiles-to [:a {:x 1} [:b {:y 2}]]
+                 "a{x:1;}a b{y:2;}")
+
+    (compiles-to [[:a :b]
+                  {:x 1}
+                  {:y 2}]
+                 "a b{x:1;y:2;}")
+
+    (compiles-to [[:a :b]
+                  {:x 1}
+                  [[:c :d]
+                   {:y 2}]]
+                 "a b{x:1;}a b c d{y:2;}")
+
+    (compiles-to [(sorted-set :a :b)
+                  {:x 1}
+                  [(sorted-set :c :d)
+                   {:y 2}]]
+                 "a,b{x:1;}a c,b c,a d,b d{y:2;}")
+
+    (compiles-to [(sorted-set :a :b)
+                  '({:x 1})
+                  (list [(sorted-set :c :d)
+                         {:y 2}])]
+                 "a,b{x:1;}a c,b c,a d,b d{y:2;}")
+
+    (compiles-to (list [:a {:x 1}]
+                       [:b {:y 2}])
+                 "a{x:1;}b{y:2;}")
+
+    (compiles-to [:a (list {:x 1}
+                           [:b {:y 1}])]
+                 "a{x:1;}a b{y:1;}")
+
+    (compiles-to [:a {:x 1}
+                  (list [:b {:y 1}])]
+                 "a{x:1;}a b{y:1;}")))
+
+(deftest color-compilation-test 
   (testing "colors"
-    (is (= "hsla(30, 40%, 50%, 0.5)" (render (color/hsla 30 40 50 0.5))))
-    ;; there was a bug which incorrectly changed "0%" to "0", see https://github.com/noprompt/garden/issues/120
-    (is (= "hsla(0, 0%, 0%, 0.0)" (render (color/hsla 0 0 0 0.0))))
-    (is (= "a{color:hsla(0,0%,0%,0.0)}" (compile [:a {:color (color/hsla 0 0 0 0.0)}])))))
+    (compiles-to (color/hsl [30 40 50])
+                 "hsl(30,40%,50%)")
 
-(deftest at-media-test
-  (let [flags {:pretty-print? false}]
-    (are [x y] (= (compile-css flags x) y)
-      (at-media {:screen true} [:h1 {:a :b}])
-      "@media screen{h1{a:b}}"
+    (compiles-to (color/hsla [30 40 50 0.5])
+                 "hsla(30,40%,50%,0.5)")
 
-      (list (at-media {:screen true}
-                      [:h1 {:a :b}])
-            [:h2 {:c :d}])
-      "@media screen{h1{a:b}}h2{c:d}"
+    (compiles-to (color/rgb [30 40 50])
+                 "rgb(30,40,50)")
 
-      (list [:a {:a "b"}
-             (at-media {:screen true}
-                       [:&:hover {:c "d"}])])
-      "a{a:b}@media screen{a:hover{c:d}}"
+    (compiles-to (color/rgba [30 40 50 0.5])
+                 "rgba(30,40,50,0.5)")))
 
-      (at-media {:toast true}
-                [:h1 {:a "b"}])
-      "@media toast{h1{a:b}}"
+(testing "media"
+  (compiles-to (media/rule (media/query :screen)
+                 [:s {:a :b}])
+               "@media screen{s{a:b;}}")
 
-      (at-media {:bacon :only}
-                [:h1 {:a "b"}])
-      "@media only bacon{h1{a:b}}"
+  (compiles-to (media/rule (media/query {:foo nil})
+                 [:s {:a :b}])
+               "@media (foo){s{a:b;}}")
+  
+  (compiles-to (media/rule (media/query :screen)
+                 [:s1 {:a :b}]
+                 (media/rule (media/query :screen)
+                   [:s2 {:a :b}]))
+               "@media screen{s1{a:b;}}@media screen{s2{a:b;}}")
 
-      (at-media {:sad false}
-                [:h1 {:a "b"}])
-      "@media not sad{h1{a:b}}"
+  (compiles-to (media/rule (media/query :screen)
+                 [:s1 {:a :b}]
+                 (media/rule (media/query :print)
+                   [:s2 {:a :b}]))
+               "@media screen{s1{a:b;}}")
 
-      (at-media {:-vendor-prefix-x "2"}
-                [:h1 {:a "b"}])
-      "@media(-vendor-prefix-x:2){h1{a:b}}"
+  (compiles-to (media/rule (media/query :not :screen)
+                 [:s1 {:a :b}]
+                 (media/rule (media/query :screen)
+                   [:s2 {:a :b}]))
+               "@media not screen{s1{a:b;}}")
 
-      (at-media {:min-width (CSSUnit. :em 1)}
-                [:h1 {:a "b"}])
-      "@media(min-width:1em){h1{a:b}}")
+  (compiles-to (media/rule (media/query :screen)
+                 [:s1 {:a :b}]
+                 (media/rule (media/query (sorted-map :a 1 :b 2))
+                   [:s2 {:a :b}]))
+               "@media screen{s1{a:b;}}@media screen and (a:1) and (b:2){s2{a:b;}}")
 
-    (let [re #"@media (?:happy and not sad|not sad and happy)"
-          compiled (compile-css
-                    {:pretty-print? false}
-                    (at-media {:happy true :sad false}
-                              [:h1 {:a "b"}]))]
-      (is (re-find re compiled)))))
-
-(deftest at-supports-test
-  (let [flags {:pretty-print? false}]
-    (are [x y] (= (compile-css flags x) y)
-      (at-supports {:display :grid} [:h1 {:a :b}])
-      "@supports(display:grid){h1{a:b}}"
-
-      (list (at-supports {:display :grid}
-                         [:h1 {:a :b}])
-            [:h2 {:c :d}])
-      "@supports(display:grid){h1{a:b}}h2{c:d}"
-
-      (list [:a {:a "b"}
-             (at-supports {:display :grid}
-                          [:&:hover {:c "d"}])])
-      "a{a:b}@supports(display:grid){a:hover{c:d}}"
-
-      (at-supports {:-vendor-prefix-x "2"}
-                   [:h1 {:a "b"}])
-      "@supports(-vendor-prefix-x:2){h1{a:b}}"
-
-      (at-supports {:min-width (CSSUnit. :em 1)}
-                   [:h1 {:a "b"}])
-      "@supports(min-width:1em){h1{a:b}}")
-
-    (let [re #"@supports(?:\(-vendor-prefix-x:2\) and \(display:grid\)|\(display:grid\) and \(-vendor-prefix-x:2\))"
-          compiled (compile-css
-                    {:pretty-print? false}
-                    (at-supports {:-vendor-prefix-x "2" :display :grid}
-                                 [:h1 {:a "b"}]))]
-      (is (re-find re compiled)))))
+  (compiles-to [:s1
+                (media/rule (media/query :screen)
+                  [:s2 {:a :b}])]
+               "s1{}@media screen{s1 s2{a:b;}}"))
 
 (deftest parent-selector-test
-  (testing "parent selector references"
-    (is (= "a:hover{x:y}"
-           (compile [:a [:&:hover {:x :y}]])))
-    (is (= "a{x:y}"
-           (compile [:a [:& {:x :y}]])))
-    (is (= "a:b{x:y}"
-           (compile [:a [:&:b {:x :y}]])))
-    (is (= "a:b,a:c{x:y}"
-           (compile [:a [:&:b :&:c {:x :y}]])))
-    (is (= "@media(max-width:1em){a:hover{x:y}}"
-           (compile [:a
-                     (at-media {:max-width "1em"}
-                               [:&:hover {:x :y}])])))
-    (is (= "@supports(display:grid){a:hover{x:y}}"
-           (compile [:a
-                     (at-supports {:display :grid}
-                                  [:&:hover {:x :y}])])))
-    (is (= "@media screen{a{f:bar}}@media print{a{g:foo}}"
-           (compile (at-media {:screen true}
-                              [:a {:f "bar"}
-                               (at-media {:print true}
-                                         [:& {:g "foo"}])]))))))
+  (testing "parent selector refrences"
+    (compiles-to [:a [:&:hover {:x :y}]]
+                 "a{}a:hover{x:y;}")
 
-(deftest css-function-test
-  (testing "CSSFunction"
-    (is (= "url(background.jpg)"
-           (render (CSSFunction. :url "background.jpg"))))
-    (is (= "daughter(alice, bob)"
-           (render (CSSFunction. :daughter [:alice :bob]))))
-    (is (= "x(y(1), z(2))"
-           (render (CSSFunction. :x [(CSSFunction. :y 1) (CSSFunction. :z 2)]))))))
+    (compiles-to [:a [:& {:x :y}]]
+                 "a{}a{x:y;}")
 
-(deftest at-rule-test
+    (compiles-to [:a [:&:b {:x :y}]]
+                 "a{}a:b{x:y;}")
+
+    (compiles-to [:a [#{:&:b :&:c} {:x :y}]]
+                 "a{}a:b,a:c{x:y;}")
+    
+    (compiles-to [:a
+                  (media/rule (media/query {:max-width "1em"})
+                    [:&:hover {:x :y}])]
+                 "a{}@media (max-width:1em){a:hover{x:y;}}")
+
+    (compiles-to (media/rule (media/query :screen)
+                   [:a {:f "bar"}
+                    (media/rule (media/query {:max-with "1em"})
+                      [:& {:g "foo"}])])
+                 "@media screen{a{f:bar;}}@media screen and (max-with:1em){a{g:foo;}}")))
+
+(deftest function-test
+  (testing "Function"
+    (compiles-to (Function. :url ["background.jpg"])
+                 "url(background.jpg)")
+
+    (compiles-to (Function. :daughter [:alice :bob])
+                 "daughter(alice,bob)")
+
+    (compiles-to (Function. :x [(Function. :y [1]) (Function. :z [2])])
+                 "x(y(1),z(2))")))
+
+(deftest at-import-test
   (testing "@import"
     (let [url "http://example.com/foo.css"]
-      (is (= "@import \"http://example.com/foo.css\";"
-             (render (at-import url))))
-      (is (= "@import \"http://example.com/foo.css\" screen;"
-             (render (at-import url {:screen true}))))))
+      (compiles-to (stylesheet/at-import url)
+                   "@import \"http://example.com/foo.css\";")
 
+      (compiles-to (stylesheet/at-import url (media/query :screen)) 
+                   "@import \"http://example.com/foo.css\" screen;"))))
+
+(deftest at-rule-test 
   (testing "@keyframes"
-    (let [kfs (at-keyframes :id
-                            [:from {:x 0}]
-                            [:to {:x 1}])]
-      (is (= "@keyframes id{from{x:0}to{x:1}}"
-             (compile kfs)))
-      (is (= "a{d:id}"
-             (compile [:a {:d kfs}]))))
-    ;; there was a bug which incorrectly changed "0%" to "0", see https://github.com/noprompt/garden/issues/120
-    (is (= "@keyframes id{0%{x:0}100%{x:1}}"
-           (compile (at-keyframes :id
-                                  [:0% {:x 0}]
-                                  [:100% {:x 1}]))))
-    (is (= "@keyframes id{0%{x:0}100%{x:1}}"
-           (compile (at-keyframes :id
-                                  ["0%" {:x 0}]
-                                  ["100%" {:x 1}]))))))
+    (compiles-to (stylesheet/at-keyframes :id
+                   [:from {:x 0}]
+                   [:to {:x 1}]) 
+                 "@keyframes id{0%{x:0;}100%{x:1;}}")
+
+    (compiles-to (stylesheet/at-keyframes :id
+                   [:to {:x 1}]
+                   [:from {:x 0}]
+                   [50 {:y 0}]
+                   [25 {:y 1}]) 
+                 "@keyframes id{0%{x:0;}25%{y:1;}50%{y:0;}100%{x:1;}}")))
+
+(deftest calc-test
+  (testing "calc"
+    (compiles-to (stylesheet/calc (+ 1 2))
+                 "calc((1 + 2))")
+    (compiles-to (stylesheet/calc (+ 1 2 3))
+                 "calc(((1 + 2) + 3))")))
 
 (deftest flag-tests
-  (testing ":vendors"
-    (let [compiled (compile-css
-                    {:vendors test-vendors :pretty-print? false}
+  (testing "^:prefix"
+    (let [compiled (garden.compiler/compile-css
+                    {:vendors #{"moz" "webkit"}
+                     :pretty-print? false}
                     [:a ^:prefix {:a 1 :b 1}])]
 
       (are [re] (re-find re compiled)
@@ -205,24 +217,25 @@
         #"a:1"
         #"-moz-b:1"
         #"-webkit-b:1"
-        #"b:1"))
+        #"b:1")))
 
-    (let [compiled (compile-css
-                    {:vendors test-vendors :pretty-print? false}
-                    (at-keyframes "fade"
-                                  [:from {:foo "bar"}]
-                                  [:to {:foo "baz"}]))]
+  (testing "@keyframes prefix"
+    (let [vendors #{"moz" "webkit"}
+          compiled (garden.compiler/compile-css
+                    {:vendors vendors
+                     :pretty-print? false}
+                    (stylesheet/at-keyframes "fade"
+                      [:from {:foo "bar"}]
+                      [:to {:foo "baz"}]))]
       (is (re-find #"@-moz-keyframes" compiled))
       (is (re-find #"@-webkit-keyframes" compiled))
       (is (re-find #"@keyframes" compiled))))
 
-  (testing ":auto-prefix"
-    (let [compiled (compile-css
-                    {:auto-prefix #{:a "b"}
-                     :vendors test-vendors
-                     :pretty-print? false}
-                    [:a {:a 1 :b 1 :c 1}])]
-
+  (testing ":prefix-properties"
+    (let [compiled (garden.compiler/compile-css
+                    {:prefix-properties #{"a" "b"}
+                     :vendors #{:moz :webkit}}
+                    [:x {:a 1 :b 1 :c 1}])]
       (are [re] (re-find re compiled)
         #"-moz-a:1"
         #"-webkit-a:1"
@@ -235,13 +248,18 @@
       (is (not (re-find #"-moz-c:1" compiled)))
       (is (not (re-find #"-webkit-c:1" compiled)))))
 
-  (testing ":media-expressions :nesting-behavior"
-    (let [compiled (compile-css
-                    {:media-expressions {:nesting-behavior :merge}
-                     :pretty-print? false}
-                    (at-media {:screen true}
-                              [:a {:x 1}]
-                              (at-media {:print true}
-                                        [:b {:y 1}])))]
-      (is (re-find #"@media screen\{a\{x:1\}\}" compiled))
-      (is (re-find #"@media (?:screen and print|print and screen)\{b\{y:1\}\}" compiled)))))
+  (testing ":prefix-functions"
+    (let [fn-a (stylesheet/cssfn :a)
+          fn-b (stylesheet/cssfn :b)
+          fn-c (stylesheet/cssfn :c)
+          compiled (garden.compiler/compile-css
+                    {:prefix-functions #{"a" "b"}
+                     :vendors #{:moz :webkit}}
+                    {:x [(fn-a 1) (fn-b 1) (fn-c 1)]})]
+      (are [re] (re-find re compiled)
+        #"x:-moz-a\(1\),-moz-b\(1\),c\(1\)"
+        #"x:-webkit-a\(1\),-webkit-b\(1\),c\(1\)"
+        #"x:a\(1\),b\(1\),c\(1\)")
+
+      (is (not (re-find #"-moz-c\(1\)" compiled)))
+      (is (not (re-find #"-webkit-c\(1\)" compiled))))))
