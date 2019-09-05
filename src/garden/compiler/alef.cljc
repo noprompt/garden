@@ -1,13 +1,13 @@
-(ns garden.compiler
+(ns garden.compiler.alef
   "Functions for compiling Clojure data structures to CSS."
   (:require
    [clojure.string :as string]
    [clojure.spec :as spec]
-   [garden.ast]
-   [garden.normalize]
-   [garden.parse]
-   [garden.selectors :as selectors]
-   [garden.util :as util]))
+   [garden.ast.alef]
+   [garden.normalize.alef]
+   [garden.parse.alef]
+   [garden.selectors.alef]
+   [garden.util.alef]))
 
 
 ;; =====================================================================
@@ -146,11 +146,11 @@
        (boolean
         (some
          (fn [x]
-           (when (garden.ast/function? x)
-             (let [[identifier-node] (garden.ast/children x)
+           (when (garden.ast.alef/function? x)
+             (let [[identifier-node] (garden.ast.alef/children x)
                    [_ identifier] identifier-node]
                (prefix-function? env identifier))))
-         (tree-seq garden.ast/node? garden.ast/children node)))))
+         (tree-seq garden.ast.alef/node? garden.ast.alef/children node)))))
 
 
 ;; =====================================================================
@@ -161,7 +161,7 @@
   compile-node
   "Compile a CSS AST node."
   (fn [node env]
-    (garden.ast/tag node))
+    (garden.ast.alef/tag node))
   :default ::unknown-node)
 
 (defn compile-nodes [nodes env]
@@ -488,13 +488,13 @@
   (transduce
    (comp
     ;; A sequence of :css/declaration-block nodes.
-    (map garden.parse/parse)
+    (map garden.parse.alef/parse)
     (mapcat
      (fn [node]
-       (garden.normalize/flatten-node node garden.normalize/empty-context)))
+       (garden.normalize.alef/flatten-node node garden.normalize.alef/empty-context)))
     ;; An alternating sequence of :css.declaration/property and
     ;; :css.declaration/value nodes.
-    (mapcat garden.ast/children)
+    (mapcat garden.ast.alef/children)
     (map (fn [node] (compile-node node default-env))))
    str
    ""
@@ -508,12 +508,12 @@
   (transduce
    (comp 
     ;; A sequence of :css/declaration-block nodes.
-    (map garden.parse/parse)
+    (map garden.parse.alef/parse)
     ;; A sequence of :css/declaration nodes.
-    (mapcat garden.ast/children)
+    (mapcat garden.ast.alef/children)
     ;; A sequence of :css.declaration/property and
     ;; :css.declaration/value pairs.
-    (map garden.ast/children)
+    (map garden.ast.alef/children)
     ;; A sequence of compiled property and value pairs.
     (map (fn [property-and-value-nodes]
            (vec (compile-nodes property-and-value-nodes default-env)))))
@@ -534,8 +534,8 @@
               (merge pretty-env options)
               (merge default-env options))]
     (-> xs
-        (garden.parse/parse)
-        (garden.normalize/normalize)
+        (garden.parse.alef/parse)
+        (garden.normalize.alef/normalize)
         (compile-node env))))
 
 (defn- do-preamble

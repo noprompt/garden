@@ -1,6 +1,7 @@
-(ns garden.keyframes
+(ns garden.keyframes.alef
   (:require [clojure.spec :as spec]
-            [garden.parse]))
+            [garden.ast.alef]
+            [garden.parse.alef]))
 
 (spec/def ::name keyword?)
 
@@ -19,7 +20,7 @@
    (spec/and
     vector?
     (spec/cat ::frame-selector ::frame-selector
-              ::declarations (spec/* :garden.parse/declaration-block)))))
+              ::declarations (spec/* :garden.parse.alef/declaration-block)))))
 
 (defrecord KeyframesRule [name frames])
 
@@ -60,12 +61,12 @@
                [:css/percentage n]]
               (into
                [:css.declaration/block]
-               (comp (map garden.parse/parse)
-                     (mapcat garden.ast/children))
+               (comp (map garden.parse.alef/parse)
+                     (mapcat garden.ast.alef/children))
                declaration-maps)]))]))
 
 
-(extend-protocol garden.parse/IParse
+(extend-protocol garden.parse.alef/IParse
   KeyframesRule
   (-parse [kr]
     (parse-keyframes-rule kr)))

@@ -1,20 +1,20 @@
-(ns garden.parse
+(ns garden.parse.alef
   "Parser for Garden syntax."
   #?@(:clj
       [(:require
         [clojure.spec :as spec]
-        [garden.ast]
-        [garden.color]
-        [garden.units])
+        [garden.ast.alef]
+        [garden.color.alef]
+        [garden.units.alef])
        (:import
-        (garden.color Hsl Hsla Rgb Rgba)
-        (garden.units Unit))]
+        (garden.color.alef Hsl Hsla Rgb Rgba)
+        (garden.units.alef Unit))]
       :cljs
       [(:require
         [clojure.spec :as spec]
-        [garden.ast]
-        [garden.color :refer [Hsl Hsla Rgb Rgba]]
-        [garden.units :refer [Unit]])]))
+        [garden.ast.alef]
+        [garden.color.alef :refer [Hsl Hsla Rgb Rgba]]
+        [garden.units.alef :refer [Unit]])]))
 
 (defprotocol IParse
   (-parse [this]))
@@ -27,7 +27,7 @@
 (defn parse
   "Parse a value into a CSS AST."
   [x]
-  {:post [(garden.ast/ast? %)]}
+  {:post [(garden.ast.alef/ast? %)]}
   (-parse x))
 
 (defn tag
@@ -146,7 +146,7 @@
 
 (spec/def ::vector-rule
   (spec/cat :selector ::selector
-            :children (spec/* ::vector-rule-child))) 
+            :children (spec/* ::vector-rule-child)))
 
 ;; ---------------------------------------------------------------------
 ;; Conformed data processing
@@ -230,7 +230,7 @@
           ;; HACK: This is *extremely* undesirable. Toting around
           ;; special meta data adds complexity here and elsewhere
           ;; (since it must persist though AST transformations).
-          (with-meta 
+          (with-meta
             (process-tagged-parse-data data)
             {:prefix? true}))
         parse-data)))
@@ -414,42 +414,42 @@
     [:css/function
      [:css/identifier "hsl"]
      [:css/comma-separated-list
-      [:css/number (garden.color/hue c)]
-      [:css/percentage (garden.color/saturation c)]
-      [:css/percentage (garden.color/lightness c)]]])
+      [:css/number (garden.color.alef/hue c)]
+      [:css/percentage (garden.color.alef/saturation c)]
+      [:css/percentage (garden.color.alef/lightness c)]]])
 
-  
+
   Hsla
   (-parse [c]
     [:css/function
      [:css/identifier "hsla"]
      [:css/comma-separated-list
-      [:css/number (garden.color/hue c)]
-      [:css/percentage (garden.color/saturation c)]
-      [:css/percentage (garden.color/lightness c)]
-      [:css/number (garden.color/alpha c)]]])
+      [:css/number (garden.color.alef/hue c)]
+      [:css/percentage (garden.color.alef/saturation c)]
+      [:css/percentage (garden.color.alef/lightness c)]
+      [:css/number (garden.color.alef/alpha c)]]])
 
   Rgb
   (-parse [c]
     [:css/function
      [:css/identifier "rgb"]
      [:css/comma-separated-list
-      [:css/number (garden.color/red c)]
-      [:css/number (garden.color/green c)]
-      [:css/number (garden.color/blue c)]]])
+      [:css/number (garden.color.alef/red c)]
+      [:css/number (garden.color.alef/green c)]
+      [:css/number (garden.color.alef/blue c)]]])
 
   Rgba
   (-parse [c]
     [:css/function
      [:css/identifier "rgba"]
      [:css/comma-separated-list
-      [:css/number (garden.color/red c)]
-      [:css/number (garden.color/green c)]
-      [:css/number (garden.color/blue c)]
-      [:css/number (garden.color/alpha c)]]])
+      [:css/number (garden.color.alef/red c)]
+      [:css/number (garden.color.alef/green c)]
+      [:css/number (garden.color.alef/blue c)]
+      [:css/number (garden.color.alef/alpha c)]]])
 
   Unit
   (-parse [u]
     [:css/unit
-     [:css/number (garden.units/magnitude u)]
-     [:css/identifier (name (garden.units/measurement u))]]))
+     [:css/number (garden.units.alef/magnitude u)]
+     [:css/identifier (name (garden.units.alef/measurement u))]]))

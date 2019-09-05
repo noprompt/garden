@@ -1,4 +1,4 @@
-(defproject garden "2.0.0-alpha1"
+(defproject garden "alef"
   :description "Generate CSS with Clojure(Script)"
   :url "https://github.com/noprompt/garden"
   :license {:name "Eclipse Public License"
@@ -9,9 +9,7 @@
 
   :dependencies
   [[org.clojure/clojure "1.9.0-alpha13" :scope "provided"]
-   [org.clojure/clojurescript "1.9.293" :scope "provided"]
-   [garden/garden-color "1.0.0-RC1"]
-   [garden/garden-units "1.0.0-RC2"]]
+   [org.clojure/clojurescript "1.9.293" :scope "provided"]]
 
   :npm
   {:dependencies [[source-map-support "0.4.0"]]}
@@ -21,7 +19,8 @@
 
   :profiles
   {:dev
-   {:dependencies [[criterium "0.4.3"]
+   {:dependencies [[org.clojure/test.check "0.9.0"]
+                   [criterium "0.4.3"]
                    [hiccup "1.0.5"]]
     :jvm-opts ["-Dclojure.spec.compile-asserts=true"
                "-Dclojure.spec.check-asserts=true"]

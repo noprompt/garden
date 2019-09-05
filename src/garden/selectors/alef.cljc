@@ -1,4 +1,4 @@
-(ns garden.selectors
+(ns garden.selectors.alef
   "Macros and functions for working with CSS selectors."
   (:require
    [clojure.string :as string])
@@ -13,7 +13,7 @@
      (:refer-clojure :exclude [+ - > empty first map meta not time]))
   #?(:cljs
      (:require-macros
-      [garden.selectors :refer [defselector
+      [garden.selectors.alef :refer [defselector
                                 defid
                                 defpseudoclass
                                 defpseudoelement
@@ -880,7 +880,7 @@
               "Selector must be either a keyword, string, or symbol." (str "Invalid value " (pr-str s)))))))
 
 (defpseudoclass
-  ^{:doc "CSS :nth-child pseudo class selector."} 
+  ^{:doc "CSS :nth-child pseudo class selector."}
   nth-child [x]
   (if (number? x)
     (nth-x (str x "n"))
@@ -1046,7 +1046,7 @@
     ;; => 101
     (specificity (a hover))
     ;; => 10
-  " 
+  "
   [selector]
   {:pre [(satisfies? ICSSSelector selector)]}
   (let [{:keys [a b c]} (specificity* selector)

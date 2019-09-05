@@ -1,10 +1,10 @@
-(ns garden.stylesheet
+(ns garden.stylesheet.alef
   "Utility functions for CSS properties, directives and functions."
-  (:require [garden.util :as util]
-            [garden.color :as color]
-            [garden.media :as media]
-            [garden.keyframes :as keyframes]
-            [garden.parse]))
+  (:require [garden.util.alef]
+            [garden.color.alef :as color]
+            [garden.media.alef]
+            [garden.keyframes.alef]
+            [garden.parse.alef]))
 
 ;;;; ## Stylesheet helpers
 
@@ -34,11 +34,11 @@
 ;; @-rules
 
 (defrecord FontFaceRule [declarations]
-  garden.parse/IParse
+  garden.parse.alef/IParse
   (-parse [f]
     (into
      [:css/font-face]
-     (map garden.parse/parse declarations))))
+     (map garden.parse.alef/parse declarations))))
 
 (defn at-font-face
   "Create a CSS @font-face rule."
@@ -48,12 +48,12 @@
    {:declarations declarations}))
 
 (defrecord ImportRule [url media-query-list]
-  garden.parse/IParse
+  garden.parse.alef/IParse
   (-parse [i]
     [:css/import
      url
      (if-let [media-query-list (:media-query-list i)]
-       (garden.parse/parse media-query-list)
+       (garden.parse.alef/parse media-query-list)
        [:css/noop])]))
 
 (defn at-import
@@ -70,22 +70,22 @@
 (defn at-media
   "Create a CSS @media rule."
   [media-queries & rules]
-  (apply media/rule media-queries rules))
+  (apply garden.media.alef/rule media-queries rules))
 
 (defn at-keyframes
   "Create a CSS @keyframes rule."
   [identifier & frames]
-  (apply keyframes/rule identifier frames))
+  (apply garden.keyframes.alef/rule identifier frames))
 
 ;; ---------------------------------------------------------------------
 ;; Functions
 
 (defrecord Function [name args]
-  garden.parse/IParse
+  garden.parse.alef/IParse
   (-parse [f]
     [:css/function
      [:css/identifier (clojure.core/name (:name f))]
-     (garden.parse/parse-comma-separated-list (:args f))]))
+     (garden.parse.alef/parse-comma-separated-list (:args f))]))
 
 (defn cssfn [fn-name]
   (fn [& args]
@@ -105,37 +105,37 @@
 ;; calc
 
 (defrecord Calc [arg]
-  garden.parse/IParse
+  garden.parse.alef/IParse
   (-parse [c]
-    [:css/calc (garden.parse/parse (:arg c))]))
+    [:css/calc (garden.parse.alef/parse (:arg c))]))
 
 (defrecord CalcDifference [arg-1 arg-2]
-  garden.parse/IParse
+  garden.parse.alef/IParse
   (-parse [c]
     [:css.calc/difference
-     (garden.parse/parse (:arg-1 c))
-     (garden.parse/parse (:arg-2 c))]))
+     (garden.parse.alef/parse (:arg-1 c))
+     (garden.parse.alef/parse (:arg-2 c))]))
 
 (defrecord CalcProduct [arg-1 arg-2]
-  garden.parse/IParse
+  garden.parse.alef/IParse
   (-parse [c]
     [:css.calc/product
-     (garden.parse/parse (:arg-1 c))
-     (garden.parse/parse (:arg-2 c))]))
+     (garden.parse.alef/parse (:arg-1 c))
+     (garden.parse.alef/parse (:arg-2 c))]))
 
 (defrecord CalcQuotient [arg-1 arg-2]
-  garden.parse/IParse
+  garden.parse.alef/IParse
   (-parse [c]
     [:css.calc/quotient
-     (garden.parse/parse (:arg-1 c))
-     (garden.parse/parse (:arg-2 c))]))
+     (garden.parse.alef/parse (:arg-1 c))
+     (garden.parse.alef/parse (:arg-2 c))]))
 
 (defrecord CalcSum [arg-1 arg-2]
-  garden.parse/IParse
+  garden.parse.alef/IParse
   (-parse [c]
     [:css.calc/sum
-     (garden.parse/parse (:arg-1 c))
-     (garden.parse/parse (:arg-2 c))]))
+     (garden.parse.alef/parse (:arg-1 c))
+     (garden.parse.alef/parse (:arg-2 c))]))
 
 #?(:clj
    (def ^{:private true

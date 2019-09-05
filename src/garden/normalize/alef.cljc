@@ -1,19 +1,19 @@
-(ns garden.normalize
+(ns garden.normalize.alef
   (:require
-   [garden.ast]
+   [garden.ast.alef]
    [clojure.spec :as spec]
-   [garden.util]))
+   [garden.util.alef]))
 
 (spec/def ::parent-media-query-list
-  (spec/or :noop garden.ast/noop?
-           :media-query-list garden.ast/media-query-list?))
+  (spec/or :noop garden.ast.alef/noop?
+           :media-query-list garden.ast.alef/media-query-list?))
 
 (spec/def ::parent-node
-  garden.ast/node?)
+  garden.ast.alef/node?)
 
 (spec/def ::parent-selector
-  (spec/or :noop garden.ast/noop?
-           :selector garden.ast/selector?))
+  (spec/or :noop garden.ast.alef/noop?
+           :selector garden.ast.alef/selector?))
 
 (spec/def ::context
   (spec/keys :req-un [::parent-media-query-list
@@ -34,7 +34,7 @@
   nest-selector
   "Nest `child-selector` within `parent-selector`."
   (fn [child-selector parent-selector]
-    [(garden.ast/tag child-selector) (garden.ast/tag parent-selector)]))
+    [(garden.ast.alef/tag child-selector) (garden.ast.alef/tag parent-selector)]))
 
 (defmethod nest-selector [:css.selector/simple :css/noop]
   [child-selector _]
@@ -93,7 +93,7 @@
   (into [:css.selector/complex]
         (map (fn [[child-selector parent-selector]]
                (nest-selector child-selector parent-selector))
-             (garden.util/cartesian-product (rest child-selector)
+             (garden.util.alef/cartesian-product (rest child-selector)
                                             (rest parent-selector)))))
 
 ;; Complex selector nesting
@@ -128,8 +128,8 @@
   nest-media-query
   (fn [[_ child-media-constraint child-media-type _]
        [_ parent-media-constraint parent-media-type _]]
-    [[(garden.ast/tag child-media-constraint) (garden.ast/tag child-media-type)]
-     [(garden.ast/tag parent-media-constraint) (garden.ast/tag parent-media-type)]]))
+    [[(garden.ast.alef/tag child-media-constraint) (garden.ast.alef/tag child-media-type)]
+     [(garden.ast.alef/tag parent-media-constraint) (garden.ast.alef/tag parent-media-type)]]))
 
 ;; Neither parent or child has media constraints or types.
 (defmethod nest-media-query [[:css/noop :css/noop]
@@ -262,11 +262,11 @@
       [:css/noop])))
 
 (defn nest-media-query-list [child-media-query-list parent-media-query-list]
-  {:pre [(= (garden.ast/tag child-media-query-list) 
+  {:pre [(= (garden.ast.alef/tag child-media-query-list) 
             :css.media/query-list)
-         (or (= (garden.ast/tag parent-media-query-list)
+         (or (= (garden.ast.alef/tag parent-media-query-list)
                 :css.media/query-list)
-             (garden.ast/noop? parent-media-query-list))]}
+             (garden.ast.alef/noop? parent-media-query-list))]}
   (if (= parent-media-query-list [:css/noop])
     child-media-query-list
     (let [[_ & child-queries] child-media-query-list
@@ -299,8 +299,8 @@
 (defmulti flatten-node
   (fn [node context]
     (spec/assert ::context context)
-    (if (garden.ast/node? node)
-      (garden.ast/tag node)
+    (if (garden.ast.alef/node? node)
+      (garden.ast.alef/tag node)
       ::not-node))
   :default ::pass)
 
@@ -323,7 +323,7 @@
   {:private true}
   [property-node context]
   (let [{:keys [parent-property-node]} context]
-    (if (garden.ast/noop? parent-property-node)
+    (if (garden.ast.alef/noop? parent-property-node)
       property-node
       (let [[_ parent-property] parent-property-node
             [_ property] property-node
@@ -334,10 +334,10 @@
   [[_ property-node value-node :as node] context]
   (let [property-node* (normalize-property property-node context)
         [_ value-child-node] value-node]
-    (case (garden.ast/tag value-child-node)
+    (case (garden.ast.alef/tag value-child-node)
       :css.declaration/block
       (let [context* (assoc context :parent-property-node property-node*)]
-        (flatten-nodes (garden.ast/children value-child-node) context*))
+        (flatten-nodes (garden.ast.alef/children value-child-node) context*))
 
       ;; else
       (list
@@ -367,7 +367,7 @@
   (let [[_ url media-query-list ] import-node
         {:keys [parent-media-query-list]} context]
     (list
-     (case [(garden.ast/noop? media-query-list) (garden.ast/noop? parent-media-query-list)]
+     (case [(garden.ast.alef/noop? media-query-list) (garden.ast.alef/noop? parent-media-query-list)]
        [false false]
        [:css/import url (nest-media-query-list media-query-list parent-media-query-list)]
 
@@ -403,7 +403,7 @@
       (seq
        (reduce
         (fn [state node]
-          (if (garden.ast/top-level-node? node)
+          (if (garden.ast.alef/top-level-node? node)
             (conj state node)
             (update state 0 conj node)))
         [;; Media query node.
@@ -418,8 +418,8 @@
    :doc "Add `node` to the stylesheet `stylesheet`."
    :private true}
   (fn [stylesheet-node node]
-    {:pre [(garden.ast/node? stylesheet-node)]}
-    (garden.ast/tag node))
+    {:pre [(garden.ast.alef/node? stylesheet-node)]}
+    (garden.ast.alef/tag node))
   :default ::default)
 
 (defmethod insert-node ::default
@@ -433,15 +433,15 @@
 (defmethod insert-node :css/charset
   [stylesheet charset-node]
   (let [[_ & children] stylesheet
-        [charset-nodes non-charset-nodes] (split-with garden.ast/charset? children)]
+        [charset-nodes non-charset-nodes] (split-with garden.ast.alef/charset? children)]
     (into [:css/stylesheet] (concat charset-nodes (cons charset-node non-charset-nodes)))))        
 
 (defmethod insert-node :css/import
   [stylesheet import-node]
   (let [[_ & children] stylesheet
         [head-nodes tail-nodes] (split-with
-                                 (some-fn garden.ast/charset?
-                                          garden.ast/import?)
+                                 (some-fn garden.ast.alef/charset?
+                                          garden.ast.alef/import?)
                                  children)]
     (into [:css/stylesheet] (concat head-nodes (cons import-node tail-nodes)))))
 

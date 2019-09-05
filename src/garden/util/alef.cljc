@@ -1,4 +1,4 @@
-(ns garden.util
+(ns garden.util.alef
   "Utility functions.")
 
 ;; Taken from clojure.math.combinatorics.

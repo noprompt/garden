@@ -1,10 +1,10 @@
-(ns garden.def
+(ns garden.def.alef
   (:require [clojure.spec :as spec]
-            [garden.core]
-            [garden.keyframes]
-            [garden.parse]
-            [garden.stylesheet]
-            [garden.util :as util]))
+            [garden.core.alef]
+            [garden.keyframes.alef]
+            [garden.parse.alef]
+            [garden.stylesheet.alef ]
+            [garden.util.alef]))
 
 (defmacro defstyles
   "Convenience macro equivalent to `(def name (list styles*))`."
@@ -15,7 +15,7 @@
   "Convenience macro equivalent to `(def name (css opts? styles*))`."
   [name & styles]
   `(def ~name
-     (garden.core/css ~@styles)))
+     (garden.core.alef/css ~@styles)))
 
 (defmacro defrule
   "Define a function for creating rules. If only the `name` argument is
@@ -90,7 +90,7 @@
   ([sym]
    (let [[_ sym fn-tail] (macroexpand
                           `(defn ~sym [& args#]
-                             (garden.stylesheet.Function.
+                             (garden.stylesheet.alef.Function.
                               ~(str sym)
                               (vec args#))))]
      `(def ~sym ~fn-tail)))
@@ -101,7 +101,7 @@
         (fn [& args#]
           (let [result# (apply (fn ~@fn-spec) args#)]
             (if (vector? result#)
-              (garden.stylesheet.Function. ~cssfn-name result#)
+              (garden.stylesheet.alef.Function. ~cssfn-name result#)
               (throw
                (ex-info ~(format "The CSS function `%s` must return vector"
                                  (symbol (name (ns-name *ns*)) (name sym)))
@@ -125,6 +125,6 @@
          {:animation [[my-animation \"5s\"]]}])"
   [sym & frames]
   `(def ~sym
-     (garden.keyframes/rule ~(name sym) ~@frames)))
+     (garden.keyframes.alef/rule ~(name sym) ~@frames)))
 
 

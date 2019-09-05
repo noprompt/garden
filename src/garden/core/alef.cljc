@@ -1,6 +1,6 @@
-(ns garden.core
+(ns garden.core.alef
   "Convert Clojure data structures to CSS."
-  (:require [garden.compiler]))
+  (:require [garden.compiler.alef]))
 
 (defn ^String css
   "Convert a variable number of Clojure data structure to a string of
@@ -15,18 +15,18 @@
                 (rest xs)
                 xs)
         options (or options {})]
-    (garden.compiler/compile-css options rules)))
+    (garden.compiler.alef/compile-css options rules)))
 
 (defn ^String style
   "Convert a variable number of maps into a string of CSS for use with
   the HTML `style` attribute."
   [& maps]
   {:pre [(not (empty? maps))]}
-  (garden.compiler/compile-style maps))
+  (garden.compiler.alef/compile-style maps))
 
 (defn vdom-style
   "Convert a variable number of maps into a map for use with the a virtual
   DOM `style` attribute."
   [& maps]
   {:pre [(not (empty? maps))]}
-  (garden.compiler/compile-vdom-style maps))
+  (garden.compiler.alef/compile-vdom-style maps))
