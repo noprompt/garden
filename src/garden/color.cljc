@@ -293,7 +293,7 @@
   color* *)
 
 (defcolor-operation
-  ^{:doc "Multiply the RGB components of two or more colors."
+  ^{:doc "Divide the RGB components of two or more colors."
     :arglists '([a] [a b] [a b & more])}
   color-div /)
 
