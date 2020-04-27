@@ -16,7 +16,7 @@
 (defn render [x]
   (first (render-css (expand x))))
 
-(defn compile [x & {:as flags}]
+(defn compile-helper [x & {:as flags}]
   (-> (merge flags {:pretty-print? false})
       (compile-css x)))
 
@@ -46,19 +46,19 @@
              (render (sorted-map-by #(compare %2 %1) :a 1 :b 2 :c 3 :d 4 :e 5 :f 6 :g 7 :h 8 :i 9 :j 10 :k 11))))))
 
   (testing "vectors"
-    (is (= "a{x:1;y:2}" (compile [:a {:x 1} {:y 2}])))
-    (is (= "a{x:1}a b{y:2}" (compile [:a {:x 1} [:b {:y 2}]])))
-    (is (= "a,b{x:1}a c,a d,b c,b d{y:2}" (compile [:a :b {:x 1} [:c :d {:y 2}]])))
-    (is (= "a,b{x:1}a c,a d,b c,b d{y:2}" (compile [:a :b '({:x 1}) '([:c :d {:y 2}])])))
-    (is (= "a{x:1}b{y:2}" (compile [[:a {:x 1}] [:b {:y 2}]])))
-    (is (= "a b{y:1}" (compile [:a [{:x 1} [:b {:y 1}]]])))
-    (is (= "a{x:1}a b{y:1}" (compile [:a {:x 1} [[:b {:y 1}]]]))))
+    (is (= "a{x:1;y:2}" (compile-helper [:a {:x 1} {:y 2}])))
+    (is (= "a{x:1}a b{y:2}" (compile-helper [:a {:x 1} [:b {:y 2}]])))
+    (is (= "a,b{x:1}a c,a d,b c,b d{y:2}" (compile-helper [:a :b {:x 1} [:c :d {:y 2}]])))
+    (is (= "a,b{x:1}a c,a d,b c,b d{y:2}" (compile-helper [:a :b '({:x 1}) '([:c :d {:y 2}])])))
+    (is (= "a{x:1}b{y:2}" (compile-helper [[:a {:x 1}] [:b {:y 2}]])))
+    (is (= "a b{y:1}" (compile-helper [:a [{:x 1} [:b {:y 1}]]])))
+    (is (= "a{x:1}a b{y:1}" (compile-helper [:a {:x 1} [[:b {:y 1}]]]))))
 
   (testing "colors"
     (is (= "hsla(30, 40%, 50%, 0.5)" (render (color/hsla 30 40 50 0.5))))
     ;; there was a bug which incorrectly changed "0%" to "0", see https://github.com/noprompt/garden/issues/120
     (is (= "hsla(0, 0%, 0%, 0.0)" (render (color/hsla 0 0 0 0.0))))
-    (is (= "a{color:hsla(0,0%,0%,0.0)}" (compile [:a {:color (color/hsla 0 0 0 0.0)}])))))
+    (is (= "a{color:hsla(0,0%,0%,0.0)}" (compile-helper [:a {:color (color/hsla 0 0 0 0.0)}])))))
 
 (deftest at-media-test
   (let [flags {:pretty-print? false}]
@@ -137,26 +137,26 @@
 (deftest parent-selector-test
   (testing "parent selector references"
     (is (= "a:hover{x:y}"
-           (compile [:a [:&:hover {:x :y}]])))
+           (compile-helper [:a [:&:hover {:x :y}]])))
     (is (= "a{x:y}"
-           (compile [:a [:& {:x :y}]])))
+           (compile-helper [:a [:& {:x :y}]])))
     (is (= "a:b{x:y}"
-           (compile [:a [:&:b {:x :y}]])))
+           (compile-helper [:a [:&:b {:x :y}]])))
     (is (= "a:b,a:c{x:y}"
-           (compile [:a [:&:b :&:c {:x :y}]])))
+           (compile-helper [:a [:&:b :&:c {:x :y}]])))
     (is (= "@media(max-width:1em){a:hover{x:y}}"
-           (compile [:a
-                     (at-media {:max-width "1em"}
-                               [:&:hover {:x :y}])])))
+           (compile-helper [:a
+                            (at-media {:max-width "1em"}
+                                      [:&:hover {:x :y}])])))
     (is (= "@supports(display:grid){a:hover{x:y}}"
-           (compile [:a
-                     (at-supports {:display :grid}
-                                  [:&:hover {:x :y}])])))
+           (compile-helper [:a
+                            (at-supports {:display :grid}
+                                         [:&:hover {:x :y}])])))
     (is (= "@media screen{a{f:bar}}@media print{a{g:foo}}"
-           (compile (at-media {:screen true}
-                              [:a {:f "bar"}
-                               (at-media {:print true}
-                                         [:& {:g "foo"}])]))))))
+           (compile-helper (at-media {:screen true}
+                                     [:a {:f "bar"}
+                                      (at-media {:print true}
+                                                [:& {:g "foo"}])]))))))
 
 (deftest css-function-test
   (testing "CSSFunction"
@@ -180,18 +180,18 @@
                             [:from {:x 0}]
                             [:to {:x 1}])]
       (is (= "@keyframes id{from{x:0}to{x:1}}"
-             (compile kfs)))
+             (compile-helper kfs)))
       (is (= "a{d:id}"
-             (compile [:a {:d kfs}]))))
+             (compile-helper [:a {:d kfs}]))))
     ;; there was a bug which incorrectly changed "0%" to "0", see https://github.com/noprompt/garden/issues/120
     (is (= "@keyframes id{0%{x:0}100%{x:1}}"
-           (compile (at-keyframes :id
-                                  [:0% {:x 0}]
-                                  [:100% {:x 1}]))))
+           (compile-helper (at-keyframes :id
+                                         [:0% {:x 0}]
+                                         [:100% {:x 1}]))))
     (is (= "@keyframes id{0%{x:0}100%{x:1}}"
-           (compile (at-keyframes :id
-                                  ["0%" {:x 0}]
-                                  ["100%" {:x 1}]))))))
+           (compile-helper (at-keyframes :id
+                                         ["0%" {:x 0}]
+                                         ["100%" {:x 1}]))))))
 
 (deftest flag-tests
   (testing ":vendors"
