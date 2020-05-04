@@ -184,13 +184,10 @@
         (convert x unit))
 
       :else
-      (let [;; Does `.getName` even work in CLJS? -- @noprompt
-            ex-message (util/format "Unable to convert from %s to %s"
-                                    (.getName type)
+      (let [ex-message (util/format "Unable to convert %s to %s"
+                                    x
                                     (name unit))
-            ;; TODO: This needs to be populated with more helpful
-            ;; data.
-            ex-data {:given {:type type
+            ex-data {:given {:x x
                              :unit unit}}]
         (throw
          (ex-info ex-message ex-data))))))

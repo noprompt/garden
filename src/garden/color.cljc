@@ -180,7 +180,7 @@
                (* l (inc s))
                (- (+ l s) (* l s)))
           m1 (- (* 2 l) m2)
-          [r g b] (map #(Math/round (* % 0xff))
+          [r g b] (map #(int (+ 0.5 (* % 0xff)))
                        [(hue->rgb m1 m2 (+ h (/ 1.0 3)))
                         (hue->rgb m1 m2 h)
                         (hue->rgb m1 m2 (- h (/ 1.0 3)))])]
@@ -387,6 +387,10 @@
      (let [d (util/clip 1 179 distance-from-complement)]
          (hue-rotations color 0 d (- d)))))
 
+(defn- abs
+  [x]
+  (if (neg? x) (- x) x))
+
 (defn tetrad
   "Given a color return a quadruple of four colors which are
   equidistance on the color wheel (ie. a pair of complements). An
@@ -395,7 +399,7 @@
   ([color]
      (tetrad color 90))
   ([color angle]
-     (let [a (util/clip 1 90 (Math/abs (:magnitude angle angle)))
+     (let [a (util/clip 1 90 (abs (:magnitude angle angle)))
            color-2 (rotate-hue color a)]
        [(rotate-hue color 0)
         (complement color)
@@ -410,7 +414,7 @@
      (shades color 10))
   ([color step]
      (let [c (as-hsl color)]
-       (for [i (range 1 (Math/floor (/ 100.0 step)))]
+       (for [i (range 1 (int (/ 100.0 step)))]
          (assoc c :lightness (* i step))))))
 
 ;; ---------------------------------------------------------------------

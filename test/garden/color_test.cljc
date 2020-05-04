@@ -221,3 +221,22 @@
 (deftest weighted-mix-test []
   (testing "weighted-mix basics"
     (is (= "#000000" (color/weighted-mix "#000" "#fff" 0)))))
+
+(deftest tetrad-test []
+  (testing "tetrad basics"
+    (let [[{h1 :hue s1 :saturation l1 :lightness}
+           {h2 :hue s2 :saturation l2 :lightness}
+           {h3 :hue s3 :saturation l3 :lightness}
+           {h4 :hue s4 :saturation l4 :lightness}]
+          (color/tetrad (color/from-name "aquamarine"))]
+      (is (= h1 5115/32))  (is (= s1 100N)) (is (= l1 3820/51))
+      (is (= h2 10875/32)) (is (= s2 100N)) (is (= l2 3820/51))
+      (is (= h3 7995/32))  (is (= s3 100N)) (is (= l3 3820/51))
+      (is (= h4 2235/32))  (is (= s4 100N)) (is (= l4 3820/51)))))
+
+(deftest shades-test []
+  (testing "shades basics"
+    (let [aquamarine-shades (color/shades (color/from-name "aquamarine"))]
+      (is (every? (comp #{5115/32} :hue) aquamarine-shades))
+      (is #(= [10 20 30 40 50 60 70 80 90]
+              (map :lightness aquamarine-shades))))))
