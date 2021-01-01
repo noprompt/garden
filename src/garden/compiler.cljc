@@ -561,9 +561,13 @@
   [css-unit]
   (let [{:keys [magnitude unit]} css-unit
         magnitude #?(:cljs magnitude)
-        #?(:clj (if (ratio? magnitude)
-                  (float magnitude)
-                  magnitude))]
+        #?(:clj (let [non-ratio (if (ratio? magnitude)
+                                  (float magnitude)
+                                  magnitude)
+                      int-magnitude (int non-ratio)]
+                  (if (and (float? non-ratio) (== non-ratio int-magnitude)) ;; workaround for https://github.com/yui/yuicompressor/issues/108
+                    int-magnitude
+                    non-ratio))
     (str magnitude (name unit))))
 
 (defn- render-function
