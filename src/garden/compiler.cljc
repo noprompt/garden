@@ -567,7 +567,7 @@
                       int-magnitude (int non-ratio)]
                   (if (and (float? non-ratio) (== non-ratio int-magnitude)) ;; workaround for https://github.com/yui/yuicompressor/issues/108
                     int-magnitude
-                    non-ratio))
+                    non-ratio)))]
     (str magnitude (name unit))))
 
 (defn- render-function
