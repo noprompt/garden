@@ -236,7 +236,9 @@
   [{:keys [value]}]
   (let [{:keys [identifier frames]} value]
     (->> {:identifier (util/to-str identifier)
-          :frames (mapcat expand frames)}
+          :frames (mapcat (fn [[ident rules]]
+                            [[(list (list ident)) (expand rules)]])
+                          frames)}
          (CSSAtRule. :keyframes)
          (list))))
 
