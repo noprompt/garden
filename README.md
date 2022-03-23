@@ -31,8 +31,7 @@ and other major changes in the compiler and repl in Clojurescript.
 
 Garden syntax is very similar to
 [Hiccup](https://github.com/weavejester/hiccup). If you're familiar with Hiccup
-you should feel right at home. If not, don't sweat it! Garden's syntax is
-simple.
+you should feel right at home. If not, don't sweat it!
 
 From your project's root directory start up a new REPL and try the following:
 
@@ -236,18 +235,6 @@ and Plugins is under the community-contributed
 [wiki](https://github.com/noprompt/garden/wiki).
 
 Please contribute!
-
-
-## Contributors
-
-Listed by first commit:
-
-* [noprompt](https://github.com/noprompt)
-* [malcolmsparks](https://github.com/malcolmsparks)
-* [jeluard](https://github.com/jeluard)
-* [ToBeReplaced](https://github.com/ToBeReplaced)
-* [migroh](https://github.com/migroh)
-* [priyatam](https://github.com/priyatam)
 
 ## Help!
 
