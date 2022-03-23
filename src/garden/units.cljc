@@ -152,7 +152,7 @@
              and unit are captured."
        :private true}
   unit-re
-  #"([+-]?\d+(?:\.?\d+)?)(p[xtc]|in|[cm]m|%|r?em|ex|ch|v(?:[wh]|m(?:in|ax))|deg|g?rad|turn|m?s|k?Hz|dp(?:i|cm|px))")
+  #"([+-]?\d+(?:\.?\d+)?)(p[xtc]|in|[cm]m|%|r?em|ex|ch|v(?:[wh]|m(?:in|ax))|fr|deg|g?rad|turn|m?s|k?Hz|dp(?:i|cm|px))")
 
 (defn read-unit
   "Read a `CSSUnit` object from the string `s`."
@@ -309,6 +309,10 @@
 (defunit vh)
 (defunit vmin)
 (defunit vmax)
+
+;; Grid track length
+
+(defunit fr)
 
 ;; Angles
 

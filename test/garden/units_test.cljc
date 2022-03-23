@@ -105,6 +105,7 @@
       (units/vh 1) (units/read-unit "1vh")
       (units/vmin 1) (units/read-unit "1vmin")
       (units/vmax 1) (units/read-unit "1vmax")
+      (units/fr 1) (units/read-unit "1fr")
       (units/deg 1) (units/read-unit "1deg")
       (units/grad 1) (units/read-unit "1grad")
       (units/rad 1) (units/read-unit "1rad")
