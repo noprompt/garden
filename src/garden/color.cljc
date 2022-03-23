@@ -1,6 +1,6 @@
 (ns garden.color
   "Utilities for color creation, conversion, and manipulation."
-  (:refer-clojure :exclude [complement])
+  (:refer-clojure :exclude [abs complement])
   #?(:cljs
      (:require-macros
       [garden.color :refer [defcolor-operation]]))
