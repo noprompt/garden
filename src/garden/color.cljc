@@ -421,10 +421,10 @@
 ;; CSS color name conversion
 
 (def color-name->hex
-  {:aquamarine "#7fffd4"
-   :aliceblue "#f0f8ff"
+  {:aliceblue "#f0f8ff"
    :antiquewhite "#faebd7"
    :aqua "#00ffff"
+   :aquamarine "#7fffd4"
    :azure "#f0ffff"
    :beige "#f5f5dc"
    :bisque "#ffe4c4"
@@ -477,6 +477,7 @@
    :gray "#808080"
    :green "#008000"
    :greenyellow "#adff2f"
+   :grey "#808080"
    :honeydew "#f0fff0"
    :hotpink "#ff69b4"
    :indianred "#cd5c5c"
@@ -540,6 +541,7 @@
    :powderblue "#b0e0e6"
    :purple "#800080"
    :red "#ff0000"
+   :rebeccapurple "#663399"
    :rosybrown "#bc8f8f"
    :royalblue "#4169e1"
    :saddlebrown "#8b4513"
