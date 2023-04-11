@@ -816,6 +816,7 @@
     first-of-type
     fullscreen
     focus
+    marker
     hover
     indeterminate
     in-range
