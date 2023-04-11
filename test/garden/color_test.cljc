@@ -13,6 +13,7 @@
 (def hex-blue "#0000ff")
 (def hex-white "#ffffff")
 
+(def hexa-opaque-black "#000000ff")
 (def hexa-black "#00000080")
 (def hexa-red "#ff000080")
 (def hexa-green "#00ff0080")
@@ -27,6 +28,7 @@
 (def rgb-white (color/rgb 255 255 255))
 (def rgb-orange (color/rgb 255 133 27))
 
+(def rgba-opaque-black (color/rgba 0 0 0 1))
 (def rgba-black (color/rgba 0 0 0 0.5))
 (def rgba-red (color/rgba 255 0 0 0.5))
 (def rgba-green (color/rgba 0 255 0 0.5))
@@ -66,6 +68,7 @@
 
   (testing "rgba->hex"
     (are [x y] (= x y)
+      (color/rgba->hex rgba-opaque-black) hexa-opaque-black
       (color/rgba->hex rgba-black) hexa-black
       (color/rgba->hex rgba-red) hexa-red
       (color/rgba->hex rgba-green) hexa-green
