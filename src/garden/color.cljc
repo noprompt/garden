@@ -152,7 +152,8 @@
   (letfn [(hex-part [v]
             (-> (util/format "%2s" (util/int->string v 16))
                 (string/replace " " "0")))]
-    (apply str "#" (map hex-part [r g b a]))))
+    (str (apply str "#" (map hex-part [r g b]) )
+         (hex-part (int (* 256 a))))))
 
 (defn trim-one [x]
   (if (< 1 x) 1 x))

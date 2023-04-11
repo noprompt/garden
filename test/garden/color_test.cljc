@@ -13,12 +13,26 @@
 (def hex-blue "#0000ff")
 (def hex-white "#ffffff")
 
+(def hexa-black "#00000080")
+(def hexa-red "#ff000080")
+(def hexa-green "#00ff0080")
+(def hexa-blue "#0000ff80")
+(def hexa-white "#ffffff80")
+
+
 (def rgb-black (color/rgb 0 0 0))
 (def rgb-red (color/rgb 255 0 0))
 (def rgb-green (color/rgb 0 255 0))
 (def rgb-blue (color/rgb 0 0 255))
 (def rgb-white (color/rgb 255 255 255))
 (def rgb-orange (color/rgb 255 133 27))
+
+(def rgba-black (color/rgba 0 0 0 0.5))
+(def rgba-red (color/rgba 255 0 0 0.5))
+(def rgba-green (color/rgba 0 255 0 0.5))
+(def rgba-blue (color/rgba 0 0 255 0.5))
+(def rgba-white (color/rgba 255 255 255 0.5))
+(def rgba-orange (color/rgba 255 133 27 0.5))
 
 (def hsl-black (color/hsl 0 0 0))
 (def hsl-red (color/hsl 0 100 50))
@@ -42,6 +56,13 @@
       (color/rgb->hex rgb-red) hex-red
       (color/rgb->hex rgb-green) hex-green
       (color/rgb->hex rgb-blue) hex-blue))
+
+  (testing "rgba->hex"
+    (are [x y] (= x y)
+      (color/rgba->hex rgba-black) hexa-black
+      (color/rgba->hex rgba-red) hexa-red
+      (color/rgba->hex rgba-green) hexa-green
+      (color/rgba->hex rgba-blue) hexa-blue))
 
   (testing "hsl->rgb"
     (are [x y] (= x y)
