@@ -41,6 +41,13 @@
 (def hsl-white (color/hsl 0 0 100))
 (def hsl-orange (color/hsl 530/19 100 940/17))
 
+(def hsla-black (color/hsla 0 0 0 0.5))
+(def hsla-red (color/hsla 0 100 50 0.5))
+(def hsla-green (color/hsla 120 100 50 0.5))
+(def hsla-blue (color/hsla 240 100 50 0.5))
+(def hsla-white (color/hsla 0 0 100 0.5))
+(def hsla-orange (color/hsla 530/19 100 940/17 0.5))
+
 (deftest color-conversion-test
   (testing "hex->rgb"
     (are [x y] (= x y)
@@ -71,6 +78,14 @@
       (color/hsl->rgb hsl-green) rgb-green
       (color/hsl->rgb hsl-blue) rgb-blue
       (color/hsl->rgb hsl-white) rgb-white))
+
+  (testing "hsla->rgba"
+    (are [x y] (= x y)
+      (color/hsla->rgba hsla-black) rgba-black
+      (color/hsla->rgba hsla-red) rgba-red
+      (color/hsla->rgba hsla-green) rgba-green
+      (color/hsla->rgba hsla-blue) rgba-blue
+      (color/hsla->rgba hsla-white) rgba-white))
 
   (testing "rgb->hsl"
     (are [x y] (= x y)
