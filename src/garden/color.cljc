@@ -92,6 +92,12 @@
   (and (map? color)
        (every? color #{:red :green :blue})))
 
+(defn rgba?
+  "Return true if color is an RGBA color."
+  [color]
+  (and (map? color)
+       (every? color #{:red :green :blue :alpha})))
+
 (defn hsl?
   "Return true if color is an HSL color."
   [color]
@@ -140,6 +146,14 @@
                 (string/replace " " "0")))]
     (apply str "#" (map hex-part [r g b]))))
 
+(defn rgba->hex
+  "Convert an RGB color map to a hexadecimal color."
+  [{r :red g :green b :blue a :alpha}]
+  (letfn [(hex-part [v]
+            (-> (util/format "%2s" (util/int->string v 16))
+                (string/replace " " "0")))]
+    (apply str "#" (map hex-part [r g b a]))))
+
 (defn trim-one [x]
   (if (< 1 x) 1 x))
 
@@ -186,6 +200,24 @@
                         (hue->rgb m1 m2 (- h (/ 1.0 3)))])]
       (rgb [r g b]))))
 
+(defn hsla->rgba
+  "Convert an HSLA color map to an RGBA color map."
+  [{:keys  [hue saturation lightness alpha] :as color}]
+  (if (rgb? color)
+    color
+    (let [h (/ hue 360.0)
+          s (/ saturation 100.0)
+          l (/ lightness 100.0)
+          m2 (if (<= l 0.5)
+               (* l (inc s))
+               (- (+ l s) (* l s)))
+          m1 (- (* 2 l) m2)
+          [r g b] (map #(int (+ 0.5 (* % 0xff)))
+                       [(hue->rgb m1 m2 (+ h (/ 1.0 3)))
+                        (hue->rgb m1 m2 h)
+                        (hue->rgb m1 m2 (- h (/ 1.0 3)))])]
+      (rgba [r g b alpha]))))
+
 (defn- hue->rgb
   [m1 m2 h]
   (let [h (cond
@@ -202,6 +234,11 @@
   "Convert an HSL color map to a hexadecimal string."
   [color]
   (-> color hsl->rgb rgb->hex))
+
+(defn hsla->hex
+  "Convert an HSLA color map to a hexadecimal string."
+  [color]
+  (-> color hsla->rgba rgb->hex))
 
 (defn hex->hsl
   "Convert a hexadecimal color to an HSL color."
@@ -223,10 +260,12 @@
   "Convert a color to a hexadecimal string."
   [x]
   (cond
-   (hex? x) x
-   (rgb? x) (rgb->hex x)
-   (hsl? x) (hsl->hex x)
-   :else (throw (ex-info (str "Can't convert " x " to a color.") {}))))
+    (hex? x)  x
+    (rgb? x)  (rgb->hex x)
+    (rgba? x) (rgba->hex x)
+    (hsl? x)  (hsl->hex x)
+    (hsla? x) (hsla->hex x)
+    :else     (throw (ex-info (str "Can't convert " x " to a color.") {}))))
 
 (defn as-rgb
   "Convert a color to a RGB."
