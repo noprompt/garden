@@ -94,7 +94,15 @@
       (color/rgb->hsl rgb-green) hsl-green
       (color/rgb->hsl rgb-blue) hsl-blue
       (color/rgb->hsl rgb-white) hsl-white
-      (color/rgb->hsl rgb-orange) hsl-orange)))
+      (color/rgb->hsl rgb-orange) hsl-orange))
+
+  (testing "as-hex"
+    (are [x y] (= x y)
+      (color/as-hex rgba-black) hexa-black
+      (color/as-hex rgba-red) hexa-red
+      (color/as-hex rgba-green) hexa-green
+      (color/as-hex rgba-blue) hexa-blue
+      (color/as-hex rgba-white) hexa-white)))
 
 (deftest color-math-test
   (testing "color+"

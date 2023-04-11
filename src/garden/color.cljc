@@ -261,11 +261,11 @@
   "Convert a color to a hexadecimal string."
   [x]
   (cond
+    (rgba? x) (rgba->hex x)
+    (hsla? x) (hsla->hex x)
     (hex? x)  x
     (rgb? x)  (rgb->hex x)
-    (rgba? x) (rgba->hex x)
     (hsl? x)  (hsl->hex x)
-    (hsla? x) (hsla->hex x)
     :else     (throw (ex-info (str "Can't convert " x " to a color.") {}))))
 
 (defn as-rgb
