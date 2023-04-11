@@ -43,6 +43,7 @@
 (def hsl-white (color/hsl 0 0 100))
 (def hsl-orange (color/hsl 530/19 100 940/17))
 
+(def hsla-opaque-black (color/hsla 0 0 0 1))
 (def hsla-black (color/hsla 0 0 0 0.5))
 (def hsla-red (color/hsla 0 100 50 0.5))
 (def hsla-green (color/hsla 120 100 50 0.5))
@@ -84,6 +85,7 @@
 
   (testing "hsla->rgba"
     (are [x y] (= x y)
+      (color/hsla->rgba hsla-opaque-black) rgba-opaque-black
       (color/hsla->rgba hsla-black) rgba-black
       (color/hsla->rgba hsla-red) rgba-red
       (color/hsla->rgba hsla-green) rgba-green
