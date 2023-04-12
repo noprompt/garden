@@ -13,6 +13,14 @@
 (def hex-blue "#0000ff")
 (def hex-white "#ffffff")
 
+(def hexa-opaque-black "#000000ff")
+(def hexa-black "#00000080")
+(def hexa-red "#ff000080")
+(def hexa-green "#00ff0080")
+(def hexa-blue "#0000ff80")
+(def hexa-white "#ffffff80")
+
+
 (def rgb-black (color/rgb 0 0 0))
 (def rgb-red (color/rgb 255 0 0))
 (def rgb-green (color/rgb 0 255 0))
@@ -20,12 +28,28 @@
 (def rgb-white (color/rgb 255 255 255))
 (def rgb-orange (color/rgb 255 133 27))
 
+(def rgba-opaque-black (color/rgba 0 0 0 1))
+(def rgba-black (color/rgba 0 0 0 0.5))
+(def rgba-red (color/rgba 255 0 0 0.5))
+(def rgba-green (color/rgba 0 255 0 0.5))
+(def rgba-blue (color/rgba 0 0 255 0.5))
+(def rgba-white (color/rgba 255 255 255 0.5))
+(def rgba-orange (color/rgba 255 133 27 0.5))
+
 (def hsl-black (color/hsl 0 0 0))
 (def hsl-red (color/hsl 0 100 50))
 (def hsl-green (color/hsl 120 100 50))
 (def hsl-blue (color/hsl 240 100 50))
 (def hsl-white (color/hsl 0 0 100))
 (def hsl-orange (color/hsl 530/19 100 940/17))
+
+(def hsla-opaque-black (color/hsla 0 0 0 1))
+(def hsla-black (color/hsla 0 0 0 0.5))
+(def hsla-red (color/hsla 0 100 50 0.5))
+(def hsla-green (color/hsla 120 100 50 0.5))
+(def hsla-blue (color/hsla 240 100 50 0.5))
+(def hsla-white (color/hsla 0 0 100 0.5))
+(def hsla-orange (color/hsla 530/19 100 940/17 0.5))
 
 (deftest color-conversion-test
   (testing "hex->rgb"
@@ -43,6 +67,14 @@
       (color/rgb->hex rgb-green) hex-green
       (color/rgb->hex rgb-blue) hex-blue))
 
+  (testing "rgba->hex"
+    (are [x y] (= x y)
+      (color/rgba->hex rgba-opaque-black) hexa-opaque-black
+      (color/rgba->hex rgba-black) hexa-black
+      (color/rgba->hex rgba-red) hexa-red
+      (color/rgba->hex rgba-green) hexa-green
+      (color/rgba->hex rgba-blue) hexa-blue))
+
   (testing "hsl->rgb"
     (are [x y] (= x y)
       (color/hsl->rgb hsl-black) rgb-black
@@ -51,6 +83,15 @@
       (color/hsl->rgb hsl-blue) rgb-blue
       (color/hsl->rgb hsl-white) rgb-white))
 
+  (testing "hsla->rgba"
+    (are [x y] (= x y)
+      (color/hsla->rgba hsla-opaque-black) rgba-opaque-black
+      (color/hsla->rgba hsla-black) rgba-black
+      (color/hsla->rgba hsla-red) rgba-red
+      (color/hsla->rgba hsla-green) rgba-green
+      (color/hsla->rgba hsla-blue) rgba-blue
+      (color/hsla->rgba hsla-white) rgba-white))
+
   (testing "rgb->hsl"
     (are [x y] (= x y)
       (color/rgb->hsl rgb-black) hsl-black
@@ -58,7 +99,15 @@
       (color/rgb->hsl rgb-green) hsl-green
       (color/rgb->hsl rgb-blue) hsl-blue
       (color/rgb->hsl rgb-white) hsl-white
-      (color/rgb->hsl rgb-orange) hsl-orange)))
+      (color/rgb->hsl rgb-orange) hsl-orange))
+
+  (testing "as-hex"
+    (are [x y] (= x y)
+      (color/as-hex rgba-black) hexa-black
+      (color/as-hex rgba-red) hexa-red
+      (color/as-hex rgba-green) hexa-green
+      (color/as-hex rgba-blue) hexa-blue
+      (color/as-hex rgba-white) hexa-white)))
 
 (deftest color-math-test
   (testing "color+"
