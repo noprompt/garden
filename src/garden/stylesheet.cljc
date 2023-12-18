@@ -21,7 +21,7 @@
   Ex.
       (let [text-field (rule \"[type=\"text\"])]
        (text-field {:border [\"1px\" :solid \"black\"]}))
-      ;; => [\"[type=\"text\"] {:boder [\"1px\" :solid \"black\"]}]"
+      ;; => [\"[type=\"text\"] {:border [\"1px\" :solid \"black\"]}]"
   [selector & more]
   (if-not (or (keyword? selector)
               (string? selector)
@@ -60,8 +60,9 @@
   (at-rule :media {:media-queries media-queries
                    :rules rules}))
 
-(defn at-supports [feature-queries & rules]
+(defn at-supports
   "Create a CSS @supports rule."
+  [feature-queries & rules]
   (at-rule :feature {:feature-queries feature-queries
                      :rules rules}))
 

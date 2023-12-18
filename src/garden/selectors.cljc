@@ -1015,7 +1015,7 @@
         pseudo-element-re #"^::[a-zA-Z][\w-]*"]
     (some
      (fn [[re k]]
-       (if-let [m (re-find re s)]
+       (when-let [m (re-find re s)]
          [m k]))
      [[id-selector-re :a]
       [class-selector-re :b]
