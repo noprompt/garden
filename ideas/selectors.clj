@@ -53,12 +53,12 @@
    :form i})
 
 (defn separated-list* [op coll]
-  (reduce 
+  (reduce
    (fn [data [index x]]
      (-> data
          (update-in [:children] conj index)
          (assoc index x)))
-   {:op op 
+   {:op op
     :children []}
    (map-indexed vector coll)))
 
@@ -119,7 +119,7 @@
    :else
    (str (float magnitude) (name type))))
 
-;; Primatives
+;; Primitives
 
 (defmethod compile :number
   [{:keys [form]}]
