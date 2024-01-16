@@ -74,8 +74,9 @@
 
 (defn at-page
   "Create a CSS @page rule."
-  [page-properties & rules]
-  (at-rule :page {:page-properties page-properties
+  [named-page page-properties & rules]
+  (at-rule :page {:named-page named-page
+                  :page-properties page-properties
                   :rules rules}))
 
 ;;;; ## Functions

@@ -282,8 +282,9 @@
 
 (defmethod expand-at-rule :page
   [{:keys [value]}]
-  (let [{:keys [page-properties rules]} value]
-    (->> {:page-properties page-properties
+  (let [{:keys [named-page page-properties rules]} value]
+    (->> {:named-page named-page
+          :page-properties page-properties
           :rules (map (fn [[ident rules]]
                         [(list (list ident)) (expand rules)])
                       rules)}
@@ -675,8 +676,9 @@
 
 (defmethod render-at-rule :page
   [{:keys [value]}]
-  (let [{:keys [page-properties rules]} value]
+  (let [{:keys [named-page page-properties rules]} value]
     (str "@page "
+         (when named-page (name named-page))
          l-brace
          (render-css page-properties)
          (when (seq rules)

@@ -200,10 +200,15 @@
                                           ["100%" {:x 1}])]))))
   (testing "@page"
     (is (= "@page{size:A4;margin:10px}"
-           (compile-helper (at-page {:size "A4"
-                                     :margin "10px"}))))
+           (compile-helper (at-page nil {:size "A4"
+                                         :margin "10px"}))))
     (is (= "@page{size:A3;@bottom-right-corner{content:'Page ' counter(page)}}"
-           (compile-helper (at-page {:size "A3"}
+           (compile-helper (at-page nil
+                                    {:size "A3"}
+                                    ["@bottom-right-corner" {:content "'Page ' counter(page)"}]))))
+    (is (= "@page cover{size:A3;@bottom-right-corner{content:'Page ' counter(page)}}"
+           (compile-helper (at-page :cover
+                                    {:size "A3"}
                                     ["@bottom-right-corner" {:content "'Page ' counter(page)"}]))))))
 
 (deftest flag-tests
