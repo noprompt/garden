@@ -48,11 +48,11 @@
 (defn at-import
   "Create a CSS @import rule."
   ([url]
-     (at-rule :import {:url url
-                       :media-queries nil}))
+   (at-rule :import {:url url
+                     :media-queries nil}))
   ([url & media-queries]
-     (at-rule :import {:url url
-                       :media-queries media-queries})))
+   (at-rule :import {:url url
+                     :media-queries media-queries})))
 
 (defn at-media
   "Create a CSS @media rule."
@@ -71,6 +71,13 @@
   [identifier & frames]
   (at-rule :keyframes {:identifier identifier
                        :frames frames}))
+
+(defn at-page
+  "Create a CSS @page rule."
+  [named-page page-properties & rules]
+  (at-rule :page {:named-page named-page
+                  :page-properties page-properties
+                  :rules rules}))
 
 ;;;; ## Functions
 

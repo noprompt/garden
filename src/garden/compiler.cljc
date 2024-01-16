@@ -103,7 +103,8 @@
       (util/at-import? x)
       (util/at-media? x)
       (util/at-supports? x)
-      (util/at-keyframes? x)))
+      (util/at-keyframes? x)
+      (util/at-page? x)))
 
 (defn- divide-vec
   "Return a vector of [(filter pred coll) (remove pred coll)]."
@@ -276,6 +277,19 @@
       (CSSAtRule. :feature {:feature-queries feature-queries
                             :rules rules})
       subqueries)))
+
+;; @page expansion
+
+(defmethod expand-at-rule :page
+  [{:keys [value]}]
+  (let [{:keys [named-page page-properties rules]} value]
+    (->> {:named-page named-page
+          :page-properties page-properties
+          :rules (map (fn [[ident rules]]
+                        [(list (list ident)) (expand rules)])
+                      rules)}
+         (CSSAtRule. :page)
+         (list))))
 
 ;; ---------------------------------------------------------------------
 ;; Stylesheet expansion
@@ -657,6 +671,22 @@
                (rule-join)
                (indent-str))
            r-brace-1))))
+
+;; @page
+
+(defmethod render-at-rule :page
+  [{:keys [value]}]
+  (let [{:keys [named-page page-properties rules]} value]
+    (str "@page "
+         (when named-page (name named-page))
+         l-brace
+         (render-css page-properties)
+         (when (seq rules)
+           (str rule-sep
+                (-> (map render-css rules)
+                    (rule-join)
+                    (indent-str))))
+         r-brace)))
 
 ;; ---------------------------------------------------------------------
 ;; CSSRenderer implementation

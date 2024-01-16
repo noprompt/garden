@@ -6,7 +6,7 @@
       :cljs [garden.types :as types :refer [CSSFunction CSSUnit]])
    [garden.color :as color]
    [garden.compiler :refer [compile-css expand render-css]]
-   [garden.stylesheet :refer (at-import at-media at-keyframes at-supports)])
+   [garden.stylesheet :refer (at-import at-media at-keyframes at-supports at-page)])
   #?(:clj
      (:import garden.types.CSSFunction
               garden.types.CSSUnit)))
@@ -196,8 +196,20 @@
            (compile-helper [:.foo
                             {:color "red"}
                             (at-keyframes :id
-                                         ["0%" {:x 0}]
-                                         ["100%" {:x 1}])])))))
+                                          ["0%" {:x 0}]
+                                          ["100%" {:x 1}])]))))
+  (testing "@page"
+    (is (= "@page{size:A4;margin:10px}"
+           (compile-helper (at-page nil {:size "A4"
+                                         :margin "10px"}))))
+    (is (= "@page{size:A3;@bottom-right-corner{content:'Page ' counter(page)}}"
+           (compile-helper (at-page nil
+                                    {:size "A3"}
+                                    ["@bottom-right-corner" {:content "'Page ' counter(page)"}]))))
+    (is (= "@page cover{size:A3;@bottom-right-corner{content:'Page ' counter(page)}}"
+           (compile-helper (at-page :cover
+                                    {:size "A3"}
+                                    ["@bottom-right-corner" {:content "'Page ' counter(page)"}]))))))
 
 (deftest flag-tests
   (testing ":vendors"
